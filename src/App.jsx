@@ -125,7 +125,7 @@ const colorResultado = (texto) => {
     >
       {/* Imagen fija arriba */}
       <img
-        src="logo.png"
+        src="/logo.png"
         alt="Logo"
         className="imagen-fija"
       />    
