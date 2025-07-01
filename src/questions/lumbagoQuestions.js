@@ -1,100 +1,226 @@
 export const lumbagoQuestions = [
   {
-    id: 'l1',
-    text: '¿El paciente tiene menos de 18 años?',
+    id: "menor_18",
+    text: "¿El paciente tiene menos de 18 años?",
+    type: "boolean",
     options: [
-      { value: 'si', label: 'Sí' },
-      { value: 'no', label: 'No' },
+      { value: "si", label: "Sí" },
+      { value: "no", label: "No" },
     ],
     next: {
-      si: 'result_no_ley',
-      no: 'l2',
+      si: "es_mujer",
+      no: "es_mujer",
     },
   },
   {
-    id: 'l2',
-    text: '¿El paciente es mujer?',
+    id: "es_mujer",
+    text: "¿El paciente es mujer?",
+    type: "boolean",
     options: [
-      { value: 'si', label: 'Sí' },
-      { value: 'no', label: 'No' },
+      { value: "si", label: "Sí" },
+      { value: "no", label: "No" },
     ],
     next: {
-      si: 'l3',
-      no: 'l4',
+      si: "embarazada",
+      no: "consulta_dolor_lumbar",
     },
   },
   {
-    id: 'l3',
-    text: '¿La paciente está embarazada?',
+    id: "embarazada",
+    text: "¿La paciente está embarazada?",
+    type: "boolean",
     options: [
-      { value: 'si', label: 'Sí' },
-      { value: 'no', label: 'No' },
+      { value: "si", label: "Sí" },
+      { value: "no", label: "No" },
     ],
     next: {
-      si: 'l4',
-      no: 'l4',
+      si: "result_alto",
+      no: "consulta_dolor_lumbar",
     },
   },
   {
-    id: 'l4',
-    text: '¿Cuánto fue el peso movilizado?',
+    id: "consulta_dolor_lumbar",
+    text: "¿El dolor lumbar está asociado a MMC (manejo manual de carga)?",
+    type: "boolean",
     options: [
-      { value: 'p10', label: 'Hasta 10kg' },
-      { value: 'p10_15', label: 'Entre 10 y 15kg' },
-      { value: 'p15_20', label: 'Entre 15 y 20kg' },
-      { value: 'p20_25', label: 'Entre 20 y 25kg' },
-      { value: 'p25', label: 'Más de 25kg' },
+      { value: "no", label: "No asociado a MMC" },
+      { value: "si", label: "Asociado a MMC" },
     ],
     next: {
-      p10: 'result_bajo',
-      p10_15: 'result_bajo',
-      p15_20: 'l5',
-      p20_25: 'l5',
-      p25: 'result_alto',
+      no: "antecedentes_trauma",
+      si: "peso_asociado",
     },
   },
   {
-    id: 'l5',
-    text: 'Frecuencia de la carga',
+    id: "antecedentes_trauma",
+    text: "¿Tiene antecedentes de trauma (por ejemplo: contusión, fractura)?",
+    type: "boolean",
     options: [
-      { value: 'unico', label: 'Único' },
-      { value: 'menos_12', label: 'Menos de 12 veces por hora' },
-      { value: 'mas_12', label: 'Más de 12 veces por hora' },
+      { value: "no", label: "Sin antecedentes de trauma" },
+      { value: "si", label: "Con antecedentes de trauma" },
     ],
     next: {
-      unico: 'result_medio',
-      menos_12: 'result_medio',
-      mas_12: 'l6',
+      no: "result_medio", // Aquí corregido para que sea "Definir calificación médica..." = result_medio
+      si: "result_alto",
     },
   },
   {
-    id: 'l6',
-    text: 'Distancia de carga',
+    id: "peso_asociado",
+    text: "¿Cuál fue el peso movilizado?",
+    type: "options",
     options: [
-      { value: 'd1', label: 'Hasta 4 metros' },
-      { value: 'd2', label: '4 a 10 metros' },
-      { value: 'd3', label: '10 o más metros' },
+      { value: "menor_igual_10", label: "≤10 Kg" },
+      { value: "entre_10_1_y_20", label: "10.1 a 20.0 Kg" },
+      { value: "entre_20_1_y_25", label: "20.1 a 25.0 Kg" },
+      { value: "mayor_25", label: ">25.0 Kg" },
     ],
-    next: {
-      d1: 'l7',
-      d2: 'l7',
-      d3: 'l7',
+    next: (answers) => {
+      const esMujer = answers["es_mujer"] === "si";
+      const menor18 = answers["menor_18"] === "si";
+      const embarazada = answers["embarazada"] === "si";
+
+      if (embarazada) return "result_alto";
+
+      const mayorCarga = ["entre_20_1_y_25", "mayor_25"].includes(answers["peso_asociado"]);
+
+      if (mayorCarga) {
+        if (esMujer || menor18) {
+          if (
+            answers["peso_asociado"] === "entre_20_1_y_25" ||
+            answers["peso_asociado"] === "mayor_25"
+          ) {
+            return "result_alto";
+          }
+        } else {
+          if (answers["peso_asociado"] === "mayor_25") {
+            return "result_alto";
+          }
+        }
+      }
+
+      if (answers["peso_asociado"] === "menor_igual_10") return "result_no_trabajo";
+
+      if (
+        answers["peso_asociado"] === "entre_10_1_y_20" ||
+        answers["peso_asociado"] === "entre_20_1_y_25"
+      )
+        return "expuesto_a_mmc";
+
+      return "result_no_trabajo";
     },
   },
   {
-    id: 'l7',
-    text: 'Características de la carga',
+    id: "expuesto_a_mmc",
+    text: "¿El trabajador está expuesto a MMC habitualmente? (ej: bodeguero, peoneta)",
+    type: "boolean",
     options: [
-      { value: 'simetrica', label: 'Simétrica con ambas manos' },
-      { value: 'torso_lateral', label: 'Torso simétrico pero carga hacia un lado' },
-      { value: 'asimetrica', label: 'Carga asimétrica' },
-      { value: 'transporte_lateral', label: 'Transporte lateral con 2 manos o sobre un hombro' },
+      { value: "no", label: "No" },
+      { value: "si", label: "Sí" },
     ],
     next: {
-      simetrica: 'result_bajo',
-      torso_lateral: 'result_alto',
-      asimetrica: 'result_alto',
-      transporte_lateral: 'result_alto',
+      no: "levantamiento_unico",
+      si: "frecuencia_levantamiento",
     },
+  },
+  {
+    id: "levantamiento_unico",
+    text: "¿Cuál fue el peso del levantamiento único?",
+    type: "options",
+    options: [
+      { value: "menor_igual_15", label: "≤15 Kg" },
+      { value: "mayor_15", label: ">15 Kg" },
+    ],
+    next: (answers) => {
+      if (answers["levantamiento_unico"] === "mayor_15") {
+        // Caso: No expuesto y peso >15 → evaluación adicional
+        return "result_evaluacion_adicional";
+      }
+      return "result_no_trabajo";
+    },
+  },
+  {
+    id: "frecuencia_levantamiento",
+    text: "¿Cuál es la frecuencia de levantamientos por hora?",
+    type: "options",
+    options: [
+      { value: "mayor_igual_12", label: "≥12 levantamientos/hora" },
+      { value: "menor_12", label: "<12 levantamientos/hora" },
+    ],
+    next: {
+      mayor_igual_12: "peso_habitual_mmc",
+      menor_12: "peso_bajo_12_mmc",
+    },
+  },
+  {
+    id: "peso_habitual_mmc",
+    text: "¿Cuál es el peso que levanta habitualmente?",
+    type: "options",
+    options: [
+      { value: "menor_igual_15", label: "≤15 Kg" },
+      { value: "mayor_15", label: ">15 Kg" },
+    ],
+    next: (answers) => {
+      // Caso: Expuesto, frecuencia ≥12, peso habitual ≤15 → evaluación adicional
+      if (
+        answers["frecuencia_levantamiento"] === "mayor_igual_12" &&
+        answers["peso_habitual_mmc"] === "menor_igual_15"
+      ) {
+        return "result_evaluacion_adicional";
+      }
+      return "result_trabajo";
+    },
+  },
+  {
+    id: "peso_bajo_12_mmc",
+    text: "¿Cuál es el peso que levanta habitualmente?",
+    type: "options",
+    options: [
+      { value: "menor_igual_20", label: "≤20 Kg" },
+      { value: "mayor_20", label: ">20 Kg" },
+    ],
+    next: (answers) => {
+      // Caso: Expuesto, frecuencia <12, peso habitual >20 → evaluación adicional
+      if (
+        answers["frecuencia_levantamiento"] === "menor_12" &&
+        answers["peso_bajo_12_mmc"] === "mayor_20"
+      ) {
+        return "result_evaluacion_adicional";
+      }
+      return answers["peso_bajo_12_mmc"] === "menor_igual_20"
+        ? "result_medio"
+        : "result_trabajo";
+    },
+  },
+
+  // Resultados finales
+  {
+    id: "result_no_ley",
+    type: "result",
+    next: { default: "result_no_ley" },
+  },
+  {
+    id: "result_alto",
+    type: "result",
+    next: { default: "result_alto" },
+  },
+  {
+    id: "result_no_trabajo",
+    type: "result",
+    next: { default: "result_no_trabajo" },
+  },
+  {
+    id: "result_medio",
+    type: "result",
+    next: { default: "result_medio" },
+  },
+  {
+    id: "result_trabajo",
+    type: "result",
+    next: { default: "result_trabajo" },
+  },
+  {
+    id: "result_evaluacion_adicional",
+    type: "result",
+    next: { default: "result_evaluacion_adicional" },
   },
 ];

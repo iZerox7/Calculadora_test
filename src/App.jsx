@@ -23,14 +23,13 @@ export default function App() {
   const preguntaActual = preguntas.find(q => q.id === preguntaId);
 
   const resultadosTexto = {
-    result_trabajo: 'Resultado final: Trabajo',
-    result_no_trabajo: 'Resultado final: No es trabajo',
-    result_trayecto: 'Resultado final: Trayecto',
-    result_no_trayecto: 'Resultado final: No es trayecto',
-    result_alto: 'Riesgo alto: Califica como Ley',
-    result_bajo: 'Riesgo bajo: No califica como Ley',
-    result_medio: 'Riesgo medio: Evaluación adicional requerida',
-    result_no_ley: 'No aplica: Menor de edad',
+    result_trabajo: "Entregar cobertura Ley N°16.744",
+    result_alto: "Entregar cobertura Ley N°16.744",
+    result_no_trabajo: "Derivar a su previsión para estudio y tratamiento sin cobertura Ley N°16.744",
+    result_bajo: "Derivar a su previsión para estudio y tratamiento sin cobertura Ley N°16.744",
+    result_no_ley: "Derivar a su previsión para estudio y tratamiento sin cobertura Ley N°16.744",
+    result_medio: "Definir calificación médica según mecanismo y entregar cobertura Ley N°16.744 según calificación médica",
+    result_evaluacion_adicional: "Requiere una evaluación adicional",
   };
 
   const colorResultado = (texto) => {
@@ -58,13 +57,33 @@ export default function App() {
   const responder = async (valor) => {
     const nuevasRespuestas = { ...respuestas, [preguntaId]: valor };
     setRespuestas(nuevasRespuestas);
-    const siguiente = preguntaActual.next[valor];
 
-    if (siguiente.startsWith('result_')) {
-      const textoResultado = resultadosTexto[siguiente];
+    let siguiente;
+
+    if (typeof preguntaActual.next === "function") {
+      // Si next es función, le pasamos TODAS las respuestas
+      siguiente = preguntaActual.next(nuevasRespuestas);
+    } else if (typeof preguntaActual.next === "object") {
+      // Si next es objeto, accedemos con el valor
+      siguiente = preguntaActual.next[valor];
+    } else {
+      console.error("next inválido en pregunta", preguntaActual);
+      setResultado("Error interno en el flujo del cuestionario");
+      return;
+    }
+
+    if (!siguiente) {
+      console.error("Siguiente pregunta/resultado no definido para respuesta", valor);
+      setResultado("Error: flujo inválido en cuestionario");
+      return;
+    }
+
+    // Si siguiente es resultado
+    if (siguiente.startsWith("result_")) {
+      const textoResultado = resultadosTexto[siguiente] || "Resultado desconocido";
       setResultado(textoResultado);
       setGuardando(true);
-      const { error } = await supabase.from('respuestas').insert([
+      const { error } = await supabase.from("respuestas").insert([
         {
           id_caso: idCaso,
           cuestionario,
@@ -73,12 +92,14 @@ export default function App() {
         },
       ]);
       setGuardando(false);
-      if (error) alert('Error al guardar: ' + error.message);
+      if (error) alert("Error al guardar: " + error.message);
       return;
     }
 
-    setHistorialPreguntas(prev => [...prev, siguiente]);
+    // Avanzar a siguiente pregunta
     setPreguntaId(siguiente);
+    setHistorialPreguntas((prev) => [...prev, siguiente]);
+    setResultado(null);
   };
 
   const volverPreguntaAnterior = () => {

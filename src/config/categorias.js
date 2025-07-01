@@ -5,10 +5,10 @@ export const categorias = {
   cobertura: {
     label: 'Cobertura',
     cuestionarios: {
-      faenas: {
-        label: 'Faenas y Campamentos',
-        preguntas: faenasCampamentosQuestions,
-      },
+      // faenas: {
+      //   label: 'Faenas y Campamentos',
+      //   preguntas: faenasCampamentosQuestions,
+      // },
       lumbago: {
         label: 'Lumbago',
         preguntas: lumbagoQuestions,
