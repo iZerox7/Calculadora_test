@@ -201,7 +201,7 @@ function App() {
           <h2 className="text-3xl font-bold" style={{color: '#002a6c'}}>Calculadora Médica</h2>
           <div className="text-left">
             <label htmlFor="caseId" className="block text-sm font-medium text-gray-700">ID del Caso</label>
-            <input type="text" id="caseId" value={caseId} onChange={(e) => setCaseId(e.target.value)} placeholder="Ej: 12345-6" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+            <input type="text" id="caseId" value={caseId} onChange={(e) => setCaseId(e.target.value)} placeholder="Ej: 8123456" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
           </div>
           <div className="text-left">
             <label htmlFor="category" className="block text-sm font-medium text-gray-700">Categoría</label>
