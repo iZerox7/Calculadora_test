@@ -106,6 +106,8 @@ const lumbagoQuestionModule = {
   questions,
   generateClinicalReport,
   evaluateRisk,
+  // Nueva propiedad para la imagen de guía
+  guideImage: 'Memoria_levantamiento.png', // Usa la ruta a tu imagen. Ej: '/images/lumbago_guide.png'  
 };
 
 export default lumbagoQuestionModule;

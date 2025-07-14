@@ -4,6 +4,31 @@ import { supabase } from './supabaseClient';
 
 // NOTA: Para que este código funcione, asegúrate de que tu proyecto esté configurado para usar Tailwind CSS.
 
+// --- Componente ImageModal ---
+const ImageModal = ({ isOpen, onClose, imageSrc }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="relative bg-white p-2 rounded-lg shadow-xl max-w-7xl max-h-[95vh]" // Se aumentó el tamaño del modal
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button 
+          onClick={onClose}
+          className="absolute -top-4 -right-4 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center text-2xl font-bold shadow-lg hover:bg-gray-200 transition-colors z-10"
+        >
+          &times;
+        </button>
+        <img src={imageSrc} alt="Imagen de Guía" className="object-contain w-full h-full max-h-[90vh] rounded" />
+      </div>
+    </div>
+  );
+};
+
 // --- Componente MultiSelect ---
 const MultiSelect = ({ question, value, onChange }) => {
   const [selected, setSelected] = useState(value || []);
@@ -79,6 +104,7 @@ function App() {
   const [riskHistory, setRiskHistory] = useState([]);
   const [currentRiskQuestionId, setCurrentRiskQuestionId] = useState(null);
   const [wizardFinished, setWizardFinished] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (selectedCategory && selectedQuestionnaireKey) {
@@ -93,9 +119,11 @@ function App() {
     }
   }, [selectedCategory, selectedQuestionnaireKey]);
 
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
   const saveToSupabase = async (data) => {
     try {
-      // Se actualiza el nombre de la tabla a 'respuestas'
       const { error } = await supabase.from('respuestas').insert([data]);
       if (error) throw error;
     } catch (error) {
@@ -201,7 +229,7 @@ function App() {
           <h2 className="text-3xl font-bold" style={{color: '#002a6c'}}>Calculadora Médica</h2>
           <div className="text-left">
             <label htmlFor="caseId" className="block text-sm font-medium text-gray-700">ID del Caso</label>
-            <input type="text" id="caseId" value={caseId} onChange={(e) => setCaseId(e.target.value)} placeholder="Ej: 8123456" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+            <input type="text" id="caseId" value={caseId} onChange={(e) => setCaseId(e.target.value)} placeholder="Ej: 12345-6" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
           </div>
           <div className="text-left">
             <label htmlFor="category" className="block text-sm font-medium text-gray-700">Categoría</label>
@@ -233,9 +261,9 @@ function App() {
         return (
             <div>
                 <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-8 gap-y-6 md:gap-y-0">
-                    {/* Columna Izquierda: Wizard de Factores de Riesgo */}
-                    <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 flex flex-col justify-between">
-                        <div>
+                    {/* Columna Izquierda: Wizard y Resultado Preliminar */}
+                    <div className="flex flex-col space-y-4">
+                        <div className="flex-grow space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-200">
                             <h3 className="text-xl font-semibold text-gray-800 border-b border-slate-300 pb-2 mb-6">Factores de Riesgo</h3>
                             {currentRiskQuestion && !wizardFinished && (
                                 <div key={currentRiskQuestion.id}>
@@ -258,6 +286,18 @@ function App() {
                                 </div>
                             )}
                         </div>
+                        
+                        {questionnaireModule.guideImage && (
+                            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                                <h3 className="text-xl font-semibold text-gray-800 border-b border-slate-300 pb-2 mb-6">Imagen de Guía</h3>
+                                <img 
+                                    src={questionnaireModule.guideImage} 
+                                    alt="Imagen de Guía" 
+                                    className="w-full h-auto rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                                    onClick={() => openModal()}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {/* Columna Derecha: Anamnesis */}
@@ -315,6 +355,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 to-blue-500 font-sans flex items-center justify-center p-4">
+      <ImageModal isOpen={isModalOpen} onClose={closeModal} imageSrc={questionnaireModule?.guideImage} />
       <div className="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl p-6 md:p-8">
         <div className="min-h-[500px] flex flex-col justify-center">
           {renderContent()}

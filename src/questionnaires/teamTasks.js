@@ -56,6 +56,7 @@ const evaluateRisk = (answers, isFinalEvaluation = false) => {
           case 'control_deficiente': score += 2; break;
           case 'distancia_4_10': score += 1; break;
           case 'distancia_mas_10': score += 2; break;
+          case 'ninguno': score += 0; break;
           default: break;
       }
   });
@@ -89,6 +90,7 @@ const questions = [
       { value: "control_deficiente", label: "Control deficiente de la carga (+2)" },
       { value: "distancia_4_10", label: "Distancia 4-10 metros (+1)" },
       { value: "distancia_mas_10", label: "Distancia > 10 metros (+2)" },
+      { value: "ninguno", label: "Sin Factores de Riesgo" },
   ]},
 
   // --- Anamnesis (Columna Derecha) ---
@@ -104,6 +106,8 @@ const teamTasksModule = {
   questions,
   generateClinicalReport,
   evaluateRisk,
+  // Nueva propiedad para la imagen de guía
+  guideImage: 'Memoria_teamwork.png', // Usa la ruta a tu imagen. Ej: '/images/lumbago_guide.png'  
 };
 
 export default teamTasksModule;

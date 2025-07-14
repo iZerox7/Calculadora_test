@@ -65,6 +65,7 @@ const evaluateRisk = (answers, isFinalEvaluation = false) => {
           case 'carga_peligrosa': score += 1; break;
           case 'distancia_2_10': score += 1; break;
           case 'distancia_mas_10': score += 2; break;
+          case 'ninguno': score += 0; break;
           default: break;
       }
   });
@@ -100,6 +101,7 @@ const questions = [
       { value: "carga_peligrosa", label: "Carga peligrosa al tacto (+1)" },
       { value: "distancia_2_10", label: "Distancia 2-10 metros (+1)" },
       { value: "distancia_mas_10", label: "Distancia > 10 metros (+2)" },
+      { value: "ninguno", label: "Sin Factores de Riesgo" },
   ]},
 
   // --- Anamnesis (Columna Derecha) ---
@@ -114,6 +116,8 @@ const pushPullNoWheelsModule = {
   questions,
   generateClinicalReport,
   evaluateRisk,
+  // Nueva propiedad para la imagen de guía
+  guideImage: 'Memoria_ruedant.png', // Usa la ruta a tu imagen. Ej: '/images/lumbago_guide.png'  
 };
 
 export default pushPullNoWheelsModule;
