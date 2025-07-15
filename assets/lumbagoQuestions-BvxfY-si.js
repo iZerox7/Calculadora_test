@@ -1,7 +1,7 @@
-import{d as c}from"./commonAnamnesis-DdwxIT9E.js";const _=({caseId:t,answers:a,resultQuestion:r,allQuestions:u})=>{if(!r)return"Generando informe...";const i=(d,n)=>{const o=u.find(l=>l.id===d);return!o||!o.options?n:Array.isArray(n)?n.map(l=>o.options.find(s=>s.value===l)?.label||l).join(", "):o.options.find(l=>l.value===n)?.label||n};let e=`INFORME DE EVALUACIÓN DE RIESGO - LEVANTAMIENTO INDIVIDUAL
+import{d as c}from"./commonAnamnesis-DdwxIT9E.js";const _=({caseId:t,answers:a,resultQuestion:r,allQuestions:u})=>{if(!r)return"Generando informe...";const i=(d,n)=>{const o=u.find(l=>l.id===d);return!o||!o.options?n:Array.isArray(n)?n.map(l=>o.options.find(s=>s.value===l)?.label||l).join(", "):o.options.find(l=>l.value===n)?.label||n};let e=`INFORME DE EVALUACIÓN CALCULADORA - LEVANTAMIENTO INDIVIDUAL
 `;return e+=`==================================================
 
-`,e+=`CASO ID: ${t}
+`,e+=`SINIESTRO ID: ${t}
 `,e+=`Fecha de Evaluación: ${new Date().toLocaleDateString("es-CL")}
 
 `,e+=`I. ANAMNESIS:

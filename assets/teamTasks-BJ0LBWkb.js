@@ -1,7 +1,7 @@
-import{d}from"./commonAnamnesis-DdwxIT9E.js";const p=({caseId:t,answers:o,resultQuestion:a,allQuestions:s})=>{if(!a)return"Generando informe...";const l=(u,i)=>{const n=s.find(r=>r.id===u);return!n||!n.options?i:Array.isArray(i)?i.map(r=>n.options.find(c=>c.value===r)?.label||r).join(", "):n.options.find(r=>r.value===i)?.label||i};let e=`INFORME DE EVALUACIÓN DE RIESGO - TAREAS EN EQUIPO
+import{d}from"./commonAnamnesis-DdwxIT9E.js";const p=({caseId:t,answers:o,resultQuestion:a,allQuestions:s})=>{if(!a)return"Generando informe...";const l=(u,i)=>{const n=s.find(r=>r.id===u);return!n||!n.options?i:Array.isArray(i)?i.map(r=>n.options.find(c=>c.value===r)?.label||r).join(", "):n.options.find(r=>r.value===i)?.label||i};let e=`INFORME DE EVALUACIÓN CALCULADORA - TAREAS EN EQUIPO
 `;return e+=`==================================================
 
-`,e+=`CASO ID: ${t}
+`,e+=`SINIESTRO ID: ${t}
 `,e+=`Fecha de Evaluación: ${new Date().toLocaleDateString("es-CL")}
 
 `,e+=`I. DATOS DE LA TAREA:

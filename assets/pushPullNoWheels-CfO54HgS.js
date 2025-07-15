@@ -1,7 +1,7 @@
-import{d as _}from"./commonAnamnesis-DdwxIT9E.js";const c=({caseId:s,answers:a,resultQuestion:r,allQuestions:i})=>{if(!r)return"Generando informe...";const n=(d,t)=>{const l=i.find(o=>o.id===d);return!l||!l.options?t:Array.isArray(t)?t.map(o=>l.options.find(u=>u.value===o)?.label||o).join(", "):l.options.find(o=>o.value===t)?.label||t};let e=`INFORME DE EVALUACIÓN DE RIESGO - EMPUJE Y TRACCIÓN (SIN RUEDAS)
+import{d as _}from"./commonAnamnesis-DdwxIT9E.js";const c=({caseId:s,answers:a,resultQuestion:r,allQuestions:i})=>{if(!r)return"Generando informe...";const n=(d,t)=>{const l=i.find(o=>o.id===d);return!l||!l.options?t:Array.isArray(t)?t.map(o=>l.options.find(u=>u.value===o)?.label||o).join(", "):l.options.find(o=>o.value===t)?.label||t};let e=`INFORME DE EVALUACIÓN CALCULADORA - EMPUJE Y TRACCIÓN (SIN RUEDAS)
 `;return e+=`==================================================
 
-`,e+=`CASO ID: ${s}
+`,e+=`SINIESTRO ID: ${s}
 `,e+=`Fecha de Evaluación: ${new Date().toLocaleDateString("es-CL")}
 
 `,e+=`I. DATOS DE LA TAREA:
