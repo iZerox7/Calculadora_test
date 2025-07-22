@@ -228,8 +228,8 @@ function App() {
           <img src="logo_normal.png" alt="Logo de la Calculadora Médica" className="w-40 h-auto mx-auto mb-4" />
           <h2 className="text-3xl font-bold" style={{color: '#002a6c'}}>Calculadora Médica</h2>
           <div className="text-left">
-            <label htmlFor="caseId" className="block text-sm font-medium text-gray-700">ID del Caso</label>
-            <input type="text" id="caseId" value={caseId} onChange={(e) => setCaseId(e.target.value)} placeholder="Ej: 12345-6" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+            <label htmlFor="caseId" className="block text-sm font-medium text-gray-700">ID del Siniestro</label>
+            <input type="text" id="caseId" value={caseId} onChange={(e) => setCaseId(e.target.value)} placeholder="Ej: 8123456" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
           </div>
           <div className="text-left">
             <label htmlFor="category" className="block text-sm font-medium text-gray-700">Categoría</label>
@@ -240,9 +240,9 @@ function App() {
           </div>
           {selectedCategory && (
             <div className="text-left">
-              <label htmlFor="questionnaire" className="block text-sm font-medium text-gray-700">Cuestionario</label>
+              <label htmlFor="questionnaire" className="block text-sm font-medium text-gray-700">Calculadoras</label>
               <select id="questionnaire" value={selectedQuestionnaireKey || ""} onChange={(e) => setSelectedQuestionnaireKey(e.target.value)} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                <option value="" disabled>Seleccione un cuestionario</option>
+                <option value="" disabled>Seleccione una calculadora</option>
                 {Object.keys(categoriesConfig[selectedCategory].questionnaires).map(key => (<option key={key} value={key}>{categoriesConfig[selectedCategory].questionnaires[key].name}</option>))}
               </select>
             </div>
@@ -282,14 +282,14 @@ function App() {
                             {wizardFinished && (
                                 <div className="flex flex-col items-center justify-center text-center p-4 bg-green-50 rounded-lg">
                                     <p className="text-lg font-medium text-green-800">Sección completada.</p>
-                                    <p className="text-sm text-gray-600 mt-2">Puede continuar con la anamnesis y luego generar el resultado final.</p>
+                                    <p className="text-sm text-gray-600 mt-2">Complete la anamnesis para luego generar el resultado final.</p>
                                 </div>
                             )}
                         </div>
                         
                         {questionnaireModule.guideImage && (
                             <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
-                                <h3 className="text-xl font-semibold text-gray-800 border-b border-slate-300 pb-2 mb-6">Imagen de Guía</h3>
+                                <h3 className="text-xl font-semibold text-gray-800 border-b border-slate-300 pb-2 mb-6">Guía Calculadora</h3>
                                 <img 
                                     src={questionnaireModule.guideImage} 
                                     alt="Imagen de Guía" 
@@ -313,7 +313,7 @@ function App() {
                 </div>
                 {wizardFinished && (
                     <button type="button" onClick={handleEvaluate} className="mt-8 w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors">
-                        Generar Resultado Final
+                        Obtener Resultado Final
                     </button>
                 )}
             </div>
@@ -326,7 +326,7 @@ function App() {
       return (
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-center text-gray-800">Resultado de la Evaluación</h2>
-          <div className={`p-4 border-l-4 rounded-lg ${resultColorClass}`}><p className="font-bold">{finalResult.text}</p></div>
+          <div className={`p-4 border-1 rounded-lg ${resultColorClass}`}><p className="font-bold text-center text-xl">{finalResult.text}</p></div>
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-gray-700">Resumen de Respuestas</h3>
             <div className="p-4 bg-gray-50 rounded-lg border max-h-60 overflow-y-auto">

@@ -13,9 +13,9 @@ const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions 
     return q.options.find(opt => opt.value === val)?.label || val;
   };
 
-  let report = `INFORME DE EVALUACIÓN DE RIESGO - TAREAS EN EQUIPO\n`;
+  let report = `INFORME DE EVALUACIÓN CALCULADORA LUMBAGO - TAREAS EN EQUIPO\n`;
   report += `==================================================\n\n`;
-  report += `CASO ID: ${caseId}\n`;
+  report += `SINIESTRO ID: ${caseId}\n`;
   report += `Fecha de Evaluación: ${new Date().toLocaleDateString('es-CL')}\n\n`;
   
   report += `I. DATOS DE LA TAREA:\n`;
@@ -33,8 +33,8 @@ const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions 
   report += `- Incidentes: ${answers.incidente_durante_tarea || 'No reportado'}\n`;
   report += `- Banderas Rojas: ${answers.banderas_rojas || 'No reportado'}\n\n`;
 
-  report += `IV. CONCLUSIÓN:\n`;
-  report += `${resultQuestion.text}\n`;
+  report += `IV. GRADO DE EXPOSICIÓN:\n`;
+  report += `- ${resultQuestion.text}\n`;
 
   return report;
 };
@@ -97,8 +97,8 @@ const questions = [
   ...detailedAnamnesisQuestions,
 
   // --- Resultados ---
-  { id: "result_alto_equipo", text: "Riesgo Alto: La combinación de peso, personas y factores de riesgo supera los límites recomendados.", type: "result", color: "red" },
-  { id: "result_bajo_equipo", text: "Riesgo Bajo: La tarea se encuentra dentro de los límites aceptables.", type: "result", color: "green" },
+  { id: "result_alto_equipo", text: "Riesgo Alto", type: "result", color: "red" },
+  { id: "result_bajo_equipo", text: "Riesgo Bajo", type: "result", color: "green" },
 ];
 
 // Exportamos el módulo del cuestionario

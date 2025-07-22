@@ -13,9 +13,9 @@ const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions 
     return q.options.find(opt => opt.value === val)?.label || val;
   };
 
-  let report = `INFORME DE EVALUACIÓN DE RIESGO - LEVANTAMIENTO INDIVIDUAL\n`;
+  let report = `INFORME DE EVALUACIÓN CALCULADORA LUMBAGO - LEVANTAMIENTO INDIVIDUAL\n`;
   report += `==================================================\n\n`;
-  report += `CASO ID: ${caseId}\n`;
+  report += `SINIESTRO ID: ${caseId}\n`;
   report += `Fecha de Evaluación: ${new Date().toLocaleDateString('es-CL')}\n\n`;
   
   report += `I. ANAMNESIS:\n`;
@@ -36,8 +36,8 @@ const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions 
   report += `- Factores de postura: ${(answers.factores_postura || []).map(val => findAnswerLabel('factores_postura', val)).join(', ') || 'Ninguno'}\n`;
   report += `- Distancia de transporte: ${findAnswerLabel('distancia_transporte', answers.distancia_transporte)}\n\n`;
   
-  report += `III. CONCLUSIÓN:\n`;
-  report += `${resultQuestion.text}\n`;
+  report += `III. GRADO DE EXPOSICIÓN:\n`;
+  report += `- ${resultQuestion.text}\n`;
 
   return report;
 };
@@ -97,8 +97,8 @@ const questions = [
   ...detailedAnamnesisQuestions,
 
   // --- Resultados ---
-  { id: "result_alto", text: "Riesgo Alto: Mecanismo lesional suficiente para generar patología lumbar aguda.", type: "result", color: "red" },
-  { id: "result_bajo", text: "Riesgo Bajo: Mecanismo lesional insuficiente para generar patología lumbar aguda.", type: "result", color: "green" },
+  { id: "result_alto", text: "Riesgo Alto", type: "result", color: "red" },
+  { id: "result_bajo", text: "Riesgo Bajo", type: "result", color: "green" },
 ];
 
 // Exportamos el módulo del cuestionario
