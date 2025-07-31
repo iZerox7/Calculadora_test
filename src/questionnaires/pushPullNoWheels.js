@@ -1,4 +1,5 @@
 import { detailedAnamnesisQuestions } from './commonAnamnesis.js';
+import { commonDemographicQuestions } from './commonDemographics.js';
 
 // --- Lógica de Generación de Informe ---
 const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions }) => {
@@ -19,6 +20,8 @@ const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions 
   report += `Fecha de Evaluación: ${new Date().toLocaleDateString('es-CL')}\n\n`;
   
   report += `I. DATOS DE LA TAREA:\n`;
+  report += `- Sexo del paciente: ${findAnswerLabel('sexo_paciente', answers.sexo_paciente) || 'N/A'}\n`;
+  report += `- Edad del paciente: ${answers.edad_paciente || 'N/A'} años\n`;
   report += `- Tipo de empuje/tracción: ${findAnswerLabel('tipo_empuje_sin_ruedas', answers.tipo_empuje_sin_ruedas) || 'N/A'}\n`;
   report += `- Peso de la carga: ${answers.peso_carga_sin_ruedas || 'N/A'} kg\n\n`;
 
@@ -28,6 +31,7 @@ const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions 
   report += `III. ANAMNESIS ADICIONAL:\n`;
   report += `- Fecha de inicio del dolor: ${answers.fecha_inicio_dolor || 'No reportado'}\n`;
   report += `- Actividad durante inicio del dolor: ${answers.actividad_dolor || 'No reportado'}\n`;
+  report += `- Información complementaria a la anamnesis: ${answers.info_complementaria || 'No reportado'}\n`;
   report += `- Características del objeto: ${answers.caracteristicas_objeto || 'No reportado'}\n`;
   report += `- Forma de agarre: ${answers.forma_agarre || 'No reportado'}\n`;
   report += `- Incidentes: ${answers.incidente_durante_tarea || 'No reportado'}\n`;
@@ -86,6 +90,7 @@ const evaluateRisk = (answers, isFinalEvaluation = false) => {
 // --- Definición de Preguntas ---
 const questions = [
   // --- Factores de Riesgo (Columna Izquierda) ---
+  ...commonDemographicQuestions,
   { id: "tipo_empuje_sin_ruedas", text: "Tipo de empuje / tracción", type: "options", group: "risk", options: [
       { value: "rodado", label: "Rodado" }, 
       { value: "pivoteo", label: "Pivoteo y rodado" }, 

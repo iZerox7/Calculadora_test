@@ -14,7 +14,7 @@ const ImageModal = ({ isOpen, onClose, imageSrc }) => {
       onClick={onClose}
     >
       <div 
-        className="relative bg-white p-2 rounded-lg shadow-xl max-w-7xl max-h-[95vh]" // Se aumentó el tamaño del modal
+        className="relative bg-white p-2 rounded-lg shadow-xl max-w-7xl max-h-[95vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <button 
@@ -63,7 +63,7 @@ const MultiSelect = ({ question, value, onChange }) => {
 const QuestionRenderer = ({ question, value, onChange }) => {
     if (!question) return null;
 
-    const commonInputClass = "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500";
+    const commonInputClass = "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 placeholder:text-sm";
 
     switch (question.type) {
         case 'options':
@@ -80,7 +80,7 @@ const QuestionRenderer = ({ question, value, onChange }) => {
         case 'multi':
             return <MultiSelect question={question} value={value} onChange={onChange} />;
         case 'textarea':
-             return <textarea name={question.id} value={value || ''} onChange={(e) => onChange(question.id, e.target.value)} placeholder="Escriba aquí..." className={`${commonInputClass} h-24`} />;
+             return <textarea name={question.id} value={value || ''} onChange={(e) => onChange(question.id, e.target.value)} placeholder={question.placeholder || ''} className={`${commonInputClass} h-24`} />;
         case 'number':
         case 'text':
         case 'date':
@@ -229,7 +229,7 @@ function App() {
           <h2 className="text-3xl font-bold" style={{color: '#002a6c'}}>Calculadora Médica</h2>
           <div className="text-left">
             <label htmlFor="caseId" className="block text-sm font-medium text-gray-700">ID del Siniestro</label>
-            <input type="text" id="caseId" value={caseId} onChange={(e) => setCaseId(e.target.value)} placeholder="Ej: 8123456" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+            <input type="text" id="caseId" value={caseId} onChange={(e) => setCaseId(e.target.value)} placeholder="Ej: 8123456" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 placeholder:text-sm" />
           </div>
           <div className="text-left">
             <label htmlFor="category" className="block text-sm font-medium text-gray-700">Categoría</label>
@@ -261,7 +261,18 @@ function App() {
         return (
             <div>
                 <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-8 gap-y-6 md:gap-y-0">
-                    {/* Columna Izquierda: Wizard y Resultado Preliminar */}
+                    {/* Columna Izquierda: Anamnesis */}
+                    <div className="space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-200">
+                        <h3 className="text-xl font-semibold text-gray-800 border-b border-slate-300 pb-2 mb-6">Anamnesis</h3>
+                        {anamnesisQuestions.map(q => (
+                            <div key={q.id}>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{q.text}</label>
+                                <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} />
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Columna Derecha: Wizard y Resultado Preliminar */}
                     <div className="flex flex-col space-y-4">
                         <div className="flex-grow space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-200">
                             <h3 className="text-xl font-semibold text-gray-800 border-b border-slate-300 pb-2 mb-6">Factores de Riesgo</h3>
@@ -299,17 +310,6 @@ function App() {
                             </div>
                         )}
                     </div>
-
-                    {/* Columna Derecha: Anamnesis */}
-                    <div className="space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-200">
-                        <h3 className="text-xl font-semibold text-gray-800 border-b border-slate-300 pb-2 mb-6">Anamnesis</h3>
-                        {anamnesisQuestions.map(q => (
-                            <div key={q.id}>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">{q.text}</label>
-                                <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} />
-                            </div>
-                        ))}
-                    </div>
                 </div>
                 {wizardFinished && (
                     <button type="button" onClick={handleEvaluate} className="mt-8 w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors">
@@ -326,7 +326,7 @@ function App() {
       return (
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-center text-gray-800">Resultado de la Evaluación</h2>
-          <div className={`p-4 border-1 rounded-lg ${resultColorClass}`}><p className="font-bold text-center text-xl">{finalResult.text}</p></div>
+          <div className={`p-4 border-l-4 rounded-lg ${resultColorClass}`}><p className="font-bold text-center text-xl">{finalResult.text}</p></div>
           <div className="space-y-4">
             <h3 className="text-xl font-semibold text-gray-700">Resumen de Respuestas</h3>
             <div className="p-4 bg-gray-50 rounded-lg border max-h-60 overflow-y-auto">

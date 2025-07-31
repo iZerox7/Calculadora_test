@@ -21,6 +21,7 @@ const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions 
   report += `I. ANAMNESIS:\n`;
   report += `- Fecha de inicio del dolor: ${answers.fecha_inicio_dolor || 'No reportado'}\n`;
   report += `- Actividad durante inicio del dolor: ${answers.actividad_dolor || 'No reportado'}\n`;
+  report += `- Información complementaria a la anamnesis: ${answers.info_complementaria || 'No reportado'}\n`;
   report += `- Características del objeto: ${answers.caracteristicas_objeto || 'No reportado'}\n`;
   report += `- Forma de agarre: ${answers.forma_agarre || 'No reportado'}\n`;
   report += `- Incidentes: ${answers.incidente_durante_tarea || 'No reportado'}\n`;

@@ -1,4 +1,5 @@
 import { detailedAnamnesisQuestions } from './commonAnamnesis.js';
+import { commonDemographicQuestions } from './commonDemographics.js';
 
 // --- Lógica de Generación de Informe ---
 const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions }) => {
@@ -19,6 +20,8 @@ const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions 
   report += `Fecha de Evaluación: ${new Date().toLocaleDateString('es-CL')}\n\n`;
   
   report += `I. DATOS DE LA TAREA:\n`;
+  report += `- Sexo del paciente: ${findAnswerLabel('sexo_paciente', answers.sexo_paciente) || 'N/A'}\n`;
+  report += `- Edad del paciente: ${answers.edad_paciente || 'N/A'} años\n`;
   report += `- Número de personas: ${answers.numero_personas || 'N/A'}\n`;
   report += `- Peso de la carga: ${answers.peso_carga_equipo || 'N/A'} kg\n\n`;
 
@@ -28,6 +31,7 @@ const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions 
   report += `III. ANAMNESIS ADICIONAL:\n`;
   report += `- Fecha de inicio del dolor: ${answers.fecha_inicio_dolor || 'No reportado'}\n`;
   report += `- Actividad durante inicio del dolor: ${answers.actividad_dolor || 'No reportado'}\n`;
+  report += `- Información complementaria a la anamnesis: ${answers.info_complementaria || 'No reportado'}\n`;
   report += `- Características del objeto: ${answers.caracteristicas_objeto || 'No reportado'}\n`;
   report += `- Forma de agarre: ${answers.forma_agarre || 'No reportado'}\n`;
   report += `- Incidentes: ${answers.incidente_durante_tarea || 'No reportado'}\n`;
@@ -81,16 +85,16 @@ const evaluateRisk = (answers, isFinalEvaluation = false) => {
 // --- Definición de Preguntas ---
 const questions = [
   // --- Factores de Riesgo (Columna Izquierda) ---
+  ...commonDemographicQuestions,
   { id: "numero_personas", text: "Número de personas involucradas", type: "options", group: "risk", options: [{ value: "2", label: "2 Personas" }, { value: "3", label: "3 Personas" }, { value: "4", label: "4 Personas" }] },
   { id: "peso_carga_equipo", text: "¿Cuál es el peso de la carga? (kg)", type: "number", group: "risk", placeholder: "Ej: 40" },
-  { id: "factores_riesgo_equipo", text: "Factores de riesgo adicionales (Puedes seleccionar más de una opción)", type: "multi", group: "risk", options: [
+  { id: "factores_riesgo_equipo", text: "Factores de riesgo adicionales", type: "multi", group: "risk", options: [
       { value: "postura_restringida", label: "Postura severamente restringida (+1)" },
       { value: "obstaculos", label: "Hay rampas, escaleras u obstáculos (+1)" },
       { value: "sin_sujecion", label: "Materiales sin sistema de sujeción (+1)" },
       { value: "control_deficiente", label: "Control deficiente de la carga (+2)" },
       { value: "distancia_4_10", label: "Distancia 4-10 metros (+1)" },
       { value: "distancia_mas_10", label: "Distancia > 10 metros (+2)" },
-      { value: "ninguno", label: "Sin Factores de Riesgo" },
   ]},
 
   // --- Anamnesis (Columna Derecha) ---
