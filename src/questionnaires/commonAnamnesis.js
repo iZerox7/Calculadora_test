@@ -41,7 +41,7 @@ export const detailedAnamnesisQuestions = [
     text: "Describa si hubo algún incidente", 
     type: "textarea", 
     group: "anamnesis",
-    placeholder: "Ej: “mi compañero soltó la carga”, “el piso estaba en mal estado”, “había un obstáculo” o cualquier otro)"
+    placeholder: "Ej: “Mi compañero soltó la carga”, “El piso estaba en mal estado”, “Había un obstáculo” o cualquier otro"
   },
   { 
     id: "banderas_rojas", 
