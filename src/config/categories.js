@@ -27,15 +27,15 @@ export const categoriesConfig = {
     questionnaires: {
       torsion: {
         name: "Torsión de Tobillo",
-        getQuestionsModule: () => import('../questionnaires/ankleTorsion.js'),
+        getQuestionsModule: () => import('../questionnaires/pushPullNoWheels.js'),
       },
       fractura: {
         name: "Fractura Tobillo",
-        getQuestionsModule: () => import('../questionnaires/ankleFracture.js'),
+        getQuestionsModule: () => import('../questionnaires/pushPullNoWheels.js'),
       },
       tbd: {
         name: "TBD",
-        getQuestionsModule: () => import('../questionnaires/pushPullWheels.js'),
+        getQuestionsModule: () => import('../questionnaires/pushPullNoWheels.js'),
       },
     },
   },
@@ -44,15 +44,15 @@ export const categoriesConfig = {
     questionnaires: {
       tunel_carpiano: {
         name: "Síndrome del Túnel Carpiano",
-        getQuestionsModule: () => import('../questionnaires/carpalTunnel.js'),
+        getQuestionsModule: () => import('../questionnaires/pushPullNoWheels.js'),
       },
       tendinitis: {
         name: "Tendinitis",
-        getQuestionsModule: () => import('../questionnaires/tendinitis.js'),
+        getQuestionsModule: () => import('../questionnaires/pushPullNoWheels.js'),
       },
       tbd: {
         name: "TBD",
-        getQuestionsModule: () => import('../questionnaires/pushPullWheels.js'),
+        getQuestionsModule: () => import('../questionnaires/pushPullNoWheels.js'),
       },
     },
   },
