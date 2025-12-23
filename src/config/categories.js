@@ -22,4 +22,39 @@ export const categoriesConfig = {
       },
     },
   },
+  tobillo_pie: {
+    name: "Tobillo y Pie",
+    questionnaires: {
+      torsion: {
+        name: "Torsión de Tobillo",
+        getQuestionsModule: () => import('../questionnaires/ankleTorsion.js'),
+      },
+      fractura: {
+        name: "Fractura Tobillo",
+        getQuestionsModule: () => import('../questionnaires/ankleFracture.js'),
+      },
+      tbd: {
+        name: "TBD",
+        getQuestionsModule: () => import('../questionnaires/pushPullWheels.js'),
+      },
+    },
+  },
+  mano_muneca: {
+    name: "Mano y Muñeca",
+    questionnaires: {
+      tunel_carpiano: {
+        name: "Síndrome del Túnel Carpiano",
+        getQuestionsModule: () => import('../questionnaires/carpalTunnel.js'),
+      },
+      tendinitis: {
+        name: "Tendinitis",
+        getQuestionsModule: () => import('../questionnaires/tendinitis.js'),
+      },
+      tbd: {
+        name: "TBD",
+        getQuestionsModule: () => import('../questionnaires/pushPullWheels.js'),
+      },
+    },
+  },
 };
+
