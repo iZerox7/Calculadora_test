@@ -226,13 +226,13 @@ function App() {
       return (
         <div className="space-y-5 text-center">
           <img src="logo_normal.png" alt="Logo de la Calculadora Médica" className="w-40 h-auto mx-auto mb-4" />
-          <h2 className="text-3xl font-bold" style={{color: '#002a6c'}}>Calculadora Médica</h2>
+          <h2 className="text-3xl font-bold" style={{color: '#002a6c'}}>Asistente médico virtual</h2>
           <div className="text-left">
             <label htmlFor="caseId" className="block text-sm font-medium text-gray-700">ID del Siniestro</label>
             <input type="text" id="caseId" value={caseId} onChange={(e) => setCaseId(e.target.value)} placeholder="Ej: 8123456" className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 placeholder:text-sm" />
           </div>
           <div className="text-left">
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700">Categoría</label>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700">Zona Lesional</label>
             <select id="category" value={selectedCategory || ""} onChange={(e) => { setSelectedCategory(e.target.value); setSelectedQuestionnaireKey(null); }} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
               <option value="" disabled>Seleccione una categoría</option>
               {Object.keys(categoriesConfig).map(key => (<option key={key} value={key}>{categoriesConfig[key].name}</option>))}
@@ -240,9 +240,9 @@ function App() {
           </div>
           {selectedCategory && (
             <div className="text-left">
-              <label htmlFor="questionnaire" className="block text-sm font-medium text-gray-700">Calculadoras</label>
+              <label htmlFor="questionnaire" className="block text-sm font-medium text-gray-700">Mecanismo</label>
               <select id="questionnaire" value={selectedQuestionnaireKey || ""} onChange={(e) => setSelectedQuestionnaireKey(e.target.value)} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
-                <option value="" disabled>Seleccione una calculadora</option>
+                <option value="" disabled>Seleccione un mecanismo</option>
                 {Object.keys(categoriesConfig[selectedCategory].questionnaires).map(key => (<option key={key} value={key}>{categoriesConfig[selectedCategory].questionnaires[key].name}</option>))}
               </select>
             </div>
