@@ -46,12 +46,12 @@ const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions 
 // --- Protocolos ---
 const protocols = {
     "prot_lumbago_equipo_alto": {
-        "titulo": "PROTOCOLO MANEJO - EQUIPO RIESGO ALTO",
-        "pasos": ["1. REPOSO: Reposo según EVA (48-72h).", "2. TRATAMIENTO: Calor y analgesia.", "3. COORDINACIÓN: Evaluar sincronía del equipo de trabajo.", "4. RESTRICCIÓN: Limitar peso compartido a < 15kg por persona.", "5. CONTROL: En 7 días."]
+        "titulo": "--",
+        "pasos": ["--"]
     },
     "prot_lumbago_equipo_bajo": {
-        "titulo": "PROTOCOLO MANEJO - EQUIPO RIESGO BAJO",
-        "pasos": ["1. REPOSO RELATIVO.", "2. CALOR LOCAL.", "3. EDUCACIÓN: Entrenamiento en comunicación y agarre simultáneo.", "4. REINTEGRO: Normal."]
+        "titulo": "--",
+        "pasos": ["--"]
     }
 };
 

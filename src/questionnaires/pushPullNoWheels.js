@@ -45,12 +45,12 @@ const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions 
 // --- Protocolos ---
 const protocols = {
     "prot_lumbago_alto": {
-        "titulo": "PROTOCOLO MANEJO - RIESGO ALTO",
-        "pasos": ["1. REPOSO: Reposo laboral según intensidad del dolor (48-72h).", "2. TRATAMIENTO: Analgesia reglada y calor local.", "3. RESTRICCIÓN: Prohibición absoluta de levantamiento/tracción de cargas.", "4. EVALUACIÓN: Derivación a Kinesioterapia.", "5. SEGUIMIENTO: Control médico en 7 días."]
+        "titulo": "--",
+        "pasos": ["--"]
     },
     "prot_lumbago_bajo": {
-        "titulo": "PROTOCOLO MANEJO - RIESGO BAJO",
-        "pasos": ["1. REPOSO RELATIVO: Mantenerse activo.", "2. CALOR LOCAL: Aplicar calor por 20 min, 3 veces al día.", "3. EDUCACIÓN: Reinstruir en técnicas de empuje/tracción.", "4. MEDICACIÓN: SOS en caso de dolor.", "5. REINTEGRO: Continuar labores con precaución."]
+        "titulo": "--",
+        "pasos": ["--"]
     }
 };
 

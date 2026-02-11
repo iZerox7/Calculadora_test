@@ -46,12 +46,12 @@ const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions 
 // --- Protocolos ---
 const protocols = {
     "prot_lumbago_alto": {
-        "titulo": "PROTOCOLO MANEJO - RIESGO ALTO",
-        "pasos": ["1. REPOSO: Reposo laboral (48-72h).", "2. TRATAMIENTO: Analgesia y calor local.", "3. RESTRICCIÓN: Uso de transpaletas eléctricas o apoyo mecánico.", "4. SEGUIMIENTO: Evaluación en 7 días."]
+        "titulo": "--",
+        "pasos": ["--"]
     },
     "prot_lumbago_bajo": {
-        "titulo": "PROTOCOLO MANEJO - RIESGO BAJO",
-        "pasos": ["1. REPOSO RELATIVO: Mantener actividad.", "2. CALOR LOCAL: 20 min, 3 veces al día.", "3. EDUCACIÓN: Revisar estado de ruedas y rodamientos.", "4. REINTEGRO: Continuar labores."]
+        "titulo": "--",
+        "pasos": ["--"]
     }
 };
 

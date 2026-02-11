@@ -3,23 +3,16 @@ import { detailedAnamnesisQuestions } from './commonAnamnesis.js';
 // --- Protocolos de Manejo ---
 export const protocols = {
     "prot_lumbago_alto": {
-        "titulo": "PROTOCOLO MANEJO - RIESGO ALTO",
+        "titulo": "--",
         "pasos": [
-            "1. REPOSO: Reposo laboral según intensidad del dolor (48-72h).",
-            "2. TRATAMIENTO: Analgesia reglada y calor local.",
-            "3. RESTRICCIÓN: Prohibición absoluta de levantamiento de cargas mayor a 5kg.",
-            "4. EVALUACIÓN: Derivación a Kinesioterapia para higiene de columna.",
-            "5. SEGUIMIENTO: Control médico en 7 días para evaluar reintegro."
+            "--"
         ]
     },
     "prot_lumbago_bajo": {
-        "titulo": "PROTOCOLO MANEJO - RIESGO BAJO",
+        "titulo": "--",
         "pasos": [
-            "1. REPOSO RELATIVO: Mantenerse activo, evitar reposo en cama prolongado.",
-            "2. CALOR LOCAL: Aplicar calor por 20 min, 3 veces al día.",
-            "3. EDUCACIÓN: Reinstruir en técnicas de levantamiento manual de carga.",
-            "4. MEDICACIÓN: SOS en caso de dolor moderado.",
-            "5. REINTEGRO: Continuar labores con precaución."
+            "--",
+
         ]
     }
 };
