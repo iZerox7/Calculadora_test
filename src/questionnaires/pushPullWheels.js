@@ -43,13 +43,28 @@ const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions 
   return report;
 };
 
-// --- Lógica de Evaluación de Riesgo ---
+// --- Protocolos ---
+const protocols = {
+    "prot_lumbago_alto": {
+        "titulo": "PROTOCOLO MANEJO - RIESGO ALTO",
+        "pasos": ["1. REPOSO: Reposo laboral (48-72h).", "2. TRATAMIENTO: Analgesia y calor local.", "3. RESTRICCIÓN: Uso de transpaletas eléctricas o apoyo mecánico.", "4. SEGUIMIENTO: Evaluación en 7 días."]
+    },
+    "prot_lumbago_bajo": {
+        "titulo": "PROTOCOLO MANEJO - RIESGO BAJO",
+        "pasos": ["1. REPOSO RELATIVO: Mantener actividad.", "2. CALOR LOCAL: 20 min, 3 veces al día.", "3. EDUCACIÓN: Revisar estado de ruedas y rodamientos.", "4. REINTEGRO: Continuar labores."]
+    }
+};
+
+// --- Lógica de Evaluación de Riesgo Corregida ---
 const evaluateRisk = (answers, isFinalEvaluation = false) => {
   if (!isFinalEvaluation) return null;
 
   const tipoEquipo = answers.tipo_equipo_ruedas;
   const peso = parseFloat(answers.peso_carga_ruedas);
   const factores = answers.factores_riesgo_ruedas || [];
+  
+  const resultAlto = { id: "result_alto_ruedas", text: "Riesgo Alto", color: "red", protocolId: "prot_lumbago_alto" };
+  const resultBajo = { id: "result_bajo_ruedas", text: "Riesgo Bajo", color: "green", protocolId: "prot_lumbago_bajo" };
 
   let score = 0;
   factores.forEach(factor => {
@@ -62,25 +77,15 @@ const evaluateRisk = (answers, isFinalEvaluation = false) => {
           case 'carga_peligrosa': score += 1; break;
           case 'distancia_10_30': score += 1; break;
           case 'distancia_mas_30': score += 2; break;
-          case 'ninguno': score += 0; break;
           default: break;
       }
   });
 
-  if (tipoEquipo === 'pequeno') {
-    if (peso > 50) return "result_alto_ruedas";
-    return score >= 2 ? "result_alto_ruedas" : "result_bajo_ruedas";
-  }
-  if (tipoEquipo === 'mediano') {
-    if (peso > 250) return "result_alto_ruedas";
-    return score >= 2 ? "result_alto_ruedas" : "result_bajo_ruedas";
-  }
-  if (tipoEquipo === 'grande') {
-    if (peso > 600) return "result_alto_ruedas";
-    return score >= 2 ? "result_alto_ruedas" : "result_bajo_ruedas";
-  }
+  if (tipoEquipo === 'pequeno' && (peso > 50 || score >= 2)) return resultAlto;
+  if (tipoEquipo === 'mediano' && (peso > 250 || score >= 2)) return resultAlto;
+  if (tipoEquipo === 'grande' && (peso > 600 || score >= 2)) return resultAlto;
 
-  return "result_bajo_ruedas";
+  return resultBajo;
 };
 
 // --- Definición de Preguntas ---
@@ -117,6 +122,7 @@ const pushPullWheelsModule = {
   questions,
   generateClinicalReport,
   evaluateRisk,
+  protocols,
   // Nueva propiedad para la imagen de guía
   guideImage: 'Memoria_ruedas.png', // Usa la ruta a tu imagen. Ej: '/images/lumbago_guide.png'  
 };

@@ -43,13 +43,28 @@ const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions 
   return report;
 };
 
-// --- Lógica de Evaluación de Riesgo ---
+// --- Protocolos ---
+const protocols = {
+    "prot_lumbago_equipo_alto": {
+        "titulo": "PROTOCOLO MANEJO - EQUIPO RIESGO ALTO",
+        "pasos": ["1. REPOSO: Reposo según EVA (48-72h).", "2. TRATAMIENTO: Calor y analgesia.", "3. COORDINACIÓN: Evaluar sincronía del equipo de trabajo.", "4. RESTRICCIÓN: Limitar peso compartido a < 15kg por persona.", "5. CONTROL: En 7 días."]
+    },
+    "prot_lumbago_equipo_bajo": {
+        "titulo": "PROTOCOLO MANEJO - EQUIPO RIESGO BAJO",
+        "pasos": ["1. REPOSO RELATIVO.", "2. CALOR LOCAL.", "3. EDUCACIÓN: Entrenamiento en comunicación y agarre simultáneo.", "4. REINTEGRO: Normal."]
+    }
+};
+
+// --- Lógica de Evaluación de Riesgo Corregida ---
 const evaluateRisk = (answers, isFinalEvaluation = false) => {
-  if (!isFinalEvaluation) return null; // Solo evaluar al final
+  if (!isFinalEvaluation) return null;
 
   const numPersonas = parseInt(answers.numero_personas, 10);
   const peso = parseFloat(answers.peso_carga_equipo);
   const factores = answers.factores_riesgo_equipo || [];
+
+  const resultAlto = { id: "result_alto_equipo", text: "Riesgo Alto", color: "red", protocolId: "prot_lumbago_equipo_alto" };
+  const resultBajo = { id: "result_bajo_equipo", text: "Riesgo Bajo", color: "green", protocolId: "prot_lumbago_equipo_bajo" };
 
   let score = 0;
   factores.forEach(factor => {
@@ -60,27 +75,16 @@ const evaluateRisk = (answers, isFinalEvaluation = false) => {
           case 'control_deficiente': score += 2; break;
           case 'distancia_4_10': score += 1; break;
           case 'distancia_mas_10': score += 2; break;
-          case 'ninguno': score += 0; break;
           default: break;
       }
   });
 
-  if (numPersonas === 2) {
-    if (peso > 35) return "result_alto_equipo";
-    return score >= 2 ? "result_alto_equipo" : "result_bajo_equipo";
-  }
-  if (numPersonas === 3) {
-    if (peso > 55) return "result_alto_equipo";
-    return score >= 2 ? "result_alto_equipo" : "result_bajo_equipo";
-  }
-  if (numPersonas === 4) {
-    if (peso > 75) return "result_alto_equipo";
-    return score >= 2 ? "result_alto_equipo" : "result_bajo_equipo";
-  }
+  if (numPersonas === 2 && (peso > 35 || score >= 2)) return resultAlto;
+  if (numPersonas === 3 && (peso > 55 || score >= 2)) return resultAlto;
+  if (numPersonas === 4 && (peso > 75 || score >= 2)) return resultAlto;
 
-  return "result_bajo_equipo";
+  return resultBajo;
 };
-
 
 // --- Definición de Preguntas ---
 const questions = [
@@ -110,6 +114,7 @@ const teamTasksModule = {
   questions,
   generateClinicalReport,
   evaluateRisk,
+  protocols,
   // Nueva propiedad para la imagen de guía
   guideImage: 'Memoria_teamwork.png', // Usa la ruta a tu imagen. Ej: '/images/lumbago_guide.png'  
 };

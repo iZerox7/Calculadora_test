@@ -42,22 +42,33 @@ const generateClinicalReport = ({ caseId, answers, resultQuestion, allQuestions 
 
   return report;
 };
+// --- Protocolos ---
+const protocols = {
+    "prot_lumbago_alto": {
+        "titulo": "PROTOCOLO MANEJO - RIESGO ALTO",
+        "pasos": ["1. REPOSO: Reposo laboral según intensidad del dolor (48-72h).", "2. TRATAMIENTO: Analgesia reglada y calor local.", "3. RESTRICCIÓN: Prohibición absoluta de levantamiento/tracción de cargas.", "4. EVALUACIÓN: Derivación a Kinesioterapia.", "5. SEGUIMIENTO: Control médico en 7 días."]
+    },
+    "prot_lumbago_bajo": {
+        "titulo": "PROTOCOLO MANEJO - RIESGO BAJO",
+        "pasos": ["1. REPOSO RELATIVO: Mantenerse activo.", "2. CALOR LOCAL: Aplicar calor por 20 min, 3 veces al día.", "3. EDUCACIÓN: Reinstruir en técnicas de empuje/tracción.", "4. MEDICACIÓN: SOS en caso de dolor.", "5. REINTEGRO: Continuar labores con precaución."]
+    }
+};
 
-// --- Lógica de Evaluación de Riesgo ---
+// --- Lógica de Evaluación de Riesgo Corregida ---
 const evaluateRisk = (answers, isFinalEvaluation = false) => {
   const tipoEmpuje = answers.tipo_empuje_sin_ruedas;
   const peso = parseFloat(answers.peso_carga_sin_ruedas);
   const factores = answers.factores_riesgo_sin_ruedas || [];
 
-  // Chequeos de riesgo alto inmediato por peso
-  if (tipoEmpuje === 'rodado' && peso > 400) return "result_alto_sin_ruedas";
-  if (tipoEmpuje === 'pivoteo' && peso > 80) return "result_alto_sin_ruedas";
-  if (tipoEmpuje === 'arrastrar' && peso > 25) return "result_alto_sin_ruedas";
+  const resultAlto = { id: "result_alto_sin_ruedas", text: "Riesgo Alto", color: "red", protocolId: "prot_lumbago_alto" };
+  const resultBajo = { id: "result_bajo_sin_ruedas", text: "Riesgo Bajo", color: "green", protocolId: "prot_lumbago_bajo" };
 
-  // Si no es la evaluación final, no continuar con el cálculo de puntaje
+  if (tipoEmpuje === 'rodado' && peso > 400) return resultAlto;
+  if (tipoEmpuje === 'pivoteo' && peso > 80) return resultAlto;
+  if (tipoEmpuje === 'arrastrar' && peso > 25) return resultAlto;
+
   if (!isFinalEvaluation) return null;
 
-  // Si es la evaluación final, calcular puntaje y determinar resultado
   let score = 0;
   factores.forEach(factor => {
       switch(factor) {
@@ -69,22 +80,11 @@ const evaluateRisk = (answers, isFinalEvaluation = false) => {
           case 'carga_peligrosa': score += 1; break;
           case 'distancia_2_10': score += 1; break;
           case 'distancia_mas_10': score += 2; break;
-          case 'ninguno': score += 0; break;
           default: break;
       }
   });
 
-  if (tipoEmpuje === 'rodado') {
-    return score >= 2 ? "result_alto_sin_ruedas" : "result_bajo_sin_ruedas";
-  }
-  if (tipoEmpuje === 'pivoteo') {
-    return score >= 2 ? "result_alto_sin_ruedas" : "result_bajo_sin_ruedas";
-  }
-  if (tipoEmpuje === 'arrastrar') {
-    return score >= 2 ? "result_alto_sin_ruedas" : "result_bajo_sin_ruedas";
-  }
-
-  return "result_bajo_sin_ruedas";
+  return score >= 2 ? resultAlto : resultBajo;
 };
 
 // --- Definición de Preguntas ---
@@ -121,6 +121,7 @@ const pushPullNoWheelsModule = {
   questions,
   generateClinicalReport,
   evaluateRisk,
+  protocols,
   // Nueva propiedad para la imagen de guía
   guideImage: 'Memoria_ruedant.png', // Usa la ruta a tu imagen. Ej: '/images/lumbago_guide.png'  
 };
