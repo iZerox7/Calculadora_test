@@ -48,19 +48,27 @@ export const questions = [
   // --- GRUPO ANAMNESIS (Basado en estándares ACHS) ---
   { id: "fecha_accidente", text: "Fecha del accidente", type: "date", group: "anamnesis" },
   { 
-    id: "descripcion_accidente", 
-    text: "Relato del Accidente / Mecanismo", 
-    type: "textarea", 
-    group: "anamnesis",
-    placeholder: "Ej: Al bajar de la plataforma, el pie derecho se invirtió bruscamente..."
-  },
-  { 
     id: "info_complementaria", 
-    text: "Antecedentes y síntomas asociados", 
+    text: "Antecedentes generales y alergias", 
     type: "textarea", 
     group: "anamnesis",
     placeholder: "Antecedentes mórbidos, cirugías previas, alergias, si hubo crujido audible..."
   },
+  { 
+    id: "actividad_accidente", 
+    text: "Actividad al momento del accidente", 
+    type: "textarea", 
+    group: "anamnesis",
+    placeholder: "Ej: Estaba tomando el metro de camino al trabajo..."
+  },
+    { 
+    id: "descripcion_accidente", 
+    text: "Descripción del accidente", 
+    type: "textarea", 
+    group: "anamnesis",
+    placeholder: "Ej: Al bajar de la plataforma, el pie derecho se invirtió bruscamente..."
+  },
+
   { id: "eva", text: "Nivel de Dolor (EVA)", type: "slider", group: "anamnesis", min: 0, max: 10 },
   { 
     id: "aumento_volumen", 
@@ -76,7 +84,7 @@ export const questions = [
   },
   { 
     id: "hallazgos_fisicos", 
-    text: "Examen Físico: Equimosis / Deformidad / Heridas", 
+    text: "Examen Físico: Equimosis / Deformidad / Heridas / Maniobras", 
     type: "textarea", 
     group: "anamnesis",
     placeholder: "Describa presencia de equimosis en abanico, deformidad evidente o heridas..."
@@ -167,7 +175,7 @@ export const questions = [
         return false;
     },
     options: [
-        { value: "fractura", label: "FRACTURA" },
+        { value: "fractura", label: "Fractura" },
         { value: "no_fractura", label: "No hay fractura" }
     ]
   },
@@ -179,8 +187,8 @@ export const questions = [
     group: "risk",
     showIf: (ans) => ans.evaluacion_radiografia === "fractura",
     options: [
-        { value: "abierta", label: "Abierta (Atraviesa la piel / Herida)" },
-        { value: "cerrada", label: "Cerrada (Piel intacta)" }
+        { value: "abierta", label: "Abierta" },
+        { value: "cerrada", label: "Cerrada" }
     ]
   },
   // Clasificación específica (solo si hay fractura)
@@ -303,12 +311,14 @@ export const generateClinicalReport = ({ caseId, answers, resultQuestion, protoc
 =========================================
 ID CASO: ${caseId}
 FECHA: ${new Date().toLocaleDateString()}
-DIAGNÓSTICO: ${resultQuestion.text}
+DIAGNÓSTICO SUGERIDO: ${resultQuestion.text}
 
 I. ANAMNESIS DETALLADA
 - Fecha Accidente: ${answers.fecha_accidente || 'No especificada'}
-- Mecanismo: ${answers.descripcion_accidente || 'No especificado'}
-- Info. Complementaria: ${answers.info_complementaria || 'Sin antecedentes'}
+- Antecedentes generales y alergias: ${answers.info_complementaria || 'Sin antecedentes'}
+- Actividad al momento del accidente: ${answers.actividad_accidente || 'No especificada'}
+- Descripción del accidente: ${answers.descripcion_accidente || 'No especificado'}
+
 
 II. EXAMEN FÍSICO
 - Nivel Dolor (EVA): ${answers.eva || 0}/10
@@ -325,8 +335,10 @@ III. IMAGENOLOGÍA
 ${answers.tipo_fractura ? `- Tipo Fractura: ${answers.tipo_fractura === 'abierta' ? 'ABIERTA' : 'CERRADA'}` : ''}
 ${answers.clasificacion_especifica ? `- Clasificación: ${answers.clasificacion_especifica}` : ''}
 
-IV. PROTOCOLO RECOMENDADO
-${prot?.titulo}
+IV. DIAGNÓSTICO SUGERIDO
+${resultQuestion.text}
+
+V. INDICACIONES SUGERIDAS
 ${prot?.pasos.map((s, i) => `${i+1}. ${s}`).join('\n')}
 
 =========================================
@@ -335,4 +347,14 @@ Sistema de Apoyo al Diagnóstico - ACHS
 `.trim();
 };
 
-export const guideImage = "https://www.physiotutors.com/wp-content/uploads/2017/05/Ottawa-Ankle-Rules.png";
+
+const questionnaireModule = {
+  questions,
+  protocols,
+  evaluateRisk,
+  generateClinicalReport,
+  guideImage: "arbol_decision.png",
+};
+
+export default questionnaireModule
+
