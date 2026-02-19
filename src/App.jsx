@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { categoriesConfig } from './config/categories';
 import { supabase } from './supabaseClient';
 
+// Añade un set de IDs que disparan el autosave
+const RX_CHECKPOINT_IDS = new Set(['rx_deformidad', 'rx_ottawa', 'rx_no_tolera_carga', 'rx_varias']);
 // --- Componente ImageModal ---
 const ImageModal = ({ isOpen, onClose, imageSrc }) => {
   if (!isOpen) return null;
@@ -103,6 +105,69 @@ function App() {
   const [wizardFinished, setWizardFinished] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+ 
+  // Modal pequeño para RX Checkpoint
+  const [rxModal, setRxModal] = useState({
+    open: false,
+    checkpointId: null,   // 'rx_deformidad' | 'rx_ottawa' | ...
+    showInfo: false       // para mostrar el mensaje tras pulsar "OK"
+  });
+  
+  const saveDraft = React.useCallback(
+  async (checkpointId, nextAnswers) => {
+    // No grabes si faltan estas llaves
+    if (!caseId || !selectedQuestionnaireKey) {
+      console.warn('saveDraft: faltan caseId o selectedQuestionnaireKey');
+      return { data: null, error: new Error('Missing keys') };
+    }
+
+    // Usa el snapshot más reciente de answers
+    const answersSnapshot = nextAnswers ?? answers;
+
+    const payload = {
+      id_caso: caseId,
+      cuestionario: selectedQuestionnaireKey,
+      respuestas: answersSnapshot,
+      current_risk_question_id: currentRiskQuestionId,
+      wizard_finished: wizardFinished,
+      last_checkpoint: checkpointId || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error, status, statusText } = await supabase
+      .from('respuestas_draft')
+      .upsert(payload, { onConflict: 'id_caso,cuestionario' })
+      .select()            // <<-- importante para ver respuesta y depurar
+      .single();           // devuelve solo la fila afectada
+
+    if (error) {
+      console.error('saveDraft error:', { error, status, statusText, payload });
+    } else {
+      // Puedes descomentar si quieres ver que guardó:
+      console.log('saveDraft OK:', data);
+    }
+    return { data, error };
+  },
+  [caseId, selectedQuestionnaireKey, answers, currentRiskQuestionId, wizardFinished]
+);
+
+const loadDraftIfExists = React.useCallback(async () => {
+  if (!caseId || !selectedQuestionnaireKey) return null;
+
+  const { data, error } = await supabase
+    .from('respuestas_draft')
+    .select('*')
+    .eq('id_caso', caseId)
+    .eq('cuestionario', selectedQuestionnaireKey)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error cargando draft:', error);
+    return null;
+  }
+  return data;
+}, [caseId, selectedQuestionnaireKey]);
+
   useEffect(() => {
     if (selectedCategory && selectedQuestionnaireKey) {
       const qInfo = categoriesConfig[selectedCategory]?.questionnaires[selectedQuestionnaireKey];
@@ -114,50 +179,150 @@ function App() {
     }
   }, [selectedCategory, selectedQuestionnaireKey]);
 
-  const handleStart = () => {
-    if (!caseId || !selectedQuestionnaireKey) return alert("Complete los campos");
-    setAnswers({}); setFinalResult(null); setRiskHistory([]); setWizardFinished(false);
-    const firstRisk = questionnaireModule.questions.find(q => q.group === 'risk');
-    setCurrentRiskQuestionId(firstRisk.id);
-    setStep("questionnaire");
-  };
+const handleStart = async () => {
+  if (!caseId || !selectedQuestionnaireKey) return alert("Complete los campos");
+  if (!questionnaireModule?.questions?.length) return alert("Cargando cuestionario, inténtalo de nuevo...");
+
+  const firstRisk = questionnaireModule.questions.find(q => q.group === 'risk');
+
+  // Busca si hay draft
+  const draft = await loadDraftIfExists();
+  if (draft) {
+    const reanudar = window.confirm("Se encontró un borrador para este caso. ¿Deseas reanudar?");
+    if (reanudar) {
+      // Reanudar
+      setAnswers(draft.respuestas || {});
+      setWizardFinished(!!draft.wizard_finished);
+      setCurrentRiskQuestionId(draft.current_risk_question_id || firstRisk.id);
+      setStep("questionnaire");
+      return;
+    } else {
+      // Borrar draft y empezar de cero
+      await supabase
+        .from('respuestas_draft')
+        .delete()
+        .eq('id_caso', caseId)
+        .eq('cuestionario', selectedQuestionnaireKey);
+    }
+  }
+
+  // Flujo desde cero
+  setAnswers({});
+  setFinalResult(null);
+  setRiskHistory([]);
+  setWizardFinished(false);
+  setCurrentRiskQuestionId(firstRisk.id);
+  setStep("questionnaire");
+};
+
+const openCheckpointModal = async (checkpointId) => {
+  // snapshot de respuestas al momento de abrir el modal
+  const snapshot = { ...answers };
+  await saveDraft(checkpointId, snapshot);   // <<-- espera el guardado
+  setRxModal({ open: true, checkpointId, showInfo: false });
+};
+
+const handleRxRealizada = () => {
+  if (!rxModal.checkpointId) return;
+  // Marca la pregunta checkpoint como respondida "listo"
+  handleFormChange(rxModal.checkpointId, 'listo');
+  // Cierra modal para permitir seguir completando
+  setRxModal({ open: false, checkpointId: null, showInfo: false });
+};
+
+const handleRxOk = async () => {
+  if (!rxModal.checkpointId) return;
+  // Reintenta guardar (por si hubo cambios adicionales) y espera
+  await saveDraft(rxModal.checkpointId, { ...answers });
+  setRxModal(prev => ({ ...prev, showInfo: true }));
+};
+const handleCloseRxInfoAndExit = () => {
+  // Cierra modal y vuelve a la pantalla inicial (para reingresar luego con el mismo caseId)
+  setRxModal({ open: false, checkpointId: null, showInfo: false });
+  setStep('selection');
+};
 
   const handleFormChange = (id, val) => {
-    setAnswers(prev => ({...prev, [id]: val}));
-  };
+  setAnswers(prev => {
+    const next = { ...prev, [id]: val };
 
-  const handleWizardNext = () => {
-    const allRisk = questionnaireModule.questions.filter(q => q.group === 'risk');
-    const currentIndex = allRisk.findIndex(q => q.id === currentRiskQuestionId);
-    
-    let nextIndex = currentIndex + 1;
-    while(nextIndex < allRisk.length) {
-        const nextQ = allRisk[nextIndex];
-        if(!nextQ.showIf || nextQ.showIf(answers)) {
-            setRiskHistory(prev => [...prev, currentRiskQuestionId]);
-            setCurrentRiskQuestionId(nextQ.id);
-            return;
-        }
-        nextIndex++;
+    // Si esta pregunta es un checkpoint → guardado intermedio
+    if (RX_CHECKPOINT_IDS.has(id)) {
+      saveDraft(id, next);
     }
-    setWizardFinished(true);
+
+    return next;
+  });
+};
+
+const handleWizardNext = async  () => {
+  const allRisk = questionnaireModule.questions.filter(q => q.group === 'risk');
+  const currentIndex = allRisk.findIndex(q => q.id === currentRiskQuestionId);
+
+  let nextIndex = currentIndex + 1;
+  while (nextIndex < allRisk.length) {
+    const nextQ = allRisk[nextIndex];
+    if (!nextQ.showIf || nextQ.showIf(answers)) {
+      setRiskHistory(prev => [...prev, currentRiskQuestionId]);
+      setCurrentRiskQuestionId(nextQ.id);
+
+      // Si llegamos a un checkpoint → guardar
+
+    if (RX_CHECKPOINT_IDS.has(nextQ.id)) {
+      await openCheckpointModal(nextQ.id);  // <<-- espera antes de seguir
+    }
+      return;
+    }
+    nextIndex++;
+  }
+  setWizardFinished(true);
+};
+
+
+  useEffect(() => {
+  const run = async () => {
+    if (
+      step === 'questionnaire' &&
+      currentRiskQuestionId &&
+      RX_CHECKPOINT_IDS.has(currentRiskQuestionId) &&
+      !rxModal.open
+    ) {
+      await openCheckpointModal(currentRiskQuestionId);
+    }
+  };
+  run();
+}, [step, currentRiskQuestionId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+const handleEvaluate = async () => {
+  const evaluation = questionnaireModule.evaluateRisk(answers, true);
+  setFinalResult(evaluation);
+
+  const resultData = {
+    id_caso: caseId,
+    cuestionario: selectedQuestionnaireKey,
+    respuestas: answers,
+    resultado: evaluation.text,
+    timestamp: new Date().toISOString(),
   };
 
-  const handleEvaluate = async () => {
-      const evaluation = questionnaireModule.evaluateRisk(answers, true);
-      setFinalResult(evaluation);
-      const resultData = {
-        id_caso: caseId,
-        cuestionario: selectedQuestionnaireKey,
-        respuestas: answers,
-        resultado: evaluation.text,
-        timestamp: new Date().toISOString(),
-      };
-      try {
-          await supabase.from('respuestas').insert([resultData]);
-      } catch (e) { console.error(e); }
-      setStep('result');
+  try {
+    const { error } = await supabase.from('respuestas').insert([resultData]);
+    if (error) console.error(error);
+
+    // Limpia el draft al finalizar
+    await supabase
+      .from('respuestas_draft')
+      .delete()
+      .eq('id_caso', caseId)
+      .eq('cuestionario', selectedQuestionnaireKey);
+
+  } catch (e) {
+    console.error(e);
+  }
+
+  setStep('result');
   };
+
 
   const handleRestart = () => {
     setStep("selection"); setCaseId(""); setAnswers({}); setWizardFinished(false); setSelectedCategory(null); setSelectedQuestionnaireKey(null);
@@ -204,7 +369,7 @@ function App() {
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-200">
-                    <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-4">Anamnesis y Examen</h3>
+                    <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-4">Examen físico</h3>
                     {anamnesis.map(q => (
                         <div key={q.id} className="pb-2">
                             <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
@@ -300,6 +465,51 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 to-blue-600 flex items-center justify-center p-4">
       <ImageModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} imageSrc={questionnaireModule?.guideImage} />
+        
+{/* Modal Checkpoint Radiografía */}
+{rxModal.open && (
+  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4" onClick={() => {}}>
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-5 relative">
+      <h3 className="text-lg font-bold text-gray-900 mb-2">Radiografía requerida</h3>
+
+      {!rxModal.showInfo ? (
+        <>
+          <p className="text-sm text-gray-700 mb-4">
+            Debe realizar la radiografía correspondiente antes de continuar.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={handleRxOk}
+              className="flex-1 bg-gray-100 text-gray-800 font-bold py-2 rounded-lg hover:bg-gray-200 border"
+            >
+              OK
+            </button>
+            <button
+              onClick={handleRxRealizada}
+              className="flex-1 bg-blue-700 text-white font-bold py-2 rounded-lg hover:bg-blue-800"
+            >
+              Realizada
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="text-sm text-gray-700 mb-4">
+            <span className="font-semibold">Sus cambios serán guardados.</span><br />
+            Una vez tenga el resultado de la radiografía ingrese nuevamente el siniestro para continuar con el formulario.
+          </p>
+          <button
+            onClick={handleCloseRxInfoAndExit}
+            className="w-full bg-slate-800 text-white font-bold py-2 rounded-lg hover:bg-black"
+          >
+            Volver al inicio
+          </button>
+        </>
+      )}
+    </div>
+  </div>
+)}
+
       <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl p-6 md:p-10 border border-white/20">
         <div className="min-h-[500px]">
           {renderContent()}
