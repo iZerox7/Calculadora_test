@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { categoriesConfig } from './config/categories';
 import { supabase } from './supabaseClient';
 
+// Añade un set de IDs que disparan el autosave
+const RX_CHECKPOINT_IDS = new Set(['rx_deformidad', 'rx_ottawa', 'rx_no_tolera_carga', 'rx_varias']);
 // --- Componente ImageModal ---
 const ImageModal = ({ isOpen, onClose, imageSrc }) => {
   if (!isOpen) return null;
@@ -45,50 +47,192 @@ const MultiSelect = ({ question, value, onChange }) => {
 };
 
 // --- Componente QuestionRenderer ---
-const QuestionRenderer = ({ question, value, onChange }) => {
-    if (!question) return null;
-    const commonInputClass = "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 placeholder:text-sm";
+const QuestionRenderer = ({ question, value, onChange, answers }) => {
+  if (!question) return null;
+  const commonInputClass = "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 placeholder:text-sm";
 
-    switch (question.type) {
-        case 'options':
-        case 'boolean':
-            return (
-                <div className="flex flex-col space-y-2">
-                    {question.options.map(opt => (
-                        <button key={opt.value} type="button" onClick={() => onChange(question.id, opt.value)} className={`p-3 rounded-lg text-left transition-colors border ${value === opt.value ? 'bg-blue-700 text-white border-blue-800 ring-2 ring-blue-500' : 'bg-gray-100 hover:bg-gray-200 border-gray-300'}`}>
-                            {opt.label}
-                        </button>
-                    ))}
-                </div>
-            );
-        case 'button-group':
-            return (
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                    {question.options.map((opt) => (
-                        <button key={opt.value} type="button" onClick={() => onChange(question.id, opt.value)} className={`py-2 px-3 text-sm font-bold rounded-lg border ${value === opt.value ? 'bg-blue-700 text-white border-blue-800 ring-2 ring-blue-500' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'}`}>
-                            {opt.label}
-                        </button>
-                    ))}
-                </div>
-            );
-        case 'slider':
-            return (
-                <div className="space-y-3 mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <input type="range" min={question.min || 0} max={question.max || 10} value={value || 0} onChange={(e) => onChange(question.id, parseInt(e.target.value))} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-700" />
-                    <div className="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>Sin dolor (0)</span><span>Máximo (10)</span></div>
-                    <div className={`p-2 text-center rounded-md font-bold text-lg ${(value || 0) <= 3 ? 'bg-green-100 text-green-800' : (value || 0) <= 6 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-                        EVA: {value || 0}
-                    </div>
-                </div>
-            );
-        case 'multi': return <MultiSelect question={question} value={value} onChange={onChange} />;
-        case 'textarea': return <textarea value={value || ''} onChange={(e) => onChange(question.id, e.target.value)} placeholder={question.placeholder || ''} className={`${commonInputClass} h-24`} />;
-        case 'number':
-        case 'text':
-        case 'date': return <input type={question.type} value={value || ''} onChange={(e) => onChange(question.id, e.target.value)} placeholder={question.placeholder || ''} className={commonInputClass} />;
-        default: return null;
+  // --- Filtrado dinámico para 'escenario_fractura' y 'weber' ---
+  let optionsToRender = question.options || [];
+  if (question.type === 'options' || question.type === 'boolean' || question.type === 'button-group') {
+    if (question.id === 'escenario_fractura') {
+      const allowed = allowedScenariosFor(answers);
+      optionsToRender = filterOptions(question.options || [], allowed);
     }
+    if (question.id === 'weber') {
+      const allowed = allowedWeberFor(answers);
+      optionsToRender = filterOptions(question.options || [], allowed);
+    }
+  }
+
+  switch (question.type) {
+    case 'options':
+    case 'boolean':
+      return (
+        <div className="flex flex-col space-y-2">
+          {optionsToRender.map(opt => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onChange(question.id, opt.value)}
+              className={`p-3 rounded-lg text-left transition-colors border ${value === opt.value ? 'bg-blue-700 text-white border-blue-800 ring-2 ring-blue-500' : 'bg-gray-100 hover:bg-gray-200 border-gray-300'}`}
+            >
+              {opt.label}
+            </button>
+          ))}
+          {/* Si no hay opciones válidas, muestra un aviso sutil */}
+          {optionsToRender.length === 0 && (
+            <div className="text-xs text-gray-500 italic">No hay opciones disponibles para la combinación seleccionada.</div>
+          )}
+        </div>
+      );
+
+    case 'button-group':
+      return (
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          {optionsToRender.map(opt => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onChange(question.id, opt.value)}
+              className={`py-2 px-3 text-sm font-bold rounded-lg border ${value === opt.value ? 'bg-blue-700 text-white border-blue-800 ring-2 ring-blue-500' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'}`}
+            >
+              {opt.label}
+            </button>
+          ))}
+          {optionsToRender.length === 0 && (
+            <div className="col-span-2 text-xs text-gray-500 italic">No hay opciones disponibles.</div>
+          )}
+        </div>
+      );
+
+    case 'slider':
+      return (
+        <div className="space-y-3 mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <input
+            type="range"
+            min={question.min || 0}
+            max={question.max || 10}
+            value={value || 0}
+            onChange={(e) => onChange(question.id, parseInt(e.target.value))}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-700"
+          />
+          <div className="flex justify-between text-[10px] font-bold text-gray-500 uppercase">
+            <span>Sin dolor (0)</span><span>Máximo (10)</span>
+          </div>
+          <div className={`p-2 text-center rounded-md font-bold text-lg ${(value || 0) <= 3 ? 'bg-green-100 text-green-800' : (value || 0) <= 6 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+            EVA: {value || 0}
+          </div>
+        </div>
+      );
+
+    case 'multi':
+      return <MultiSelect question={question} value={value} onChange={onChange} />;
+
+    case 'textarea':
+      return (
+        <textarea
+          value={value || ''}
+          onChange={(e) => onChange(question.id, e.target.value)}
+          placeholder={question.placeholder || ''}
+          className={`${commonInputClass} h-24`}
+        />
+      );
+
+    case 'number':
+    case 'text':
+    case 'date':
+      return (
+        <input
+          type={question.type}
+          value={value || ''}
+          onChange={(e) => onChange(question.id, e.target.value)}
+          placeholder={question.placeholder || ''}
+          className={commonInputClass}
+        />
+      );
+
+    default:
+      return null;
+  }
 };
+
+// --- Reglas de compatibilidad (escenarios y Weber) ---
+
+const CLOSED_SC3_ALLOWED = new Set([
+  'bimaleolar_cerrada',
+  'pilon_tibial_cerrada',
+  'maleolo_tibial_cerrada',
+  'maleolo_perone_cerrada',
+  'trimaleolar_cerrada',
+]);
+
+/**
+ * Retorna los escenarios permitidos para la fractura elegida.
+ * - Para abiertas: sólo 'escenario_4'.
+ * - Para cerradas: según tu tabla de restricciones.
+ * - Si no hay clasificación aún: permite 'escenario_4' (válido para cualquier fractura).
+ */
+function allowedScenariosFor(ans) {
+  const tipo = ans.hay_fractura; // 'si_abierta' | 'si_cerrada' | 'no' | undefined
+  if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return [];
+
+  // Escenario 4 puede ser cualquier fractura
+  const always = ['escenario_4'];
+
+  if (tipo === 'si_abierta') {
+    // Abiertas: sólo Escenario 4
+    return always;
+  }
+
+  // Cerradas
+  const clasVal = ans.clasificacion_especifica_cerrada;
+  if (!clasVal) return always; // aún no sabemos, dejamos solo 4
+
+  const allowed = new Set(always);
+
+  // Escenario 1:
+  // - Permitido si la clasificación es Pilón tibial cerrada o Maléolo peroné cerrada.
+  if (['pilon_tibial_cerrada', 'maleolo_perone_cerrada'].includes(clasVal)) {
+    allowed.add('escenario_1');
+  }
+
+  // Escenario 2:
+  // - Permitido si la clasificación es Bimaleolar cerrada
+  if (clasVal === 'bimaleolar_cerrada') {
+    allowed.add('escenario_2');
+  }
+
+  // Escenario 3:
+  // - Permitido si la clasificación está en el set de SC3
+  if (CLOSED_SC3_ALLOWED.has(clasVal)) {
+    allowed.add('escenario_3');
+  }
+
+  return Array.from(allowed);
+}
+
+/**
+ * Retorna Weber permitido dado Escenario 1 y la clasificación cerrada.
+ * - Pilón tibial cerrada -> Sólo Weber A
+ * - Maléolo peroné cerrada -> Weber A, B, C
+ * - Otras -> ninguna (escenario 1 no debería ser elegible)
+ */
+function allowedWeberFor(ans) {
+  if (ans.escenario_fractura !== 'escenario_1') return [];
+  const clasVal = ans.clasificacion_especifica_cerrada;
+  if (clasVal === 'pilon_tibial_cerrada')       return ['weber_a'];
+  if (clasVal === 'maleolo_perone_cerrada')     return ['weber_a', 'weber_b_c']; // <-- aquí el cambio clave
+  return [];
+}
+
+
+/**
+ * Dada una lista de opciones [{value, label}], la filtra por valores permitidos.
+ */
+function filterOptions(options, allowedValues) {
+  const allow = new Set(allowedValues);
+  return options.filter(o => allow.has(o.value));
+}
 
 function App() {
   const [step, setStep] = useState("selection");
@@ -103,6 +247,70 @@ function App() {
   const [wizardFinished, setWizardFinished] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+ 
+  // Modal pequeño para RX Checkpoint
+  const [rxModal, setRxModal] = useState({
+    open: false,
+    checkpointId: null,   // 'rx_deformidad' | 'rx_ottawa' | ...
+    showInfo: false,       // para mostrar el mensaje tras pulsar "OK"
+    rxText: ''
+  });
+  
+  const saveDraft = React.useCallback(
+  async (checkpointId, nextAnswers) => {
+    // No grabes si faltan estas llaves
+    if (!caseId || !selectedQuestionnaireKey) {
+      console.warn('saveDraft: faltan caseId o selectedQuestionnaireKey');
+      return { data: null, error: new Error('Missing keys') };
+    }
+
+    // Usa el snapshot más reciente de answers
+    const answersSnapshot = nextAnswers ?? answers;
+
+    const payload = {
+      id_caso: caseId,
+      cuestionario: selectedQuestionnaireKey,
+      respuestas: answersSnapshot,
+      current_risk_question_id: currentRiskQuestionId,
+      wizard_finished: wizardFinished,
+      last_checkpoint: checkpointId || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error, status, statusText } = await supabase
+      .from('respuestas_draft')
+      .upsert(payload, { onConflict: 'id_caso,cuestionario' })
+      .select()            // <<-- importante para ver respuesta y depurar
+      .single();           // devuelve solo la fila afectada
+
+    if (error) {
+      console.error('saveDraft error:', { error, status, statusText, payload });
+    } else {
+      // Puedes descomentar si quieres ver que guardó:
+      console.log('saveDraft OK:', data);
+    }
+    return { data, error };
+  },
+  [caseId, selectedQuestionnaireKey, answers, currentRiskQuestionId, wizardFinished]
+);
+
+const loadDraftIfExists = React.useCallback(async () => {
+  if (!caseId || !selectedQuestionnaireKey) return null;
+
+  const { data, error } = await supabase
+    .from('respuestas_draft')
+    .select('*')
+    .eq('id_caso', caseId)
+    .eq('cuestionario', selectedQuestionnaireKey)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error cargando draft:', error);
+    return null;
+  }
+  return data;
+}, [caseId, selectedQuestionnaireKey]);
+
   useEffect(() => {
     if (selectedCategory && selectedQuestionnaireKey) {
       const qInfo = categoriesConfig[selectedCategory]?.questionnaires[selectedQuestionnaireKey];
@@ -114,50 +322,208 @@ function App() {
     }
   }, [selectedCategory, selectedQuestionnaireKey]);
 
-  const handleStart = () => {
-    if (!caseId || !selectedQuestionnaireKey) return alert("Complete los campos");
-    setAnswers({}); setFinalResult(null); setRiskHistory([]); setWizardFinished(false);
-    const firstRisk = questionnaireModule.questions.find(q => q.group === 'risk');
-    setCurrentRiskQuestionId(firstRisk.id);
-    setStep("questionnaire");
-  };
+const handleStart = async () => {
+  if (!caseId || !selectedQuestionnaireKey) return alert("Complete los campos");
+  if (!questionnaireModule?.questions?.length) return alert("Cargando cuestionario, inténtalo de nuevo...");
 
-  const handleFormChange = (id, val) => {
-    setAnswers(prev => ({...prev, [id]: val}));
-  };
+  const firstRisk = questionnaireModule.questions.find(q => q.group === 'risk');
 
-  const handleWizardNext = () => {
-    const allRisk = questionnaireModule.questions.filter(q => q.group === 'risk');
-    const currentIndex = allRisk.findIndex(q => q.id === currentRiskQuestionId);
-    
-    let nextIndex = currentIndex + 1;
-    while(nextIndex < allRisk.length) {
-        const nextQ = allRisk[nextIndex];
-        if(!nextQ.showIf || nextQ.showIf(answers)) {
-            setRiskHistory(prev => [...prev, currentRiskQuestionId]);
-            setCurrentRiskQuestionId(nextQ.id);
-            return;
-        }
-        nextIndex++;
+  // Busca si hay draft
+  const draft = await loadDraftIfExists();
+  if (draft) {
+    const reanudar = window.confirm("Se encontró un borrador para este caso. ¿Deseas reanudar?");
+    if (reanudar) {
+      // Reanudar
+      setAnswers(draft.respuestas || {});
+      setWizardFinished(!!draft.wizard_finished);
+      setCurrentRiskQuestionId(draft.current_risk_question_id || firstRisk.id);
+      setStep("questionnaire");
+      return;
+    } else {
+      // Borrar draft y empezar de cero
+      await supabase
+        .from('respuestas_draft')
+        .delete()
+        .eq('id_caso', caseId)
+        .eq('cuestionario', selectedQuestionnaireKey);
     }
-    setWizardFinished(true);
+  }
+
+  // Flujo desde cero
+  setAnswers({});
+  setFinalResult(null);
+  setRiskHistory([]);
+  setWizardFinished(false);
+  setCurrentRiskQuestionId(firstRisk.id);
+  setStep("questionnaire");
+};
+
+const openCheckpointModal = async (checkpointId) => {
+  // snapshot de respuestas al momento de abrir el modal
+  const snapshot = { ...answers };
+  await saveDraft(checkpointId, snapshot);   // <<-- espera el guardado
+  
+   // Obtiene el texto de la pregunta checkpoint para mostrarlo en el modal
+  const qText = questionnaireModule?.questions?.find(q => q.id === checkpointId)?.text || '';
+
+  setRxModal({ open: true, checkpointId, showInfo: false, rxText: qText });
+};
+
+const handleRxRealizada = () => {
+  if (!rxModal.checkpointId) return;
+  // Marca la pregunta checkpoint como respondida "listo"
+  handleFormChange(rxModal.checkpointId, 'listo');
+  // Cierra modal para permitir seguir completando
+  setRxModal({ open: false, checkpointId: null, showInfo: false });
+};
+
+const handleRxOk = async () => {
+  if (!rxModal.checkpointId) return;
+  // Reintenta guardar (por si hubo cambios adicionales) y espera
+  await saveDraft(rxModal.checkpointId, { ...answers });
+  setRxModal(prev => ({ ...prev, showInfo: true }));
+};
+const handleCloseRxInfoAndExit = () => {
+  // Cierra modal y vuelve a la pantalla inicial (para reingresar luego con el mismo caseId)
+  setRxModal({ open: false, checkpointId: null, showInfo: false });
+  setStep('selection');
+};
+
+const handleFormChange = (id, val) => {
+  setAnswers(prev => {
+    let next = { ...prev, [id]: val };
+
+    // --- Normalización / limpieza en cascada ---
+
+    // Si cambia hay_fractura:
+    if (id === 'hay_fractura') {
+      // Limpiar todo lo que depende de esto
+      next.escenario_fractura = undefined;
+      next.weber = undefined;
+      if (val === 'si_abierta') {
+        next.clasificacion_especifica_cerrada = undefined;
+      } else if (val === 'si_cerrada') {
+        next.clasificacion_especifica_abierta = undefined;
+      } else {
+        next.clasificacion_especifica_cerrada = undefined;
+        next.clasificacion_especifica_abierta = undefined;
+      }
+    }
+
+    // Si cambió la clasificación cerrada o abierta, limpiar escenarios/Weber si quedaron inválidos
+    if (id === 'clasificacion_especifica_cerrada' || id === 'clasificacion_especifica_abierta') {
+      const allowedSc = allowedScenariosFor(next);
+      if (next.escenario_fractura && !allowedSc.includes(next.escenario_fractura)) {
+        next.escenario_fractura = undefined;
+        next.weber = undefined;
+      } else if (next.escenario_fractura === 'escenario_1') {
+        const allowedW = allowedWeberFor(next);
+        if (next.weber && !allowedW.includes(next.weber)) {
+          next.weber = undefined;
+        }
+      }
+    }
+
+    // Si cambió escenario, limpiar Weber cuando corresponda
+    if (id === 'escenario_fractura') {
+      if (val !== 'escenario_1') {
+        next.weber = undefined;
+      } else {
+        // Si es escenario 1, valida que sea elegible según la clasificación actual
+        const allowedSc = allowedScenariosFor(next);
+        if (!allowedSc.includes('escenario_1')) {
+          // No permitido -> limpiar y salir
+          next.escenario_fractura = undefined;
+        }
+      }
+    }
+
+    // Si cambió Weber, validar contra la clasificación
+    if (id === 'weber') {
+      const allowedW = allowedWeberFor(next);
+      if (!allowedW.includes(val)) {
+        next.weber = undefined;
+      }
+    }
+
+    // --- Guardado intermedio en checkpoints (mantén tu lógica) ---
+    if (RX_CHECKPOINT_IDS.has(id)) {
+      saveDraft(id, next);
+    }
+
+    return next;
+  });
+};
+``
+
+const handleWizardNext = async  () => {
+  const allRisk = questionnaireModule.questions.filter(q => q.group === 'risk');
+  const currentIndex = allRisk.findIndex(q => q.id === currentRiskQuestionId);
+
+  let nextIndex = currentIndex + 1;
+  while (nextIndex < allRisk.length) {
+    const nextQ = allRisk[nextIndex];
+    if (!nextQ.showIf || nextQ.showIf(answers)) {
+      setRiskHistory(prev => [...prev, currentRiskQuestionId]);
+      setCurrentRiskQuestionId(nextQ.id);
+
+      // Si llegamos a un checkpoint → guardar
+
+    if (RX_CHECKPOINT_IDS.has(nextQ.id)) {
+      await openCheckpointModal(nextQ.id);  // <<-- espera antes de seguir
+    }
+      return;
+    }
+    nextIndex++;
+  }
+  setWizardFinished(true);
+};
+
+
+  useEffect(() => {
+  const run = async () => {
+    if (
+      step === 'questionnaire' &&
+      currentRiskQuestionId &&
+      RX_CHECKPOINT_IDS.has(currentRiskQuestionId) &&
+      !rxModal.open
+    ) {
+      await openCheckpointModal(currentRiskQuestionId);
+    }
+  };
+  run();
+}, [step, currentRiskQuestionId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+const handleEvaluate = async () => {
+  const evaluation = questionnaireModule.evaluateRisk(answers, true);
+  setFinalResult(evaluation);
+
+  const resultData = {
+    id_caso: caseId,
+    cuestionario: selectedQuestionnaireKey,
+    respuestas: answers,
+    resultado: evaluation.text,
+    timestamp: new Date().toISOString(),
   };
 
-  const handleEvaluate = async () => {
-      const evaluation = questionnaireModule.evaluateRisk(answers, true);
-      setFinalResult(evaluation);
-      const resultData = {
-        id_caso: caseId,
-        cuestionario: selectedQuestionnaireKey,
-        respuestas: answers,
-        resultado: evaluation.text,
-        timestamp: new Date().toISOString(),
-      };
-      try {
-          await supabase.from('respuestas').insert([resultData]);
-      } catch (e) { console.error(e); }
-      setStep('result');
+  try {
+    const { error } = await supabase.from('respuestas').insert([resultData]);
+    if (error) console.error(error);
+
+    // Limpia el draft al finalizar
+    await supabase
+      .from('respuestas_draft')
+      .delete()
+      .eq('id_caso', caseId)
+      .eq('cuestionario', selectedQuestionnaireKey);
+
+  } catch (e) {
+    console.error(e);
+  }
+
+  setStep('result');
   };
+
 
   const handleRestart = () => {
     setStep("selection"); setCaseId(""); setAnswers({}); setWizardFinished(false); setSelectedCategory(null); setSelectedQuestionnaireKey(null);
@@ -204,11 +570,11 @@ function App() {
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-200">
-                    <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-4">Anamnesis y Examen</h3>
+                    <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-4">Examen físico</h3>
                     {anamnesis.map(q => (
                         <div key={q.id} className="pb-2">
                             <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
-                            <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} />
+                            <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} />
                         </div>
                     ))}
                 </div>
@@ -219,7 +585,7 @@ function App() {
                         {!wizardFinished ? (
                             <div className="flex-grow animate-in fade-in slide-in-from-right-4">
                                 <label className="block text-base font-bold text-gray-800 mb-4">{currentRisk.text}</label>
-                                <QuestionRenderer question={currentRisk} value={answers[currentRisk.id]} onChange={handleFormChange} />
+                                <QuestionRenderer question={currentRisk} value={answers[currentRisk.id]} onChange={handleFormChange} answers={answers} />
                                 <div className="flex justify-between mt-8">
                                     <button disabled={riskHistory.length === 0} onClick={() => {
                                         const last = riskHistory.pop();
@@ -300,6 +666,60 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 to-blue-600 flex items-center justify-center p-4">
       <ImageModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} imageSrc={questionnaireModule?.guideImage} />
+        
+{/* Modal Checkpoint Radiografía */}
+{rxModal.open && (
+  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4" onClick={() => {}}>
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-5 relative">
+      <h3 className="text-lg font-bold text-gray-900 mb-2">Radiografía requerida</h3>
+
+      {!rxModal.showInfo ? (
+        <>
+         <div className="text-sm text-gray-700 mb-4">
+           <p className="mb-1">Debe realizar la radiografía correspondiente antes de continuar.</p>
+           {rxModal.rxText && (
+             <div className="mt-2 p-2 rounded-md bg-blue-50 border border-blue-100 text-blue-800">
+               <span className="font-semibold">Orden:</span> {rxModal.rxText}
+            </div>
+           )}
+        </div>
+
+
+          <div className="flex gap-3">
+
+            <button
+             onClick={handleRxOk}
+             className="flex-1 bg-blue-700 text-white font-bold py-2 rounded-lg hover:bg-blue-800"
+           >
+             OK
+           </button>
+           <button
+             onClick={handleRxRealizada}
+             className="flex-1 bg-gray-100 text-gray-800 font-bold py-2 rounded-lg hover:bg-gray-200 border"
+           >
+             Realizada
+           </button>
+
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="text-sm text-gray-700 mb-4">
+            <span className="font-semibold">Sus cambios serán guardados.</span><br />
+            Una vez tenga el resultado de la radiografía ingrese nuevamente el siniestro para continuar con el formulario.
+          </p>
+          <button
+            onClick={handleCloseRxInfoAndExit}
+            className="w-full bg-slate-800 text-white font-bold py-2 rounded-lg hover:bg-black"
+          >
+            Volver al inicio
+          </button>
+        </>
+      )}
+    </div>
+  </div>
+)}
+
       <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl p-6 md:p-10 border border-white/20">
         <div className="min-h-[500px]">
           {renderContent()}
