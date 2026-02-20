@@ -639,6 +639,15 @@ const handleEvaluate = async () => {
       });
       const currentProtocol = questionnaireModule.protocols[finalResult.protocolId];
 
+// NUEVO: calcular reposo dinámico (usa el helper exportado)
+const reposoDinamico = questionnaireModule.restTextPorCarga(answers, finalResult.protocolId);
+
+// Pasos a mostrar en la UI (reposo primero, luego protocolo base)
+const displayedSteps = [
+  ...(reposoDinamico ? [reposoDinamico] : []),
+  ...((currentProtocol?.pasos ?? []))
+];
+
       return (
         <div className="space-y-6">
           <div className={`p-6 border-l-8 rounded-lg shadow-sm ${finalResult.color === 'red' ? 'bg-red-50 border-red-500 text-red-900' : 'bg-green-50 border-green-500 text-green-900'}`}>
@@ -652,14 +661,16 @@ const handleEvaluate = async () => {
             </h3>
             <div className="space-y-3">
               <p className="font-bold text-blue-900 text-sm">{currentProtocol?.titulo}</p>
+                            
               <ul className="space-y-2">
-                {currentProtocol?.pasos.map((paso, i) => (
+                {displayedSteps.map((paso, i) => (
                   <li key={i} className="flex items-start text-sm text-blue-800">
                     <span className="font-bold mr-2 text-blue-400">{i + 1}.</span>
                     {paso}
                   </li>
                 ))}
               </ul>
+
             </div>
           </div>
 

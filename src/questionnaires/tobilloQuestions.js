@@ -397,6 +397,20 @@ const PROTOCOL_WEBER = {
   weber_b_c: 'protocolo_weber_b_c'
 };
 
+// Devuelve el texto de reposo sugerido según carga laboral SOLO para esguince grado I
+export const restTextPorCarga = (answers, protocolId) => {
+  if (protocolId !== 'protocolo_esguince_1') return null;
+  const carga = Number(answers?.carga_laboral); // 1..3
+  const map = {
+    1: 'STP',
+    2: 'Alta diferida 2 días',
+    3: 'Alta diferida 3 días',
+  };
+  const indicacion = map[carga];
+  return indicacion ? `Reposo sugerido según carga laboral: ${indicacion}` : null;
+};
+
+
 // EVALUACIÓN PARA SUGERIR DIAGNÓSTICO
 export const evaluateRisk = (answers) => {
   // 1. Diagnósticos de Fractura (prioridad más alta)
@@ -548,6 +562,11 @@ const SCENARIO_PRIORITY = ['escenario_4', 'escenario_3', 'escenario_2', 'escenar
 export const generateClinicalReport = ({ caseId, answers, resultQuestion, protocols }) => {
   const prot = protocols[resultQuestion.protocolId];
   
+
+  // NUEVO: reposo dinámico por carga (solo Esguince I)
+  const reposoDinamico = restTextPorCarga(answers, resultQuestion.protocolId);
+
+
   // Mapeo de valores a texto legible
   const edemaTexto = {
       "ninguno": "Sin aumento de volumen",
@@ -623,6 +642,7 @@ const questionnaireModule = {
   protocols,
   evaluateRisk,
   generateClinicalReport,
+  restTextPorCarga,
   guideImage: "arbol_decision.png",
 };
 
