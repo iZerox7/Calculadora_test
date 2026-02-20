@@ -41,133 +41,64 @@ export const protocols = {
             "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 5 días. Ajustar según respuesta.En caso de no respuesta a los 7-10 días, considerar escalara tramadol/paracetamol 37,5 mg/ 325 mg vo c/8-12 h."
         ]
     },
-    "protocolo_fractura_abierta": {
-        "titulo": "🚨 URGENCIA QUIRÚRGICA - FRACTURA ABIERTA",
+    
+    // PROTOCOLOS ESCENARIOS FRACTURAS
+    "protocolo_weber_a": {
+        "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 1 - WEBER A",
         "pasos": [
-            "1. MANEJO DE HERIDA: Cubrir con apósito estéril, NO reducir.",
-            "2. ANTIBIÓTICOS: Cefazolina 2g EV + Profilaxis antitetánica.",
-            "3. TRASLADO: Derivación inmediata a centro de mayor complejidad."
-        ]
-    },
-    "protocolo_fractura_cerrada": {
-        "titulo": "MANEJO - FRACTURA CERRADA",
-        "pasos": [
-            "1. INMOVILIZACIÓN: Férula posterior de yeso bien almohadillada.",
-            "2. DESCARGA: Prohibición absoluta de carga de peso.",
-            "3. DERIVACIÓN: Control con Traumatología para resolución quirúrgica o conservadora."
-        ]
-    },
-    // FRACTURAS ABIERTAS
-    "protocolo_fractura_mp_abierta": {
-        "titulo": "PROTOCOLO DE MANEJO - FRACTURA MALEOLO PERONEO ABIERTA",
-        "pasos": [
-            "1. INMOVILIZACIÓN: Férula posterior de yeso bien almohadillada.",
-            "2. DESCARGA: Prohibición absoluta de carga de peso.",
-            "3. DERIVACIÓN: Control con Traumatología para resolución quirúrgica o conservadora."
-        ]
-    },
-    "protocolo_fractura_mt_abierta": {
-        "titulo": "PROTOCOLO DE MANEJO - FRACTURA MALEOLO TIBIAL ABIERTA",
-        "pasos": [
-            "1. INMOVILIZACIÓN: Férula posterior de yeso bien almohadillada.",
-            "2. DESCARGA: Prohibición absoluta de carga de peso.",
-            "3. DERIVACIÓN: Control con Traumatología para resolución quirúrgica o conservadora."
-        ]
-    },
-    "protocolo_fractura_pt_abierta": {
-        "titulo": "PROTOCOLO DE MANEJO - FRACTURA PILON TIBIAL ABIERTA",
-        "pasos": [
-            "1. INMOVILIZACIÓN: Férula posterior de yeso bien almohadillada.",
-            "2. DESCARGA: Prohibición absoluta de carga de peso.",
-            "3. DERIVACIÓN: Control con Traumatología para resolución quirúrgica o conservadora."
+            "Inmovilización: bota con bastones. Se puede retirar en la noche",
+            "Carga a tolerancia por 4 semanas",
+            "Medicamentos: Profilaxis anticoagulante (aspirina 100mg c/12 hrs)"
         ]
     },
 
-    "protocolo_fractura_tb_abierta": {
-        "titulo": "PROTOCOLO DE MANEJO - FRACTURA TOBILLO BIMALEOLAR ABIERTA",
+    "protocolo_weber_b_c": {
+        "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 1 - Unimaleolar no luxada - WEBER B Y C",
         "pasos": [
-            "1. INMOVILIZACIÓN: Férula posterior de yeso bien almohadillada.",
-            "2. DESCARGA: Prohibición absoluta de carga de peso.",
-            "3. DERIVACIÓN: Control con Traumatología para resolución quirúrgica o conservadora."
+            "Inmovilización: bota ortopédica con bastones canadienses",
+            "Sin carga",
+            "Medicamentos: Profilaxis tromboembólica con heparina de bajo peso molecular (enoxaparina o dalteparina) hasta definición de especialista",
+            "Aplicar frio local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.", 
         ]
-    },
-    "protocolo_fractura_tt_abierta": {
-        "titulo": "PROTOCOLO DE MANEJO - FRACTURA TOBILLO TRIMALEOLAR ABIERTA",
-        "pasos": [
-            "1. INMOVILIZACIÓN: Férula posterior de yeso bien almohadillada.",
-            "2. DESCARGA: Prohibición absoluta de carga de peso.",
-            "3. DERIVACIÓN: Control con Traumatología para resolución quirúrgica o conservadora."
-        ]
-    },     
+    },    
 
-    // FRACTURAS CERRADAS
-     "protocolo_fractura_mp_cerrada": {
-        "titulo": "PROTOCOLO DE MANEJO - FRACTURA MALEOLO PERONEO CERRADA",
+    "protocolo_escenario_2": {
+        "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 2 - Bimaleolar no luxada",
         "pasos": [
-            "1. INMOVILIZACIÓN: Férula posterior de yeso bien almohadillada.",
-            "2. DESCARGA: Prohibición absoluta de carga de peso.",
-            "3. DERIVACIÓN: Control con Traumatología para resolución quirúrgica o conservadora."
+            "Inmovilización: bota ortopédica con bastones canadienses",
+            "Medicamentos: Profilaxis tromboembólica con heparina de bajo peso molecular (enoxaparina o dalteparina) para cirugía",
+            "Aplicar frío local" ,
+            "Corroborar protocolo con TMT de urgencia"
         ]
-    },
-    "protocolo_fractura_mt_cerrada": {
-        "titulo": "PROTOCOLO DE MANEJO - FRACTURA MALEOLO TIBIAL CERRADA",
-        "pasos": [
-            "1. INMOVILIZACIÓN: Férula posterior de yeso bien almohadillada.",
-            "2. DESCARGA: Prohibición absoluta de carga de peso.",
-            "3. DERIVACIÓN: Control con Traumatología para resolución quirúrgica o conservadora."
-        ]
-    },
-    "protocolo_fractura_pt_cerrada": {
-        "titulo": "PROTOCOLO DE MANEJO - FRACTURA PILON TIBIAL CERRADA",
-        "pasos": [
-            "1. INMOVILIZACIÓN: Férula posterior de yeso bien almohadillada.",
-            "2. DESCARGA: Prohibición absoluta de carga de peso.",
-            "3. DERIVACIÓN: Control con Traumatología para resolución quirúrgica o conservadora."
-        ]
-    },
+    }, 
 
-    "protocolo_fractura_tb_cerrada": {
-        "titulo": "PROTOCOLO DE MANEJO - FRACTURA TOBILLO BIMALEOLAR CERRADA",
+    "protocolo_escenario_3": {
+        "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 3 - Luxada (uni/bi/tri)",
         "pasos": [
-            "1. INMOVILIZACIÓN: Férula posterior de yeso bien almohadillada.",
-            "2. DESCARGA: Prohibición absoluta de carga de peso.",
-            "3. DERIVACIÓN: Control con Traumatología para resolución quirúrgica o conservadora."
+            "🚨 Derivación inmediata a HT o centro hospitalario con capacidad resolutiva (reducción cerrada e instalación de yeso)🚨",
+            "Inmovilización con valva de la ambulancia",
+            "Aplicar frío local",
+            "Reducir fractura e inmovilizar con yeso",
+            "Medicamentos: Analgesia ev, profilaxis tromboembólica con heparina de bajo peso molecular (enoxaparina o dalteparina) una vez inmovilizada"
         ]
-    },
-    "protocolo_fractura_tt_cerrada": {
-        "titulo": "PROTOCOLO DE MANEJO - FRACTURA TOBILLO TRIMALEOLAR CERRADA",
+    }, 
+    "protocolo_escenario_4": {
+        "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 4 - Expuesta / SC / NV",
         "pasos": [
-            "1. INMOVILIZACIÓN: Férula posterior de yeso bien almohadillada.",
-            "2. DESCARGA: Prohibición absoluta de carga de peso.",
-            "3. DERIVACIÓN: Control con Traumatología para resolución quirúrgica o conservadora."
-        ]
-    },
+            "🚨 Tratamiento quirúrgico urgente 🚨", 
+            "Derivación inmediata a HT o centro hospitalario con capacidad resolutiva o evaluar traslado a Santiago",
+            "Inmovilización con valva de la ambulancia",
+            "Aplicar frío local",
+            "Reducir fractura e inmovilizar con yeso",
+            "Medicamentos: Analgesia ev, tratamiento antibiótivo ev (en caso de fractura expuesta)",
+            "Vacunación antitetánica (en caso de fractura expuesta)"
+       ]
+    }
 };
 
 export const questions = [
   // --- GRUPO ANAMNESIS (Basado en estándares ACHS) ---
   { id: "fecha_accidente", text: "Fecha del accidente", type: "date", group: "anamnesis" },
-  // { 
-  //   id: "info_complementaria", 
-  //   text: "Antecedentes generales y alergias", 
-  //   type: "textarea", 
-  //   group: "anamnesis",
-  //   placeholder: "Antecedentes mórbidos, cirugías previas, alergias, si hubo crujido audible..."
-  // },
-  // { 
-  //   id: "actividad_accidente", 
-  //   text: "Actividad al momento del accidente", 
-  //   type: "textarea", 
-  //   group: "anamnesis",
-  //   placeholder: "Ej: Estaba tomando el metro de camino al trabajo..."
-  // },
-  //   { 
-  //   id: "descripcion_accidente", 
-  //   text: "Descripción del accidente", 
-  //   type: "textarea", 
-  //   group: "anamnesis",
-  //   placeholder: "Ej: Al bajar de la plataforma, el pie derecho se invirtió bruscamente..."
-  // },
 
   { id: "eva", text: "Nivel de Dolor (EVA)", type: "slider", group: "anamnesis", min: 0, max: 10 },
   { 
@@ -202,6 +133,20 @@ export const questions = [
     ]
   },
 
+  // Criterios de Ottawa (solo si estable o local sin equimosis)
+  {
+    id: "criterios_ottawa",
+    text: "¿Cumple alguno de los Criterios de Ottawa?",
+    type: "options",
+    group: "risk",
+    showIf: (ans) => ans.deformidad_evidente === "no",
+    options: [
+        { value: "cumple", label: "Cumple criterios (Ottawa +)" },
+        { value: "no_cumple", label: "No cumple ninguno (Ottawa -)" }
+    ]
+  },
+
+
     // MANDA A RX SI TIENE DEFORMIDAD EVIDENTE
   {
     id: "rx_deformidad",
@@ -220,7 +165,7 @@ export const questions = [
     text: "¿Cómo se presenta el dolor?",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.deformidad_evidente === "no",
+    showIf: (ans) => ans.criterios_ottawa === "cumple",
     options: [
         { value: "difuso", label: "Difuso" },
         { value: "local", label: "Local" },
@@ -243,6 +188,8 @@ export const questions = [
     ]
   },
 
+  
+
   // Estabilidad (solo si dolor local o local sin equimosis)
   {
     id: "estabilidad",
@@ -256,19 +203,7 @@ export const questions = [
         { value: "estable", label: "Sin inestabilidad" }
     ]
   },
-  // Criterios de Ottawa (solo si estable o local sin equimosis)
-  {
-    id: "criterios_ottawa",
-    text: "¿Cumple alguno de los Criterios de Ottawa?",
-    type: "options",
-    group: "risk",
-    // showIf: (ans) => ans.estabilidad === "estable" || ans.tipo_dolor === "local_no_equimosis",
-    showIf: (ans) => ans.estabilidad === "estable",
-    options: [
-        { value: "cumple", label: "Cumple criterios (Ottawa +)" },
-        { value: "no_cumple", label: "No cumple ninguno (Ottawa -)" }
-    ]
-  },
+
 
 
 
@@ -279,7 +214,7 @@ export const questions = [
     text: "Realizar Radiografía Ap-Lat-Obl con carga",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.criterios_ottawa === "cumple",
+    showIf: (ans) => ans.estabilidad === "estable",
     options: [
         { value: "listo", label: "✅ Realizada" }
     ]
@@ -371,7 +306,36 @@ export const questions = [
         { value: "bimaleolar_abierta", label: "Bimaleolar Abierta" },
         { value: "trimaleolar_abierta", label: "Trimaleolar Abierta" }
     ]
+  },
+  // Separación por escenarios
+  {
+    id: "escenario_fractura",
+    text: "¿A cuál escenario pertenece la fractura?:",
+    type: "options",
+    group: "risk",
+    showIf: (ans) => ans.hay_fractura === "si_abierta" || ans.hay_fractura === "si_cerrada",
+    options: [
+        { value: "escenario_1", label: "Escenario 1: Fractura unimaleolar no luxada" },
+        { value: "escenario_2", label: "Escenario 2: Fractura bimaleolar no luxada" },
+        { value: "escenario_3", label: "Escenario 3: Fractura uni, bi o trimaleolar luxada" },
+        { value: "escenario_4", label: "Escenario 4: Fractura expuesta, síndrome compartimental, daño severo de partes blandas y/o lesión neurovascular" }
+    ]
+  },
+    // Weber
+  {
+    id: "weber",
+    text: "¿A cuál tipo de Weber corresponde?:",
+    type: "options",
+    group: "risk",
+    showIf: (ans) => ans.escenario_fractura === "escenario_1",
+    options: [
+        { value: "weber_a", label: "Weber A" },
+        { value: "weber_b_c", label: "Weber B o C" }
+    ]
   }
+
+
+
 ];
 
 // Diccionario de los values
@@ -391,117 +355,195 @@ const FRACTURA_ABIERTA_LABEL = {
   trimaleolar_abierta: 'Trimaleolar Abierta',
 };
 
-
-// Mapas value -> protocolo
+// Mapas value -> protocolo por CLASIFICACIÓN (usamos protocolos de ESCENARIO que sí existen)
 const PROTOCOL_CERRADA = {
-  maleolo_perone_cerrada: 'protocolo_fractura_mp_cerrada',
-  maleolo_tibial_cerrada: 'protocolo_fractura_mt_cerrada',
-  pilon_tibial_cerrada:   'protocolo_fractura_pt_cerrada',
-  bimaleolar_cerrada:     'protocolo_fractura_tb_cerrada',
-  trimaleolar_cerrada:    'protocolo_fractura_tt_cerrada',
+  maleolo_perone_cerrada: 'protocolo_escenario_3',
+  maleolo_tibial_cerrada: 'protocolo_escenario_3',
+  pilon_tibial_cerrada:   'protocolo_escenario_3',
+  bimaleolar_cerrada:     'protocolo_escenario_2', // caso particular
+  trimaleolar_cerrada:    'protocolo_escenario_3',
 };
 
 const PROTOCOL_ABIERTA = {
-  maleolo_perone_abierta: 'protocolo_fractura_mp_abierta',
-  maleolo_tibial_abierta: 'protocolo_fractura_mt_abierta',
-  pilon_tibial_abierta:   'protocolo_fractura_pt_abierta',
-  bimaleolar_abierta:     'protocolo_fractura_tb_abierta',
-  trimaleolar_abierta:    'protocolo_fractura_tt_abierta',
+  maleolo_perone_abierta: 'protocolo_escenario_4',
+  maleolo_tibial_abierta: 'protocolo_escenario_4',
+  pilon_tibial_abierta:   'protocolo_escenario_4',
+  bimaleolar_abierta:     'protocolo_escenario_4',
+  trimaleolar_abierta:    'protocolo_escenario_4',
+};
+// Mapas value -> protocolo
+
+// Escenarios
+const ESCENARIO_LABEL = {
+  escenario_1: 'Fractura unimaleolar no luxada',
+  escenario_2: 'Fractura bimaleolar no luxada',
+  escenario_3: 'Fractura uni/bi/trimaleolar luxada',
+  escenario_4: 'Fractura expuesta / síndrome compartimental / daño severo de partes blandas / lesión neurovascular',
+};
+
+
+// Protocolos por escenario (debes agregarlos en tu objeto protocols)
+const PROTOCOL_ESCENARIO = {
+  escenario_1: 'protocolo_escenario_1',
+  escenario_2: 'protocolo_escenario_2',
+  escenario_3: 'protocolo_escenario_3',
+  escenario_4: 'protocolo_escenario_4',
+};
+
+// Weber (sólo aplica a escenario_1)
+const WEBER_LABEL = { weber_a: 'Weber A', weber_b_c: 'Weber B y C'};
+const PROTOCOL_WEBER = {
+  weber_a: 'protocolo_weber_a',
+  weber_b_c: 'protocolo_weber_b_c'
 };
 
 // EVALUACIÓN PARA SUGERIR DIAGNÓSTICO
 export const evaluateRisk = (answers) => {
   // 1. Diagnósticos de Fractura (prioridad más alta)
   
-// 1) Fracturas ABiertas (tienen prioridad)
-if (answers.hay_fractura === 'si_abierta' && answers.clasificacion_especifica_abierta) {
-  const val = answers.clasificacion_especifica_abierta; // ej: 'maleolo_tibial_abierta'
-  const label = FRACTURA_ABIERTA_LABEL[val] || 'No especificada';
-  const protocolId = PROTOCOL_ABIERTA[val];
 
-  return {
-    id: `f_${val}`,
-    text: `Fractura Abierta: ${label}`,
-    color: 'red',
-    protocolId: protocolId || 'protocolo_fractura_abierta', // fallback general si quisieras
+
+// Prioridad de escenarios: 4 > 3 > 2 > 1
+const SCENARIO_PRIORITY = ['escenario_4', 'escenario_3', 'escenario_2', 'escenario_1'];
+
+
+// Validación de escenarios con tus restricciones
+  const isScenarioValid = (scenario, isAbierta, clasVal, weberVal) => {
+    if (!scenario) return false;
+
+    // Escenario 4: cualquier fractura
+    if (scenario === 'escenario_4') return true;
+
+    // Escenarios 1-3 aplican a fracturas cerradas
+    if (isAbierta) return false;
+
+    switch (scenario) {
+      case 'escenario_1': {
+        // Weber A: Pilón tibial cerrada o Maléolo peroné cerrada
+        // Weber B/C: solo Maléolo peroné cerrada
+        if (!weberVal) return false;
+        if (weberVal === 'weber_a') {
+          return ['pilon_tibial_cerrada', 'maleolo_perone_cerrada'].includes(clasVal);
+        }
+        if (weberVal === 'weber_b_c') {
+          return clasVal === 'maleolo_perone_cerrada';
+        }
+        return false;
+      }
+      case 'escenario_2':
+        return clasVal === 'bimaleolar_cerrada';
+      case 'escenario_3': {
+        const allowed = new Set([
+          'bimaleolar_cerrada',
+          'pilon_tibial_cerrada',
+          'maleolo_tibial_cerrada',
+          'maleolo_perone_cerrada',
+          'trimaleolar_cerrada',
+        ]);
+        return allowed.has(clasVal);
+      }
+      default:
+        return false;
+    }
   };
-}
 
-// 2) Fracturas CErradas
-if (answers.hay_fractura === 'si_cerrada' && answers.clasificacion_especifica_cerrada) {
-  const val = answers.clasificacion_especifica_cerrada; // ej: 'maleolo_tibial_cerrada'
-  const label = FRACTURA_CERRADA_LABEL[val] || 'No especificada';
-  const protocolId = PROTOCOL_CERRADA[val];
+  const pickScenarioByPriority = (list) => SCENARIO_PRIORITY.find(s => list.includes(s));
 
-  return {
-    id: `f_${val}`,
-    text: `Fractura Cerrada: ${label}`,
-    color: 'red',
-    protocolId: protocolId || 'protocolo_fractura_cerrada', // fallback general si quisieras
-  };
-}
+  // Builder de diagnóstico de fractura
+  const buildFracturaResult = (ans) => {
+    const tipo = ans.hay_fractura; // 'si_abierta' | 'si_cerrada' | 'no'
+    if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
 
+    const isAbierta = tipo === 'si_abierta';
+    const clasVal   = isAbierta ? ans.clasificacion_especifica_abierta : ans.clasificacion_especifica_cerrada;
+    const clasLabel = isAbierta ? FRACTURA_ABIERTA_LABEL[clasVal]      : FRACTURA_CERRADA_LABEL[clasVal];
+    const protocolClas = isAbierta ? PROTOCOL_ABIERTA[clasVal]         : PROTOCOL_CERRADA[clasVal];
+    const tipoTxt = isAbierta ? 'Abierta' : 'Cerrada';
 
+    // Normaliza selección de escenarios
+    const sel = ans.escenario_fractura;
+    const selected = Array.isArray(sel) ? sel : (sel ? [sel] : []);
+    const validSelected = selected.filter(s => isScenarioValid(s, isAbierta, clasVal, ans.weber));
+    const chosen = pickScenarioByPriority(validSelected);
 
-  // 2. Si hubo radiografía pero NO hay fractura, evaluar según tolerancia a la carga
-  if (answers.hay_fractura === "no") {
-    // Si no tolera carga → Esguince Grado III
-    if (answers.tolera_carga_difuso === "no_tolera") {
-      return { 
-          id: "e3", 
-          text: "Esguince de Tobillo Grado III", 
-          color: "red", 
-          protocolId: "protocolo_esguince_3" 
+    if (chosen) {
+      if (chosen === 'escenario_1') {
+        const weber = ans.weber; // weber_a | weber_b | weber_c
+        const weberLabel = WEBER_LABEL[weber];
+        const protocolWeber = PROTOCOL_WEBER[weber];
+
+        return {
+          id: `f_${clasVal || weber || chosen}`,
+          text: `Fractura ${tipoTxt}: ${clasLabel || 'No especificada'} (Escenario 1${weberLabel ? ' · ' + weberLabel : ''})`,
+          color: 'red',
+          protocolId: protocolWeber || PROTOCOL_ESCENARIO[chosen] || protocolClas,
+        };
+      }
+
+      // Escenarios 2, 3 o 4
+      return {
+        id: `f_${clasVal || chosen}`,
+        text: `Fractura ${tipoTxt}: ${clasLabel || 'No especificada'} (${ESCENARIO_LABEL[chosen]})`,
+        color: 'red',
+        protocolId: PROTOCOL_ESCENARIO[chosen] || protocolClas,
       };
     }
-    
-    // Si tolera con dificultad O hay inestabilidad → Esguince Grado II
-    if (answers.tolera_carga_difuso === "con_dificultad" || answers.estabilidad === "inestable" || answers.tolera_carga_difuso === "tolera" ) {
-      return { 
-          id: "e2", 
-          text: "Esguince de Tobillo Grado II", 
-          color: "green", 
-          protocolId: "protocolo_esguince_2" 
+
+    // Sin escenario válido -> protocolo por clasificación (si hay)
+    if (clasVal && protocolClas) {
+      return {
+        id: `f_${clasVal}`,
+        text: `Fractura ${tipoTxt}: ${clasLabel || 'No especificada'}`,
+        color: 'red',
+        protocolId: protocolClas,
       };
+    }
+
+    // Hay fractura pero sin clasificación -> protocolo genérico por tipo
+    return {
+      id: `f_sin_clasificar_${isAbierta ? 'abierta' : 'cerrada'}`,
+      text: `Fractura ${tipoTxt}: No especificada`,
+      color: 'red',
+      protocolId: isAbierta ? 'protocolo_escenario_4' : 'protocolo_escenario_3',
     };
-        // Si tolera con dificultad O hay inestabilidad → Esguince Grado II
+  };
+
+  // 1) Intentar con fractura
+  const diagFractura = buildFracturaResult(answers);
+  if (diagFractura) return diagFractura;
+
+  // 2) Si NO hay fractura -> lógica de esguinces (tu lógica previa)
+  if (answers.hay_fractura === "no") {
+    // No tolera carga → Esguince III
+    if (answers.tolera_carga_difuso === "no_tolera" || (answers.deformidad_evidente === "si" && answers.hay_fractura === "no")) {
+      return { id: "e3", text: "Esguince de Tobillo Grado III", color: "red", protocolId: "protocolo_esguince_3" };
+    }
+    // if (answers.deformidad_evidente === "si" && answers.hay_fractura === "no") {
+    //   return { id: "e3", text: "Esguince de Tobillo Grado III", color: "red", protocolId: "protocolo_esguince_3" };
+    // }    
+    // Tolera con dificultad / hay inestabilidad / (o incluso 'tolera') -> Esguince II
+    if (
+      answers.tolera_carga_difuso === "con_dificultad" ||
+      answers.estabilidad === "inestable" ||
+      answers.tolera_carga_difuso === "tolera"
+    ) {
+      return { id: "e2", text: "Esguince de Tobillo Grado II", color: "green", protocolId: "protocolo_esguince_2" };
+    }
+    // Ottawa negativo -> Esguince I
     if (answers.criterios_ottawa === "no_cumple") {
-      return { 
-          id: "e1", 
-          text: "Esguince de Tobillo Grado I", 
-          color: "green", 
-          protocolId: "protocolo_esguince_1" 
-      };
-    };
-    // Si no tolera o tolera con dificultad pero radiografía negativa → Esguince II
-    // return { 
-    //     id: "e2", 
-    //     text: "Esguince de Tobillo Grado II", 
-    //     color: "green", 
-    //     protocolId: "protocolo_esguince_2" 
-    // };
+      return { id: "e1", text: "Esguince de Tobillo Grado I", color: "green", protocolId: "protocolo_esguince_1" };
+    }
   }
 
-  // 3. Si NO hubo radiografía (Ottawa negativo y estable)
-  // Esguince Grado I
+  // 3) Sin RX (Ottawa negativo y estable) -> Esguince I
   if (answers.criterios_ottawa === "no_cumple") {
-    return { 
-        id: "e1", 
-        text: "Esguince de Tobillo Grado I", 
-        color: "red", 
-        protocolId: "protocolo_esguince_1" 
-    };
-  };
+    return { id: "e1", text: "Esguince de Tobillo Grado I", color: "green", protocolId: "protocolo_esguince_1" };
+  }
 
-
-  // 4. Esguince Grado I (default - Ottawa negativo, estable, sin criterios mayores)
-  return { 
-      id: "e1", 
-      text: "Esguince de Tobillo Grado I", 
-      color: "green", 
-      protocolId: "protocolo_esguince_1" 
-  };
+  // 4) Fallback: siempre retorna algo
+  return { id: "e1", text: "Esguince de Tobillo Grado I", color: "green", protocolId: "protocolo_esguince_1" };
 };
+
 
 export const generateClinicalReport = ({ caseId, answers, resultQuestion, protocols }) => {
   const prot = protocols[resultQuestion.protocolId];
