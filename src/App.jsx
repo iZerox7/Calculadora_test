@@ -640,8 +640,7 @@ const handleEvaluate = async () => {
       const currentProtocol = questionnaireModule.protocols[finalResult.protocolId];
 
 // NUEVO: calcular reposo dinámico (usa el helper exportado)
-const reposoDinamico = questionnaireModule.restTextPorCarga(answers, finalResult.protocolId);
-
+const reposoDinamico = questionnaireModule?.restTextPorCarga?.(answers, finalResult.protocolId) ?? null;
 // Pasos a mostrar en la UI (reposo primero, luego protocolo base)
 const displayedSteps = [
   ...(reposoDinamico ? [reposoDinamico] : []),
