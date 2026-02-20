@@ -99,7 +99,7 @@ export const protocols = {
 export const questions = [
   // --- GRUPO ANAMNESIS (Basado en estándares ACHS) ---
   { id: "fecha_accidente", text: "Fecha del accidente", type: "date", group: "anamnesis" },
-
+  { id: "ocupacion", text: "Ocupación del paciente", type: "occupation", group: "anamnesis" },
   { id: "eva", text: "Nivel de Dolor (EVA)", type: "slider", group: "anamnesis", min: 0, max: 10 },
   { 
     id: "aumento_volumen", 

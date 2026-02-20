@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { categoriesConfig } from './config/categories';
 import { supabase } from './supabaseClient';
+import { OccupationSelect } from './OccupationSelect';
 
 // Añade un set de IDs que disparan el autosave
 const RX_CHECKPOINT_IDS = new Set(['rx_deformidad', 'rx_ottawa', 'rx_no_tolera_carga', 'rx_varias']);
@@ -65,6 +66,20 @@ const QuestionRenderer = ({ question, value, onChange, answers }) => {
   }
 
   switch (question.type) {
+    case 'occupation':
+      return (
+        <OccupationSelect
+          label={question.label || 'Ocupación'}
+          initialValue={value ? { ocupacion: value } : null}
+          onSelect={(occ) => {
+            // Guarda ocupación y CARGA en answers
+            onChange('ocupacion', occ.ocupacion);
+            onChange('ocupacion_id', occ.id);
+            onChange('carga_laboral', occ.carga_laboral);
+          }}
+        />
+      );
+
     case 'options':
     case 'boolean':
       return (
