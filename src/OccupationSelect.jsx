@@ -22,13 +22,13 @@ export function OccupationSelect({ label = "Ocupación", initialValue = null, on
     //   .from('ocupaciones')
     //   .select('id, ocupacion, carga_laboral')
     //   .ilike('ocupacion_norm', `%${q.toLowerCase()}%`)
-    //   .order('ocupacion', { ascending: true })
+      // .order('ocupacion', { ascending: true })ñ
     //   .limit(20);
 
     // Si aún no tienes la columna/índice normalizados, usa ocupacion:
     const { data, error } = await supabase
       // .from('ocupaciones')
-      .rpc('search_ocupaciones', { q, limit_count: 50 })
+      .rpc('search_ocupaciones_v2', { q, limit_count: 50 })
       // .order('ocupacion', { ascending: true })
       // .limit(20);
 
