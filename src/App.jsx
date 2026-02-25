@@ -18,6 +18,32 @@ const ImageModal = ({ isOpen, onClose, imageSrc }) => {
   );
 };
 
+// --- Componente ProgressBar ---
+const ProgressBar = ({ current, total }) => {
+  const pct = total > 0 ? Math.min(100, Math.round((current / total) * 100)) : 0;
+
+  return (
+    <div className="mb-4">
+      {/* Texto del progreso */}
+      <div className="flex justify-between items-center mb-1">
+        <span className="text-xs font-semibold text-blue-800">
+          Progreso: {current}/{total}
+        </span>
+        <span className="text-[10px] text-blue-600 font-bold">{pct}%</span>
+      </div>
+
+      {/* Barra de fondo */}
+      <div className="w-full h-2 bg-blue-100 rounded-full overflow-hidden">
+        {/* Barra de avance */}
+        <div
+          className="h-full bg-blue-600 transition-all duration-300"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+};
+
 // --- Componente MultiSelect ---
 const MultiSelect = ({ question, value, onChange }) => {
   const [selected, setSelected] = useState(value || []);
@@ -346,7 +372,7 @@ const handleStart = async () => {
   // Busca si hay draft
   const draft = await loadDraftIfExists();
   if (draft) {
-    const reanudar = window.confirm("Se encontró un borrador para este caso. ¿Deseas reanudar?");
+    const reanudar = window.confirm("Se encontró un borrador para este siniestro. ¿Deseas reanudar el ingreso?");
     if (reanudar) {
       // Reanudar
       setAnswers(draft.respuestas || {});
@@ -581,6 +607,19 @@ const handleEvaluate = async () => {
     if (step === "questionnaire") {
         const anamnesis = questionnaireModule.questions.filter(q => q.group === 'anamnesis');
         const currentRisk = questionnaireModule.questions.find(q => q.id === currentRiskQuestionId);
+        
+        // --- Cálculo de progreso para Evaluación clínica ---
+        // Preguntas de riesgo que están visibles con el estado actual (answers)
+        const visibleRisk = questionnaireModule.questions.filter(q =>
+          q.group === 'risk' && (!q.showIf || q.showIf(answers))
+        );
+
+        const totalRisk = visibleRisk.length;
+
+        // Numerador: historial (ya navegadas) + 1 si la actual está respondida
+        const answeredCurrent = answers[currentRiskQuestionId] !== undefined ? 1 : 0;
+        const progressCount = riskHistory.length + answeredCurrent;
+
 
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -597,6 +636,8 @@ const handleEvaluate = async () => {
                 <div className="space-y-4">
                     <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 min-h-[350px] flex flex-col">
                         <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-6">Evaluación Clínica</h3>
+                        {/* --- Barra de Progreso (sólo Evaluación clínica) --- */}
+                        <ProgressBar current={progressCount} total={totalRisk} />
                         {!wizardFinished ? (
                             <div className="flex-grow animate-in fade-in slide-in-from-right-4">
                                 <label className="block text-base font-bold text-gray-800 mb-4">{currentRisk.text}</label>

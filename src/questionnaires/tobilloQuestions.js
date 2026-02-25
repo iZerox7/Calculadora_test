@@ -642,8 +642,8 @@ const questionnaireModule = {
   protocols,
   evaluateRisk,
   generateClinicalReport,
-  restTextPorCarga,
-  guideImage: "arbol_decision.png",
+  restTextPorCarga
+  // guideImage: "arbol_decision.png",
 };
 
 export default questionnaireModule
