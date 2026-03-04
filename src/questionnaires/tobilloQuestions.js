@@ -98,8 +98,17 @@ export const protocols = {
 
 export const questions = [
   // --- GRUPO ANAMNESIS (Basado en estándares ACHS) ---
-  { id: "fecha_accidente", text: "Fecha del accidente", type: "date", group: "anamnesis" },
-  { id: "ocupacion", text: "Ocupación del paciente", type: "occupation", group: "anamnesis" },
+{
+  id: "carga_laboral",
+  text: "Carga laboral habitual",
+  type: "button-group",
+  group: "anamnesis",
+  options: [
+    { value: 1, labelBold: "Liviana", labelDesc: "sedentario/escritorio" },
+    { value: 2, labelBold: "Mediana", labelDesc: "de pie y en movimiento" },
+    { value: 3, labelBold: "Pesada",  labelDesc: "levanta peso/maquinaria" }
+  ]
+},
   { id: "eva", text: "Nivel de Dolor (EVA)", type: "slider", group: "anamnesis", min: 0, max: 10 },
   { 
     id: "aumento_volumen", 
@@ -111,6 +120,29 @@ export const questions = [
       { value: "leve", label: "Leve (+)" },
       { value: "moderado", label: "Moderado (++)" },
       { value: "severo", label: "Severo (+++)" }
+    ]
+  },
+  { 
+    id: "equimosis", 
+    text: "Equimosis", 
+    type: "options", 
+    group: "anamnesis",
+    options: [
+      { value: "ninguno", label: "Sin equimosis" },
+      { value: "leve", label: "Leve (+)" },
+      { value: "moderado", label: "Moderado (++)" },
+      { value: "severo", label: "Severo (+++)" }
+    ]
+  },
+  { 
+    id: "inestabilidad", 
+    text: "Inestabilidad", 
+    type: "options", 
+    group: "anamnesis",
+    options: [
+      { value: "sin_inestabilidad", label: "Sin inestabilidad" },
+      { value: "dudosa", label: "Dudosa" },
+      { value: "con_inestabilidad", label: "Con inestabildad" }
     ]
   },
   { 
@@ -286,7 +318,6 @@ export const questions = [
     options: [
         { value: "maleolo_perone_cerrada", label: "Maléolo Peroné Cerrada" },
         { value: "maleolo_tibial_cerrada", label: "Maléolo Tibial Cerrada" },
-        { value: "pilon_tibial_cerrada", label: "Pilón Tibial Cerrada" },
         { value: "bimaleolar_cerrada", label: "Bimaleolar Cerrada" },
         { value: "trimaleolar_cerrada", label: "Trimaleolar Cerrada" }
     ]
@@ -302,7 +333,6 @@ export const questions = [
     options: [
         { value: "maleolo_perone_abierta", label: "Maléolo Peroné Abierta" },
         { value: "maleolo_tibial_abierta", label: "Maléolo Tibial Abierta" },
-        { value: "pilon_tibial_abierta", label: "Pilón Tibial Abierta" },
         { value: "bimaleolar_abierta", label: "Bimaleolar Abierta" },
         { value: "trimaleolar_abierta", label: "Trimaleolar Abierta" }
     ]
@@ -342,7 +372,6 @@ export const questions = [
 const FRACTURA_CERRADA_LABEL = {
   maleolo_perone_cerrada: 'Maléolo Peroné Cerrada',
   maleolo_tibial_cerrada: 'Maléolo Tibial Cerrada',
-  pilon_tibial_cerrada: 'Pilón Tibial Cerrada',
   bimaleolar_cerrada: 'Bimaleolar Cerrada',
   trimaleolar_cerrada: 'Trimaleolar Cerrada',
 };
@@ -350,7 +379,6 @@ const FRACTURA_CERRADA_LABEL = {
 const FRACTURA_ABIERTA_LABEL = {
   maleolo_perone_abierta: 'Maléolo Peroné Abierta',
   maleolo_tibial_abierta: 'Maléolo Tibial Abierta',
-  pilon_tibial_abierta: 'Pilón Tibial Abierta',
   bimaleolar_abierta: 'Bimaleolar Abierta',
   trimaleolar_abierta: 'Trimaleolar Abierta',
 };
@@ -359,7 +387,6 @@ const FRACTURA_ABIERTA_LABEL = {
 const PROTOCOL_CERRADA = {
   maleolo_perone_cerrada: 'protocolo_escenario_3',
   maleolo_tibial_cerrada: 'protocolo_escenario_3',
-  pilon_tibial_cerrada:   'protocolo_escenario_3',
   bimaleolar_cerrada:     'protocolo_escenario_2', // caso particular
   trimaleolar_cerrada:    'protocolo_escenario_3',
 };
@@ -367,7 +394,6 @@ const PROTOCOL_CERRADA = {
 const PROTOCOL_ABIERTA = {
   maleolo_perone_abierta: 'protocolo_escenario_4',
   maleolo_tibial_abierta: 'protocolo_escenario_4',
-  pilon_tibial_abierta:   'protocolo_escenario_4',
   bimaleolar_abierta:     'protocolo_escenario_4',
   trimaleolar_abierta:    'protocolo_escenario_4',
 };
@@ -397,19 +423,51 @@ const PROTOCOL_WEBER = {
   weber_b_c: 'protocolo_weber_b_c'
 };
 
-// Devuelve el texto de reposo sugerido según carga laboral SOLO para esguince grado I
+// // Devuelve el texto de reposo sugerido según carga laboral SOLO para esguince grado I
+// export const restTextPorCarga = (answers, protocolId) => {
+//   if (protocolId !== 'protocolo_esguince_1') return null;
+//   const carga = Number(answers?.carga_laboral); // 1..3
+//   const map = {
+//     1: 'STP',
+//     2: 'Alta diferida 2 días',
+//     3: 'Alta diferida 3 días',
+//   };
+//   const indicacion = map[carga];
+//   return indicacion ? `Reposo sugerido según carga laboral: ${indicacion}` : null;
+// };
+
+// --- NUEVO: reposo dinámico por carga para esguinces I, II y III
 export const restTextPorCarga = (answers, protocolId) => {
-  if (protocolId !== 'protocolo_esguince_1') return null;
-  const carga = Number(answers?.carga_laboral); // 1..3
-  const map = {
-    1: 'STP',
-    2: 'Alta diferida 2 días',
-    3: 'Alta diferida 3 días',
+  const carga = Number(answers?.carga_laboral); // valores esperados: 1, 2 o 3
+  if (!carga || ![1, 2, 3].includes(carga)) return null;
+
+  // Mapa por protocolo
+  const reposoPorProtocolo = {
+    // Mantengo tu lógica tal cual para Grado I
+    protocolo_esguince_1: {
+      1: 'STP',
+      2: 'Alta diferida 2 días',
+      3: 'Alta diferida 3 días',
+    },
+    // NUEVO: Grado II
+    protocolo_esguince_2: {
+      1: '5 días',
+      2: '7 días',
+      3: '14 días',
+    },
+    // NUEVO: Grado III
+    protocolo_esguince_3: {
+      1: '21 días',
+      2: '30 días',
+      3: '45 días',
+    },
   };
-  const indicacion = map[carga];
+
+  const map = reposoPorProtocolo[protocolId];
+  const indicacion = map?.[carga];
+
   return indicacion ? `Reposo sugerido según carga laboral: ${indicacion}` : null;
 };
-
 
 // EVALUACIÓN PARA SUGERIR DIAGNÓSTICO
 export const evaluateRisk = (answers) => {
@@ -437,7 +495,7 @@ const SCENARIO_PRIORITY = ['escenario_4', 'escenario_3', 'escenario_2', 'escenar
         // Weber B/C: solo Maléolo peroné cerrada
         if (!weberVal) return false;
         if (weberVal === 'weber_a') {
-          return ['pilon_tibial_cerrada', 'maleolo_perone_cerrada'].includes(clasVal);
+          return ['maleolo_perone_cerrada'].includes(clasVal);
         }
         if (weberVal === 'weber_b_c') {
           return clasVal === 'maleolo_perone_cerrada';
@@ -449,7 +507,6 @@ const SCENARIO_PRIORITY = ['escenario_4', 'escenario_3', 'escenario_2', 'escenar
       case 'escenario_3': {
         const allowed = new Set([
           'bimaleolar_cerrada',
-          'pilon_tibial_cerrada',
           'maleolo_tibial_cerrada',
           'maleolo_perone_cerrada',
           'trimaleolar_cerrada',
@@ -561,25 +618,50 @@ const SCENARIO_PRIORITY = ['escenario_4', 'escenario_3', 'escenario_2', 'escenar
 
 export const generateClinicalReport = ({ caseId, answers, resultQuestion, protocols }) => {
   const prot = protocols[resultQuestion.protocolId];
-  
 
-  // NUEVO: reposo dinámico por carga (solo Esguince I)
+  // Reposo dinámico por carga (ahora soporta Esguince I, II y III)
   const reposoDinamico = restTextPorCarga(answers, resultQuestion.protocolId);
 
+  // Construimos la lista de indicaciones
+  const pasos = Array.isArray(prot?.pasos) ? [...prot.pasos] : [];
+  if (reposoDinamico) {
+    // Lo agregamos como primera indicación (puedes ponerle énfasis si quieres)
+    pasos.unshift(reposoDinamico);
+  }
 
-  // Mapeo de valores a texto legible
+  // Mapeos auxiliares (como ya los tienes)
   const edemaTexto = {
-      "ninguno": "Sin aumento de volumen",
-      "leve": "Leve (+/+++)",
-      "moderado": "Moderado (++/+++)",
-      "severo": "Severo (+++/+++)"
+    "ninguno": "Sin aumento de volumen",
+    "leve": "Leve (+/+++)",
+    "moderado": "Moderado (++/+++)",
+    "severo": "Severo (+++/+++)"
   };
-  
+
   const toleranciaTexto = {
-      "no_tolera": "No tolera carga",
-      "con_dificultad": "Tolera carga con dificultad"
+    "no_tolera": "No tolera carga",
+    "con_dificultad": "Tolera carga con dificultad",
+    "tolera": "Tolera carga"
   };
-  
+
+  const cargaTexto = {
+  1: "Liviana (sedentario/escritorio)",
+  2: "Mediana (de pie y en movimiento; esfuerzos ocasionales)",
+  3: "Pesada (levanta peso/maquinaria)"
+};
+
+  const equimosisTexto = {
+    "ninguno": "Sin equimosis",
+    "leve": "Leve (+/+++)",
+    "moderado": "Moderado (++/+++)",
+    "severo": "Severo (+++/+++)"
+  };
+
+const inestabilidadTexto = {
+  "sin_inestabilidad": "Sin inestabilidad",
+  "dudosa": "Dudosa",
+  "con_inestabilidad": "Con inestabilidad"
+};
+ 
   return `
 =========================================
       INFORME MÉDICO: TOBILLO Y PIE
@@ -589,16 +671,17 @@ FECHA: ${new Date().toLocaleDateString()}
 DIAGNÓSTICO SUGERIDO: ${resultQuestion.text}
 
 I. EXAMEN FÍSICO
-- Fecha Accidente: ${answers.fecha_accidente || 'No especificada'}
+- Carga Laboral: ${cargaTexto[Number(answers.carga_laboral)] || 'No registrada'}
 - Nivel Dolor (EVA): ${answers.eva || 0}/10
 - Edema: ${edemaTexto[answers.aumento_volumen] || 'No evaluado'}
+- Equimosis: ${equimosisTexto[answers.equimosis] || 'No evaluado'}
+- Inestabilidad: ${inestabilidadTexto[answers.inestabilidad] || 'No evaluado'}
 - Hallazgos Físicos: ${answers.hallazgos_fisicos || 'Sin otros hallazgos'}
 - Deformidad Evidente: ${answers.deformidad_evidente === 'si' ? 'SÍ' : 'NO'}
 - Tipo de Dolor: ${answers.tipo_dolor || 'No especificado'}
 - Tolerancia Carga: ${toleranciaTexto[answers.tolera_carga_difuso] || 'No evaluado'}
 - Estabilidad: ${answers.estabilidad || 'No evaluado'}
 - Criterios Ottawa: ${answers.criterios_ottawa === 'cumple' ? 'Positivo (+)' : answers.criterios_ottawa === 'no_cumple' ? 'Negativo (-)' : 'No evaluado'}
-
 
 II. IMAGENOLOGÍA
 - Radiografía: ${
@@ -623,19 +706,17 @@ ${
     : ''
 }
 
-
 III. DIAGNÓSTICO SUGERIDO
 ${resultQuestion.text}
 
 IV. INDICACIONES SUGERIDAS
-${prot?.pasos.map((s, i) => `${i+1}. ${s}`).join('\n')}
+${pasos.map((s, i) => `${i+1}. ${s}`).join('\n')}
 
 =========================================
 Sistema de Apoyo al Diagnóstico - ACHS
 =========================================
 `.trim();
 };
-
 
 const questionnaireModule = {
   questions,
@@ -647,4 +728,3 @@ const questionnaireModule = {
 };
 
 export default questionnaireModule
-
