@@ -127,24 +127,57 @@ const QuestionRenderer = ({ question, value, onChange, answers }) => {
         </div>
       );
 
-    case 'button-group':
-      return (
-        <div className="grid grid-cols-2 gap-2 mt-2">
-          {optionsToRender.map(opt => (
+case 'button-group': {
+  const isCarga = question.id === 'carga_laboral';
+  return (
+    <div className="grid grid-cols-1 gap-2 mt-2">
+      {optionsToRender.map((opt) => {
+        const isActive = value === opt.value;
+        const baseBtn =
+          `py-2 px-3 text-sm rounded-lg border text-left ` +
+          (isActive
+            ? 'bg-blue-700 text-white border-blue-800 ring-2 ring-blue-500'
+            : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200');
+
+        // Render especial para "carga_laboral"
+        if (isCarga) {
+          const title = opt.labelBold ?? opt.label ?? '';
+          const desc  = opt.labelDesc ?? '';
+          return (
             <button
               key={opt.value}
               type="button"
               onClick={() => onChange(question.id, opt.value)}
-              className={`py-2 px-3 text-sm font-bold rounded-lg border ${value === opt.value ? 'bg-blue-700 text-white border-blue-800 ring-2 ring-blue-500' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'}`}
+              className={baseBtn}
             >
-              {opt.label}
+              <div className="font-bold">{title}</div>
+              {desc && <div className="text-sm font-normal">{desc}</div>}
             </button>
-          ))}
-          {optionsToRender.length === 0 && (
-            <div className="col-span-2 text-xs text-gray-500 italic">No hay opciones disponibles.</div>
-          )}
+          );
+        }
+
+        // Render genérico (otros button-group)
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(question.id, opt.value)}
+            className={baseBtn}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+
+      {optionsToRender.length === 0 && (
+        <div className="col-span-2 text-xs text-gray-500 italic">
+          No hay opciones disponibles.
         </div>
-      );
+      )}
+    </div>
+  );
+}
+
 
     case 'slider':
       return (
@@ -287,6 +320,7 @@ function App() {
   const [currentRiskQuestionId, setCurrentRiskQuestionId] = useState(null);
   const [wizardFinished, setWizardFinished] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [draftModal, setDraftModal] = useState({ open: false, draft: null });
 
  
   // Modal pequeño para RX Checkpoint
@@ -363,34 +397,46 @@ const loadDraftIfExists = React.useCallback(async () => {
     }
   }, [selectedCategory, selectedQuestionnaireKey]);
 
+// ✅ FUERA de handleStart
+const handleDraftResume = () => {
+  const { draft } = draftModal;
+  const firstRisk = questionnaireModule.questions.find(q => q.group === 'risk');
+  setAnswers(draft.respuestas || {});
+  setWizardFinished(!!draft.wizard_finished);
+  setCurrentRiskQuestionId(draft.current_risk_question_id || firstRisk.id);
+  setDraftModal({ open: false, draft: null });
+  setStep("questionnaire");
+};
+
+const handleDraftDiscard = async () => {
+  await supabase
+    .from('respuestas_draft')
+    .delete()
+    .eq('id_caso', caseId)
+    .eq('cuestionario', selectedQuestionnaireKey);
+  setDraftModal({ open: false, draft: null });
+  setAnswers({});
+  setFinalResult(null);
+  setRiskHistory([]);
+  setWizardFinished(false);
+  const firstRisk = questionnaireModule.questions.find(q => q.group === 'risk');
+  setCurrentRiskQuestionId(firstRisk.id);
+  setStep("questionnaire");
+};
+
+// ✅ handleStart limpio, solo abre el modal si hay draft
 const handleStart = async () => {
   if (!caseId || !selectedQuestionnaireKey) return alert("Complete los campos");
   if (!questionnaireModule?.questions?.length) return alert("Cargando cuestionario, inténtalo de nuevo...");
 
-  const firstRisk = questionnaireModule.questions.find(q => q.group === 'risk');
-
-  // Busca si hay draft
   const draft = await loadDraftIfExists();
   if (draft) {
-    const reanudar = window.confirm("Se encontró un borrador para este siniestro. ¿Deseas reanudar el ingreso?");
-    if (reanudar) {
-      // Reanudar
-      setAnswers(draft.respuestas || {});
-      setWizardFinished(!!draft.wizard_finished);
-      setCurrentRiskQuestionId(draft.current_risk_question_id || firstRisk.id);
-      setStep("questionnaire");
-      return;
-    } else {
-      // Borrar draft y empezar de cero
-      await supabase
-        .from('respuestas_draft')
-        .delete()
-        .eq('id_caso', caseId)
-        .eq('cuestionario', selectedQuestionnaireKey);
-    }
+    setDraftModal({ open: true, draft });
+    return;
   }
 
   // Flujo desde cero
+  const firstRisk = questionnaireModule.questions.find(q => q.group === 'risk');
   setAnswers({});
   setFinalResult(null);
   setRiskHistory([]);
@@ -398,6 +444,7 @@ const handleStart = async () => {
   setCurrentRiskQuestionId(firstRisk.id);
   setStep("questionnaire");
 };
+
 
 const openCheckpointModal = async (checkpointId) => {
   // snapshot de respuestas al momento de abrir el modal
@@ -528,6 +575,7 @@ const handleWizardNext = async  () => {
       currentRiskQuestionId &&
       RX_CHECKPOINT_IDS.has(currentRiskQuestionId) &&
       !rxModal.open
+      
     ) {
       await openCheckpointModal(currentRiskQuestionId);
     }
@@ -607,7 +655,13 @@ const handleEvaluate = async () => {
     if (step === "questionnaire") {
         const anamnesis = questionnaireModule.questions.filter(q => q.group === 'anamnesis');
         const currentRisk = questionnaireModule.questions.find(q => q.id === currentRiskQuestionId);
-        
+        // Verifica que todas las preguntas de anamnesis tengan respuesta
+        const anamnesisComplete = anamnesis.every(q => {
+          if (q.type === 'textarea') {
+            return answers[q.id] !== undefined && answers[q.id].trim() !== '';
+          }
+          return answers[q.id] !== undefined && answers[q.id] !== '';
+        });
         // --- Cálculo de progreso para Evaluación clínica ---
         // Preguntas de riesgo que están visibles con el estado actual (answers)
         const visibleRisk = questionnaireModule.questions.filter(q =>
@@ -622,52 +676,85 @@ const handleEvaluate = async () => {
 
 
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-200">
-                    <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-4">Examen físico</h3>
-                    {anamnesis.map(q => (
-                        <div key={q.id} className="pb-2">
-                            <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
-                            <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} />
-                        </div>
-                    ))}
-                </div>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    
+    {/* COLUMNA IZQUIERDA: anamnesis sin los últimos 2 campos */}
+    <div className="space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-200">
+      <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-4">Examen físico</h3>
+      {anamnesis.slice(0, -2).map(q => (
+        <div key={q.id} className="pb-2">
+          <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
+          <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} />
+        </div>
+      ))}
+    </div>
 
-                <div className="space-y-4">
-                    <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 min-h-[350px] flex flex-col">
-                        <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-6">Evaluación Clínica</h3>
-                        {/* --- Barra de Progreso (sólo Evaluación clínica) --- */}
-                        <ProgressBar current={progressCount} total={totalRisk} />
-                        {!wizardFinished ? (
-                            <div className="flex-grow animate-in fade-in slide-in-from-right-4">
-                                <label className="block text-base font-bold text-gray-800 mb-4">{currentRisk.text}</label>
-                                <QuestionRenderer question={currentRisk} value={answers[currentRisk.id]} onChange={handleFormChange} answers={answers} />
-                                <div className="flex justify-between mt-8">
-                                    <button disabled={riskHistory.length === 0} onClick={() => {
-                                        const last = riskHistory.pop();
-                                        setRiskHistory([...riskHistory]);
-                                        setCurrentRiskQuestionId(last);
-                                    }} className="text-gray-400 font-bold hover:text-gray-600">← VOLVER</button>
-                                    <button onClick={handleWizardNext} disabled={answers[currentRiskQuestionId] === undefined} className="bg-blue-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800 shadow-md">SIGUIENTE</button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex-grow flex flex-col items-center justify-center text-center p-4">
-                                <div className="w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center mb-4 text-3xl">✓</div>
-                                <p className="text-lg font-bold text-green-800">Evaluación completa</p>
-                                <p className="text-sm text-gray-500 mb-6">Revise los datos y genere el diagnóstico.</p>
-                                <button onClick={handleEvaluate} className="w-full bg-green-600 text-white font-bold py-4 rounded-xl shadow-xl hover:bg-green-700 hover:-translate-y-1 transition-all">GENERAR RESULTADO</button>
-                            </div>
-                        )}
-                    </div>
-                    {questionnaireModule.guideImage && (
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                          <img src={questionnaireModule.guideImage} onClick={() => setIsModalOpen(true)} className="w-full rounded-lg cursor-pointer border hover:ring-4 transition-all" alt="Guía" />
-                        </div>
-                    )}
-                </div>
+    {/* COLUMNA DERECHA */}
+    <div className="space-y-4 flex flex-col">
+
+      {/* Inestabilidad + Examen físico (últimos 2 de anamnesis) */}
+      <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+        {anamnesis.slice(-2).map(q => (
+          <div key={q.id} className="pb-2">
+            <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
+            <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} />
+          </div>
+        ))}
+      </div>
+
+      {/* Evaluación Clínica */}
+      <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 flex-grow flex flex-col">
+        <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-6">Evaluación Clínica</h3>
+
+        {!anamnesisComplete && (
+          <p className="text-red-600 text-sm font-semibold mt-1 mb-4">
+            ⚠️ Por favor responder las secciones previas antes de realizar la evaluación.
+          </p>
+        )}
+
+        <ProgressBar current={progressCount} total={totalRisk} />
+
+        {!wizardFinished ? (
+          <div className="flex-grow animate-in fade-in slide-in-from-right-4">
+            <label className="block text-base font-bold text-gray-800 mb-4">{currentRisk.text}</label>
+            <QuestionRenderer question={currentRisk} value={answers[currentRisk.id]} onChange={handleFormChange} answers={answers} />
+            <div className="flex justify-between mt-8">
+              <button
+                disabled={riskHistory.length === 0 || !anamnesisComplete}
+                onClick={() => {
+                  const last = riskHistory.pop();
+                  setRiskHistory([...riskHistory]);
+                  setCurrentRiskQuestionId(last);
+                }}
+                className="text-gray-400 font-bold hover:text-gray-600 disabled:opacity-30"
+              >← VOLVER</button>
+              <button
+                onClick={handleWizardNext}
+                disabled={!anamnesisComplete || answers[currentRiskQuestionId] === undefined}
+                className="bg-blue-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800 shadow-md disabled:bg-gray-400"
+              >SIGUIENTE</button>
             </div>
-        );
+          </div>
+        ) : (
+          <div className="flex-grow flex flex-col items-center justify-center text-center p-4">
+            <div className="w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center mb-4 text-3xl">✓</div>
+            <p className="text-lg font-bold text-green-800">Evaluación completa</p>
+            <p className="text-sm text-gray-500 mb-6">Revise los datos y genere el diagnóstico.</p>
+            <button onClick={handleEvaluate} className="w-full bg-green-600 text-white font-bold py-4 rounded-xl shadow-xl hover:bg-green-700 hover:-translate-y-1 transition-all">GENERAR RESULTADO</button>
+          </div>
+        )}
+      </div>
+
+      {/* Imagen guía (si existe) */}
+      {questionnaireModule.guideImage && (
+        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <img src={questionnaireModule.guideImage} onClick={() => setIsModalOpen(true)} className="w-full rounded-lg cursor-pointer border hover:ring-4 transition-all" alt="Guía" />
+        </div>
+      )}
+
+    </div>
+  </div>
+);
     }
 
     if (step === "result" && finalResult) {
@@ -782,6 +869,32 @@ const displayedSteps = [
           </button>
         </>
       )}
+    </div>
+  </div>
+)}
+
+{draftModal.open && (
+  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+      <h3 className="text-lg font-bold text-gray-900 mb-2">Borrador encontrado</h3>
+      <p className="text-sm text-gray-700 mb-6">
+        Se encontró un borrador para este siniestro. <br />
+        Seleccione Reanudar para continuar con la atención
+      </p>
+      <div className="flex gap-3">
+        <button
+          onClick={handleDraftResume}
+          className="flex-1 bg-blue-700 text-white font-bold py-2 rounded-lg hover:bg-blue-800"
+        >
+          Reanudar
+        </button>
+        <button
+          onClick={handleDraftDiscard}
+          className="flex-1 bg-gray-100 text-gray-800 font-bold py-2 rounded-lg hover:bg-gray-200 border"
+        >
+          Empezar de cero
+        </button>
+      </div>
     </div>
   </div>
 )}
