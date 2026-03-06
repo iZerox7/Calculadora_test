@@ -944,49 +944,54 @@ if (tab === "anamnesis") {
         <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-6">Evaluación Clínica</h3>
         <ProgressBar current={progressCount} total={totalRisk} />
         {!wizardFinished ? (
-          <div className="flex-grow animate-in fade-in slide-in-from-right-4">
-            <label className="block text-base font-bold text-gray-800 mb-4">{currentRisk?.text}</label>
-            <QuestionRenderer question={currentRisk} value={answers[currentRisk?.id]} onChange={handleFormChange} answers={answers} />
-            <div className="flex justify-between mt-8">
-              {/* Botón volver — izquierda, mismo nivel que Siguiente */}
-              <button
-                onClick={() => {
-                  if (riskHistory.length === 0) {
-                    // Primera pregunta de evaluación → volver al examen físico
-                    handleTabBack();
-                  } else {
-                    const last = riskHistory[riskHistory.length - 1];
-                    setRiskHistory(prev => prev.slice(0, -1));
-                    setCurrentRiskQuestionId(last);
-                  }
-                }}
-                className="text-gray-500 font-bold hover:text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-all"
-              >← Volver</button>
-              <button
-                onClick={handleWizardNext}
-                disabled={answers[currentRiskQuestionId] === undefined}
-                className="bg-blue-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800 shadow-md disabled:bg-gray-400"
-              >SIGUIENTE</button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex-grow flex flex-col items-center justify-center text-center p-4">
-            <div className="w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center mb-4 text-3xl">✓</div>
-            <p className="text-lg font-bold text-green-800">Evaluación completa</p>
-            <p className="text-sm text-gray-500 mb-6">Revise los datos y genere el diagnóstico.</p>
-            <div className="flex justify-between w-full gap-4">
-              {/* Botón volver también en la pantalla de "evaluación completa" */}
-              <button
-                onClick={handleTabBack}
-                className="text-gray-500 font-bold hover:text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-all"
-              >← Volver</button>
-              <button
-                onClick={handleEvaluate}
-                className="flex-1 bg-green-600 text-white font-bold py-4 rounded-xl shadow-xl hover:bg-green-700 hover:-translate-y-1 transition-all"
-              >GENERAR RESULTADO</button>
-            </div>
-          </div>
-        )}
+  <div className="flex-grow animate-in fade-in slide-in-from-right-4">
+    <label className="block text-base font-bold text-gray-800 mb-4">{currentRisk?.text}</label>
+    <QuestionRenderer question={currentRisk} value={answers[currentRisk?.id]} onChange={handleFormChange} answers={answers} />
+    
+    <div className="flex justify-between items-center mt-8">
+      {/* Volver dentro de la evaluación (sin modal) */}
+      <button
+        disabled={riskHistory.length === 0}
+        onClick={() => {
+          const last = riskHistory[riskHistory.length - 1];
+          setRiskHistory(prev => prev.slice(0, -1));
+          setCurrentRiskQuestionId(last);
+        }}
+        className="text-gray-400 font-bold hover:text-gray-600 disabled:opacity-30"
+      >← Volver</button>
+
+      <button
+        onClick={handleWizardNext}
+        disabled={answers[currentRiskQuestionId] === undefined}
+        className="bg-blue-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800 shadow-md disabled:bg-gray-400"
+      >SIGUIENTE</button>
+    </div>
+
+    {/* Volver a Examen físico — siempre visible, dispara modal si hay respuestas */}
+    <div className="mt-4 flex justify-start">
+      <button
+        onClick={handleTabBack}
+        className="text-sm text-gray-400 hover:text-gray-600 underline underline-offset-2"
+      >← Volver a Examen físico</button>
+    </div>
+  </div>
+) : (
+  <div className="flex-grow flex flex-col items-center justify-center text-center p-4">
+    <div className="w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center mb-4 text-3xl">✓</div>
+    <p className="text-lg font-bold text-green-800">Evaluación completa</p>
+    <p className="text-sm text-gray-500 mb-6">Revise los datos y genere el diagnóstico.</p>
+    <div className="flex justify-between w-full gap-4">
+      <button
+        onClick={handleTabBack}
+        className="text-gray-500 font-bold hover:text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-all"
+      >← Volver a Examen físico</button>
+      <button
+        onClick={handleEvaluate}
+        className="flex-1 bg-green-600 text-white font-bold py-4 rounded-xl shadow-xl hover:bg-green-700 hover:-translate-y-1 transition-all"
+      >GENERAR RESULTADO</button>
+    </div>
+  </div>
+)}
       </div>
       {questionnaireModule.guideImage && (
         <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mt-4">
@@ -1070,49 +1075,46 @@ const displayedSteps = [
     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-5 relative">
       <h3 className="text-lg font-bold text-gray-900 mb-2">Radiografía requerida</h3>
 
-      {!rxModal.showInfo ? (
-        <>
-         <div className="text-sm text-gray-700 mb-4">
-           <p className="mb-1">Debe realizar la radiografía correspondiente antes de continuar.</p>
-           {rxModal.rxText && (
-             <div className="mt-2 p-2 rounded-md bg-blue-50 border border-blue-100 text-blue-800">
-               <span className="font-semibold">Orden:</span> {rxModal.rxText}
+    {!rxModal.showInfo ? (
+      <>
+        <div className="text-sm text-gray-700 mb-4">
+          <p className="mb-1">Debe realizar la radiografía correspondiente antes de continuar.</p>
+          {rxModal.rxText && (
+            <div className="mt-2 p-2 rounded-md bg-blue-50 border border-blue-100 text-blue-800">
+              <span className="font-semibold">Orden:</span> {rxModal.rxText}
             </div>
-           )}
+          )}
         </div>
-
-
-          <div className="flex gap-3">
-
-            <button
-             onClick={handleRxOk}
-             className="flex-1 bg-blue-700 text-white font-bold py-2 rounded-lg hover:bg-blue-800"
-           >
-             OK
-           </button>
-           <button
-             onClick={handleRxRealizada}
-             className="flex-1 bg-gray-100 text-gray-800 font-bold py-2 rounded-lg hover:bg-gray-200 border"
-           >
-             Realizada
-           </button>
-
-          </div>
-        </>
-      ) : (
-        <>
-          <p className="text-sm text-gray-700 mb-4">
-            <span className="font-semibold">Sus cambios serán guardados.</span><br />
-            Una vez tenga el resultado de la radiografía ingrese nuevamente el siniestro para continuar con el formulario.
-          </p>
+        <div className="flex gap-3">
+          <button
+            onClick={handleRxOk}
+            className="flex-1 bg-blue-700 text-white font-bold py-2 rounded-lg hover:bg-blue-800"
+          >OK</button>
+          <button
+            onClick={handleRxRealizada}
+            className="flex-1 bg-gray-100 text-gray-800 font-bold py-2 rounded-lg hover:bg-gray-200 border"
+          >Realizada</button>
+        </div>
+      </>
+    ) : (
+      <>
+        <p className="text-sm text-gray-700 mb-4">
+          <span className="font-semibold">Sus cambios serán guardados.</span><br />
+          Una vez tenga el resultado de la radiografía ingrese nuevamente el siniestro para continuar con el formulario.
+        </p>
+        <div className="flex gap-3">
           <button
             onClick={handleCloseRxInfoAndExit}
-            className="w-full bg-slate-800 text-white font-bold py-2 rounded-lg hover:bg-black"
-          >
-            Volver al inicio
-          </button>
-        </>
-      )}
+            className="flex-1 bg-slate-800 text-white font-bold py-2 rounded-lg hover:bg-black"
+          >Volver al inicio</button>
+          {/* ← NUEVO: Cancelar para seguir en la evaluación */}
+          <button
+            onClick={() => setRxModal({ open: false, checkpointId: null, showInfo: false })}
+            className="flex-1 bg-gray-100 text-gray-800 font-bold py-2 rounded-lg hover:bg-gray-200 border"
+          >Cancelar</button>
+        </div>
+      </>
+    )}
     </div>
   </div>
 )}
