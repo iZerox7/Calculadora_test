@@ -109,7 +109,7 @@ export const questions = [
     { value: 3, labelBold: "Pesada",  labelDesc: "levanta peso/maquinaria" }
   ]
 },
-  { id: "eva", text: "Nivel de Dolor (EVA)", type: "slider", group: "anamnesis", min: 0, max: 10 },
+  { id: "eva", text: "Dolor (EVA)", type: "slider", group: "anamnesis", min: 0, max: 10 },
   { 
     id: "aumento_volumen", 
     text: "Aumento de volumen (Edema)", 
@@ -316,7 +316,7 @@ export const questions = [
     group: "risk",
     showIf: (ans) => ans.hay_fractura === "si_cerrada",
     options: [
-        { value: "maleolo_perone_cerrada", label: "Maléolo Peroné Cerrada" },
+        { value: "maleolo_perone_cerrada", label: "Maléolo Peroneo Cerrada" },
         { value: "maleolo_tibial_cerrada", label: "Maléolo Tibial Cerrada" },
         { value: "bimaleolar_cerrada", label: "Bimaleolar Cerrada" },
         { value: "trimaleolar_cerrada", label: "Trimaleolar Cerrada" }
@@ -331,7 +331,7 @@ export const questions = [
     group: "risk",
     showIf: (ans) => ans.hay_fractura === "si_abierta",
     options: [
-        { value: "maleolo_perone_abierta", label: "Maléolo Peroné Abierta" },
+        { value: "maleolo_perone_abierta", label: "Maléolo Peroneo Abierta" },
         { value: "maleolo_tibial_abierta", label: "Maléolo Tibial Abierta" },
         { value: "bimaleolar_abierta", label: "Bimaleolar Abierta" },
         { value: "trimaleolar_abierta", label: "Trimaleolar Abierta" }
@@ -370,14 +370,14 @@ export const questions = [
 
 // Diccionario de los values
 const FRACTURA_CERRADA_LABEL = {
-  maleolo_perone_cerrada: 'Maléolo Peroné Cerrada',
+  maleolo_perone_cerrada: 'Maléolo Peroneo Cerrada',
   maleolo_tibial_cerrada: 'Maléolo Tibial Cerrada',
   bimaleolar_cerrada: 'Bimaleolar Cerrada',
   trimaleolar_cerrada: 'Trimaleolar Cerrada',
 };
 
 const FRACTURA_ABIERTA_LABEL = {
-  maleolo_perone_abierta: 'Maléolo Peroné Abierta',
+  maleolo_perone_abierta: 'Maléolo Peroneo Abierta',
   maleolo_tibial_abierta: 'Maléolo Tibial Abierta',
   bimaleolar_abierta: 'Bimaleolar Abierta',
   trimaleolar_abierta: 'Trimaleolar Abierta',
@@ -723,8 +723,9 @@ const questionnaireModule = {
   protocols,
   evaluateRisk,
   generateClinicalReport,
-  restTextPorCarga
+  restTextPorCarga,
+  requiresAnamnesis: true,
   // guideImage: "arbol_decision.png",
 };
 
-export default questionnaireModule
+export default questionnaireModule;

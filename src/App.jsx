@@ -179,25 +179,101 @@ case 'button-group': {
 }
 
 
-    case 'slider':
-      return (
-        <div className="space-y-3 mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <input
-            type="range"
-            min={question.min || 0}
-            max={question.max || 10}
-            value={value || 0}
-            onChange={(e) => onChange(question.id, parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-700"
-          />
-          <div className="flex justify-between text-[10px] font-bold text-gray-500 uppercase">
-            <span>Sin dolor (0)</span><span>Máximo (10)</span>
-          </div>
-          <div className={`p-2 text-center rounded-md font-bold text-lg ${(value || 0) <= 3 ? 'bg-green-100 text-green-800' : (value || 0) <= 6 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-            EVA: {value || 0}
-          </div>
-        </div>
-      );
+    // case 'slider':
+    //   return (
+    //     <div className="space-y-3 mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
+    //       <input
+    //         type="range"
+    //         min={question.min || 0}
+    //         max={question.max || 10}
+    //         value={value || 0}
+    //         onChange={(e) => onChange(question.id, parseInt(e.target.value))}
+    //         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-700"
+    //       />
+    //       <div className="flex justify-between text-[10px] font-bold text-gray-500 uppercase">
+    //         <span>Sin dolor (0)</span><span>Máximo (10)</span>
+    //       </div>
+    //       <div className={`p-2 text-center rounded-md font-bold text-lg ${(value || 0) <= 3 ? 'bg-green-100 text-green-800' : (value || 0) <= 6 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+    //         EVA: {value || 0}
+    //       </div>
+    //     </div>
+    //   );
+
+  case 'slider': {
+  const val = value || 0;
+  // Color del thumb y track según valor
+  const getColor = (v) => {
+    if (v <= 3) return '#6abf69';        // verde suave
+    if (v <= 6) return '#f0a500';        // amarillo-naranja suave
+    return '#e05c5c';                    // rojo suave
+  };
+  const color = getColor(val);
+
+  // Porcentaje para el gradiente del track
+  const pct = (val / 10) * 100;
+
+  // Gradiente: verde 0-30%, amarillo-naranja 30-60%, rojo 60-100%
+  const trackGradient = `linear-gradient(to right, 
+    #6abf69 0%, #6abf69 35%, 
+    #f0a500 35%, #f0a500 65%, 
+    #e05c5c 65%, #e05c5c 100%)`;
+
+  return (
+    <div className="space-y-2 mt-2">
+      <style>{`
+        .eva-slider {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 100%;
+          height: 6px;
+          border-radius: 3px;
+          outline: none;
+          background: ${trackGradient};
+          cursor: pointer;
+        }
+        .eva-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: ${color};
+          border: 3px solid white;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+          transition: background 0.2s;
+        }
+        .eva-slider::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: ${color};
+          border: 3px solid white;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+          transition: background 0.2s;
+        }
+      `}</style>
+      <input
+        type="range"
+        min={question.min || 0}
+        max={question.max || 10}
+        value={val}
+        onChange={(e) => onChange(question.id, parseInt(e.target.value))}
+        className="eva-slider"
+      />
+      <div className="flex justify-between px-0.5">
+        {Array.from({ length: 11 }, (_, i) => (
+          <span
+            key={i}
+            className="text-[11px] font-bold w-4 text-center"
+            style={{ color: i === val ? color : '#9ca3af' }}
+          >
+            {i}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
     case 'multi':
       return <MultiSelect question={question} value={value} onChange={onChange} />;
@@ -308,6 +384,51 @@ function filterOptions(options, allowedValues) {
   return options.filter(o => allow.has(o.value));
 }
 
+const StepBar = ({ step, tab }) => {
+  const steps = [
+    { key: "inicio",     label: "Inicio" },
+    { key: "anamnesis",  label: "Examen físico" },
+    { key: "evaluation", label: "Evaluación clínica" },
+    { key: "result",     label: "Recomendaciones" },
+  ];
+
+  const activeIndex = 
+    step === "selection"    ? 0 :
+    step === "questionnaire" && tab === "anamnesis"  ? 1 :
+    step === "questionnaire" && tab === "evaluation" ? 2 : 3;
+
+  return (
+    <div className="flex items-center justify-center mb-8 gap-0">
+      {steps.map((s, i) => {
+        const isDone    = i < activeIndex;
+        const isActive  = i === activeIndex;
+        const isLast    = i === steps.length - 1;
+
+        return (
+          <React.Fragment key={s.key}>
+            <div className="flex flex-col items-center">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all
+                ${isDone   ? 'bg-blue-700 text-white' :
+                  isActive ? 'bg-blue-700 text-white ring-4 ring-blue-200' :
+                             'bg-gray-200 text-gray-400'}`}>
+                {isDone ? '✓' : i + 1}
+              </div>
+              <span className={`text-[10px] mt-1 font-semibold text-center w-16
+                ${isActive ? 'text-blue-700' : isDone ? 'text-blue-500' : 'text-gray-400'}`}>
+                {s.label}
+              </span>
+            </div>
+            {!isLast && (
+              <div className={`h-0.5 w-24 mb-4 mx-2 transition-all
+                ${i < activeIndex ? 'bg-blue-700' : 'bg-gray-200'}`} />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+};
+
 function App() {
   const [step, setStep] = useState("selection");
   const [caseId, setCaseId] = useState("");
@@ -321,6 +442,8 @@ function App() {
   const [wizardFinished, setWizardFinished] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [draftModal, setDraftModal] = useState({ open: false, draft: null });
+  const [tab, setTab] = useState("anamnesis"); // "anamnesis" | "evaluation"
+  const [backWarningModal, setBackWarningModal] = useState(false);
 
  
   // Modal pequeño para RX Checkpoint
@@ -405,6 +528,7 @@ const handleDraftResume = () => {
   setWizardFinished(!!draft.wizard_finished);
   setCurrentRiskQuestionId(draft.current_risk_question_id || firstRisk.id);
   setDraftModal({ open: false, draft: null });
+  setTab("evaluation"); // el draft siempre viene de la evaluación
   setStep("questionnaire");
 };
 
@@ -615,8 +739,37 @@ const handleEvaluate = async () => {
 
 
   const handleRestart = () => {
-    setStep("selection"); setCaseId(""); setAnswers({}); setWizardFinished(false); setSelectedCategory(null); setSelectedQuestionnaireKey(null);
+    setStep("selection"); setCaseId(""); setAnswers({}); setWizardFinished(false);
+    setSelectedCategory(null); setSelectedQuestionnaireKey(null);
+    setTab("anamnesis");
   };
+
+// Fuera de renderContent, al nivel de App
+const handleTabBack = () => {
+  const hasEvaluationAnswers = riskHistory.length > 0 || 
+    (currentRiskQuestionId && answers[currentRiskQuestionId] !== undefined);
+  if (hasEvaluationAnswers) {
+    setBackWarningModal(true);
+  } else {
+    setTab("anamnesis");
+  }
+};
+
+const confirmTabBack = () => {
+  setRiskHistory([]);
+  setWizardFinished(false);
+  const firstRisk = questionnaireModule.questions.find(q => q.group === 'risk');
+  setCurrentRiskQuestionId(firstRisk?.id);
+  setAnswers(prev => {
+    const next = { ...prev };
+    questionnaireModule.questions
+      .filter(q => q.group === 'risk')
+      .forEach(q => { delete next[q.id]; });
+    return next;
+  });
+  setBackWarningModal(false);
+  setTab("anamnesis");
+};
 
   const renderContent = () => {
     if (step === "selection") {
@@ -652,85 +805,166 @@ const handleEvaluate = async () => {
       );
     }
 
-    if (step === "questionnaire") {
-        const anamnesis = questionnaireModule.questions.filter(q => q.group === 'anamnesis');
-        const currentRisk = questionnaireModule.questions.find(q => q.id === currentRiskQuestionId);
-        // Verifica que todas las preguntas de anamnesis tengan respuesta
-        const anamnesisComplete = anamnesis.every(q => {
-          if (q.type === 'textarea') {
-            return answers[q.id] !== undefined && answers[q.id].trim() !== '';
-          }
-          return answers[q.id] !== undefined && answers[q.id] !== '';
-        });
-        // --- Cálculo de progreso para Evaluación clínica ---
-        // Preguntas de riesgo que están visibles con el estado actual (answers)
-        const visibleRisk = questionnaireModule.questions.filter(q =>
-          q.group === 'risk' && (!q.showIf || q.showIf(answers))
-        );
+if (step === "questionnaire") {
+  const isTobillo = selectedCategory === "tobillo_pie";
+  const anamnesis = questionnaireModule.questions.filter(q => q.group === 'anamnesis');
+  const currentRisk = questionnaireModule.questions.find(q => q.id === currentRiskQuestionId);
 
-        const totalRisk = visibleRisk.length;
+  const requiresAnamnesis = questionnaireModule?.requiresAnamnesis ?? false;
+  const anamnesisComplete = !requiresAnamnesis || anamnesis.every(q => {
+    if (q.type === 'textarea') return answers[q.id] !== undefined && answers[q.id].trim() !== '';
+    return answers[q.id] !== undefined && answers[q.id] !== '';
+  });
 
-        // Numerador: historial (ya navegadas) + 1 si la actual está respondida
-        const answeredCurrent = answers[currentRiskQuestionId] !== undefined ? 1 : 0;
-        const progressCount = riskHistory.length + answeredCurrent;
+  const visibleRisk = questionnaireModule.questions.filter(q =>
+    q.group === 'risk' && (!q.showIf || q.showIf(answers))
+  );
+  const totalRisk = visibleRisk.length;
+  const answeredCurrent = answers[currentRiskQuestionId] !== undefined ? 1 : 0;
+  const progressCount = riskHistory.length + answeredCurrent;
+  const hasEvaluationAnswers = riskHistory.length > 0 || answers[currentRiskQuestionId] !== undefined;
 
-
-        return (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-    
-    {/* COLUMNA IZQUIERDA: anamnesis sin los últimos 2 campos */}
-    <div className="space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-200">
-      <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-4">Examen físico</h3>
-      {anamnesis.slice(0, -2).map(q => (
-        <div key={q.id} className="pb-2">
-          <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
-          <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} />
+  // ─────────────────────────────────────────────
+  // LUMBAGO (u otros): layout original de 2 columnas
+  // ─────────────────────────────────────────────
+  if (!isTobillo) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="space-y-4 bg-slate-50 p-6 rounded-xl border border-slate-200">
+          <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-4">Examen físico</h3>
+          {anamnesis.map(q => (
+            <div key={q.id} className="pb-2">
+              <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
+              <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} />
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
-
-    {/* COLUMNA DERECHA */}
-    <div className="space-y-4 flex flex-col">
-
-      {/* Inestabilidad + Examen físico (últimos 2 de anamnesis) */}
-      <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
-        {anamnesis.slice(-2).map(q => (
-          <div key={q.id} className="pb-2">
-            <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
-            <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} />
+        <div className="space-y-4 flex flex-col">
+          <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 flex-grow flex flex-col">
+            <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-6">Evaluación Clínica</h3>
+            <ProgressBar current={progressCount} total={totalRisk} />
+            {!wizardFinished ? (
+              <div className="flex-grow animate-in fade-in slide-in-from-right-4">
+                <label className="block text-base font-bold text-gray-800 mb-4">{currentRisk?.text}</label>
+                <QuestionRenderer question={currentRisk} value={answers[currentRisk?.id]} onChange={handleFormChange} answers={answers} />
+                <div className="flex justify-between mt-8">
+                  <button
+                    disabled={riskHistory.length === 0}
+                    onClick={() => {
+                      const last = riskHistory[riskHistory.length - 1];
+                      setRiskHistory(prev => prev.slice(0, -1));
+                      setCurrentRiskQuestionId(last);
+                    }}
+                    className="text-gray-400 font-bold hover:text-gray-600 disabled:opacity-30"
+                  >← VOLVER</button>
+                  <button
+                    onClick={handleWizardNext}
+                    disabled={answers[currentRiskQuestionId] === undefined}
+                    className="bg-blue-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800 shadow-md disabled:bg-gray-400"
+                  >SIGUIENTE</button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex-grow flex flex-col items-center justify-center text-center p-4">
+                <div className="w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center mb-4 text-3xl">✓</div>
+                <p className="text-lg font-bold text-green-800">Evaluación completa</p>
+                <p className="text-sm text-gray-500 mb-6">Revise los datos y genere el diagnóstico.</p>
+                <button onClick={handleEvaluate} className="w-full bg-green-600 text-white font-bold py-4 rounded-xl shadow-xl hover:bg-green-700 hover:-translate-y-1 transition-all">GENERAR RESULTADO</button>
+              </div>
+            )}
           </div>
-        ))}
+          {questionnaireModule.guideImage && (
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <img src={questionnaireModule.guideImage} onClick={() => setIsModalOpen(true)} className="w-full rounded-lg cursor-pointer border hover:ring-4 transition-all" alt="Guía" />
+            </div>
+          )}
+        </div>
       </div>
+    );
+  }
 
-      {/* Evaluación Clínica */}
-      <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 flex-grow flex flex-col">
-        <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-6">Evaluación Clínica</h3>
+  // ─────────────────────────────────────────────
+  // TOBILLO: layout de pestañas con StepBar
+  // ─────────────────────────────────────────────
+
+  // PESTAÑA EXAMEN FÍSICO
+if (tab === "anamnesis") {
+  return (
+    <div>
+      <StepBar step={step} tab={tab} />
+      <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+        <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-4">Examen físico</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Columna izquierda: carga, EVA, edema, equimosis */}
+          <div className="space-y-4">
+            {anamnesis.slice(0, 3).map(q => (
+              <div key={q.id} className="pb-2">
+                <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
+                <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} />
+              </div>
+            ))}
+          </div>
+
+          {/* Columna derecha: inestabilidad + examen físico */}
+          <div className="space-y-4">
+            {anamnesis.slice(3).map(q => (
+              <div key={q.id} className="pb-2">
+                <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
+                <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} />
+              </div>
+            ))}
+          </div>
+        </div>
 
         {!anamnesisComplete && (
-          <p className="text-red-600 text-sm font-semibold mt-1 mb-4">
-            ⚠️ Por favor responder las secciones previas antes de realizar la evaluación.
+          <p className="text-red-500 text-xs font-semibold text-right mt-4">
+            ⚠️ Complete todos los campos para continuar
           </p>
         )}
+        <div className="flex justify-end pt-2 mt-2">
+          <button
+            onClick={() => setTab("evaluation")}
+            disabled={!anamnesisComplete}
+            className="bg-blue-700 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-800 shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed transition-all"
+          >
+            Siguiente →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
+  // PESTAÑA EVALUACIÓN CLÍNICA
+  return (
+    <div>
+      <StepBar step={step} tab={tab} />
+      <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 min-h-[350px] flex flex-col">
+        <h3 className="text-xl font-semibold border-b border-slate-300 pb-2 mb-6">Evaluación Clínica</h3>
         <ProgressBar current={progressCount} total={totalRisk} />
-
         {!wizardFinished ? (
           <div className="flex-grow animate-in fade-in slide-in-from-right-4">
-            <label className="block text-base font-bold text-gray-800 mb-4">{currentRisk.text}</label>
-            <QuestionRenderer question={currentRisk} value={answers[currentRisk.id]} onChange={handleFormChange} answers={answers} />
+            <label className="block text-base font-bold text-gray-800 mb-4">{currentRisk?.text}</label>
+            <QuestionRenderer question={currentRisk} value={answers[currentRisk?.id]} onChange={handleFormChange} answers={answers} />
             <div className="flex justify-between mt-8">
+              {/* Botón volver — izquierda, mismo nivel que Siguiente */}
               <button
-                disabled={riskHistory.length === 0 || !anamnesisComplete}
                 onClick={() => {
-                  const last = riskHistory.pop();
-                  setRiskHistory([...riskHistory]);
-                  setCurrentRiskQuestionId(last);
+                  if (riskHistory.length === 0) {
+                    // Primera pregunta de evaluación → volver al examen físico
+                    handleTabBack();
+                  } else {
+                    const last = riskHistory[riskHistory.length - 1];
+                    setRiskHistory(prev => prev.slice(0, -1));
+                    setCurrentRiskQuestionId(last);
+                  }
                 }}
-                className="text-gray-400 font-bold hover:text-gray-600 disabled:opacity-30"
-              >← VOLVER</button>
+                className="text-gray-500 font-bold hover:text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-all"
+              >← Volver</button>
               <button
                 onClick={handleWizardNext}
-                disabled={!anamnesisComplete || answers[currentRiskQuestionId] === undefined}
+                disabled={answers[currentRiskQuestionId] === undefined}
                 className="bg-blue-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800 shadow-md disabled:bg-gray-400"
               >SIGUIENTE</button>
             </div>
@@ -740,24 +974,31 @@ const handleEvaluate = async () => {
             <div className="w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center mb-4 text-3xl">✓</div>
             <p className="text-lg font-bold text-green-800">Evaluación completa</p>
             <p className="text-sm text-gray-500 mb-6">Revise los datos y genere el diagnóstico.</p>
-            <button onClick={handleEvaluate} className="w-full bg-green-600 text-white font-bold py-4 rounded-xl shadow-xl hover:bg-green-700 hover:-translate-y-1 transition-all">GENERAR RESULTADO</button>
+            <div className="flex justify-between w-full gap-4">
+              {/* Botón volver también en la pantalla de "evaluación completa" */}
+              <button
+                onClick={handleTabBack}
+                className="text-gray-500 font-bold hover:text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-all"
+              >← Volver</button>
+              <button
+                onClick={handleEvaluate}
+                className="flex-1 bg-green-600 text-white font-bold py-4 rounded-xl shadow-xl hover:bg-green-700 hover:-translate-y-1 transition-all"
+              >GENERAR RESULTADO</button>
+            </div>
           </div>
         )}
       </div>
-
-      {/* Imagen guía (si existe) */}
       {questionnaireModule.guideImage && (
-        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mt-4">
           <img src={questionnaireModule.guideImage} onClick={() => setIsModalOpen(true)} className="w-full rounded-lg cursor-pointer border hover:ring-4 transition-all" alt="Guía" />
         </div>
       )}
-
     </div>
-  </div>
-);
-    }
+  );
+}
 
     if (step === "result" && finalResult) {
+      const isTobillo = selectedCategory === "tobillo_pie";
       const reportText = questionnaireModule.generateClinicalReport({ 
           caseId, 
           answers, 
@@ -776,7 +1017,8 @@ const displayedSteps = [
 ];
 
       return (
-        <div className="space-y-6">
+      <div className="space-y-6">
+      {isTobillo && <StepBar step="result" tab="result" />}
           <div className={`p-6 border-l-8 rounded-lg shadow-sm ${finalResult.color === 'red' ? 'bg-red-50 border-red-500 text-red-900' : 'bg-green-50 border-green-500 text-green-900'}`}>
             <p className="text-sm font-bold uppercase tracking-widest opacity-60">Diagnóstico Sugerido</p>
             <h2 className="text-3xl font-black uppercase tracking-tighter">{finalResult.text}</h2>
@@ -816,6 +1058,8 @@ const displayedSteps = [
     }
   };
 
+
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 to-blue-600 flex items-center justify-center p-4">
       <ImageModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} imageSrc={questionnaireModule?.guideImage} />
@@ -888,17 +1132,37 @@ const displayedSteps = [
         >
           Reanudar
         </button>
-        <button
+        {/* <button LO SAQUÉ PARA QUE NO ESTE LA OPCIÓN DE EMPEZAR DE 0
           onClick={handleDraftDiscard}
           className="flex-1 bg-gray-100 text-gray-800 font-bold py-2 rounded-lg hover:bg-gray-200 border"
         >
           Empezar de cero
-        </button>
+        </button> */} 
       </div>
     </div>
   </div>
 )}
-
+{backWarningModal && (
+  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+      <h3 className="text-lg font-bold text-gray-900 mb-2">¿Volver al examen físico?</h3>
+      <p className="text-sm text-gray-700 mb-6">
+        Al devolverse, sus respuestas de la evaluación clínica serán reiniciadas.<br />
+        ¿Desea volver de todas formas?
+      </p>
+      <div className="flex gap-3">
+        <button
+          onClick={confirmTabBack}
+          className="flex-1 bg-red-600 text-white font-bold py-2 rounded-lg hover:bg-red-700"
+        >Sí, volver</button>
+        <button
+          onClick={() => setBackWarningModal(false)}
+          className="flex-1 bg-gray-100 text-gray-800 font-bold py-2 rounded-lg hover:bg-gray-200 border"
+        >Cancelar</button>
+      </div>
+    </div>
+  </div>
+)}
       <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl p-6 md:p-10 border border-white/20">
         <div className="min-h-[500px]">
           {renderContent()}
@@ -912,6 +1176,7 @@ const displayedSteps = [
       </div>
     </div>
   );
+  
 }
 
 export default App;
