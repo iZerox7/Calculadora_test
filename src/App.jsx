@@ -4,7 +4,7 @@ import { supabase } from './supabaseClient';
 import { OccupationSelect } from './OccupationSelect';
 
 // Añade un set de IDs que disparan el autosave
-const RX_CHECKPOINT_IDS = new Set(['rx_deformidad', 'rx_ottawa', 'rx_no_tolera_carga', 'rx_varias']);
+const RX_CHECKPOINT_IDS = new Set(['rx_deformidad', 'rx_tolera_carga', 'rx_no_tolera_carga']);
 // --- Componente ImageModal ---
 const ImageModal = ({ isOpen, onClose, imageSrc }) => {
   if (!isOpen) return null;
@@ -575,8 +575,11 @@ const openCheckpointModal = async (checkpointId) => {
   const snapshot = { ...answers };
   await saveDraft(checkpointId, snapshot);   // <<-- espera el guardado
   
-   // Obtiene el texto de la pregunta checkpoint para mostrarlo en el modal
-  const qText = questionnaireModule?.questions?.find(q => q.id === checkpointId)?.text || '';
+  // Usar textFn si existe, si no usar text estático
+  const question = questionnaireModule?.questions?.find(q => q.id === checkpointId);
+  const qText = question?.textFn 
+    ? question.textFn(snapshot) 
+    : (question?.text || '');
 
   setRxModal({ open: true, checkpointId, showInfo: false, rxText: qText });
 };
@@ -945,7 +948,14 @@ if (tab === "anamnesis") {
         <ProgressBar current={progressCount} total={totalRisk} />
         {!wizardFinished ? (
   <div className="flex-grow animate-in fade-in slide-in-from-right-4">
-    <label className="block text-base font-bold text-gray-800 mb-4">{currentRisk?.text}</label>
+    <label className="block text-base font-bold text-gray-800 mb-4">
+  {currentRisk?.textFn 
+    ? currentRisk.textFn(answers).split('\n').map((line, i) => (
+        <span key={i} className={`block ${i > 0 ? 'mt-2 text-blue-700' : ''}`}>{line}</span>
+      ))
+    : currentRisk?.text
+  }
+</label>
     <QuestionRenderer question={currentRisk} value={answers[currentRisk?.id]} onChange={handleFormChange} answers={answers} />
     
     <div className="flex justify-between items-center mt-8">
@@ -1004,6 +1014,7 @@ if (tab === "anamnesis") {
 
     if (step === "result" && finalResult) {
       const isTobillo = selectedCategory === "tobillo_pie";
+      const tieneMetatarsiano = Array.isArray(answers.criterios_ottawa2) && answers.criterios_ottawa2.includes("dolor_metatarsiano");
       const reportText = questionnaireModule.generateClinicalReport({ 
           caseId, 
           answers, 
@@ -1028,6 +1039,14 @@ const displayedSteps = [
             <p className="text-sm font-bold uppercase tracking-widest opacity-60">Diagnóstico Sugerido</p>
             <h2 className="text-3xl font-black uppercase tracking-tighter">{finalResult.text}</h2>
           </div>
+
+      {tieneMetatarsiano && (
+        <div className="p-4 bg-orange-50 border-l-4 border-orange-400 rounded-lg">
+          <p className="text-orange-800 text-sm font-semibold">
+            ⚠️ Dado que presenta dolor en metatarso, ver protocolo de esguince de pie previo a determinar diagnóstico final.
+          </p>
+        </div>
+      )}
 
           <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
             <h3 className="text-blue-800 font-bold text-lg mb-4 flex items-center">

@@ -142,7 +142,7 @@ export const questions = [
     options: [
       { value: "sin_inestabilidad", label: "Sin inestabilidad" },
       { value: "dudosa", label: "Dudosa" },
-      { value: "con_inestabilidad", label: "Con inestabildad" }
+      { value: "con_inestabilidad", label: "Con inestabilidad" }
     ]
   },
   { 
@@ -154,42 +154,73 @@ export const questions = [
   },
 
   // --- GRUPO RIESGO (Árbol de Decisión corregido) ---
-  {
-    id: "deformidad_evidente",
-    text: "¿Hay deformidad evidente?",
-    type: "options",
-    group: "risk",
-    options: [
-        { value: "si", label: "Sí" },
-        { value: "no", label: "No" }
-    ]
-  },
 
-  // Criterios de Ottawa (solo si estable o local sin equimosis)
+
+  // // Criterios de Ottawa (solo si estable o local sin equimosis)
+  // {
+  //   id: "criterios_ottawa",
+  //   text: "¿Cumple alguno de los Criterios de Ottawa?",
+  //   type: "options",
+  //   group: "risk",
+  //   showIf: (ans) => ans.deformidad_evidente === "no",
+  //   options: [
+  //       { value: "cumple", label: "Cumple criterios (Ottawa +)" },
+  //       { value: "no_cumple", label: "No cumple ninguno (Ottawa -)" }
+  //   ]
+  // },
+
+// Criterios de Ottawa (solo si estable o local sin equimosis)
   {
-    id: "criterios_ottawa",
-    text: "¿Cumple alguno de los Criterios de Ottawa?",
-    type: "options",
+    id: "criterios_ottawa2",
+    text: "¿Cumple alguno de los Criterios de Ottawa? Seleccione aquellos que cumple:",
+    type: "multi",
     group: "risk",
     showIf: (ans) => ans.deformidad_evidente === "no",
     options: [
-        { value: "cumple", label: "Cumple criterios (Ottawa +)" },
+        { value: "dolor_metatarsiano", label: "Dolor en la base del quinto metatarsiano o en el navicular" },
+        { value: "dolor_palpacion", label: "Dolor a la palpación en el borde posterior de los 6 centímetros distales de la tibia o la fíbula hasta el segmento más distal del maléolo medial o lateral" },
+        { value: "incapacidad_pasos", label: "Incapacidad de dar más de 4 pasos seguidos sin ayuda o de sostener su peso corporal" },
         { value: "no_cumple", label: "No cumple ninguno (Ottawa -)" }
     ]
   },
 
 
+{
+  id: "deformidad_evidente",
+  text: "¿Hay deformidad evidente?",
+  type: "options",
+  group: "risk",
+  showIf: (ans) => {
+    const ottawa = ans.criterios_ottawa2;
+    if (!Array.isArray(ottawa)) return false;
+    // Mostrar si seleccionó al menos un criterio positivo (cualquiera que no sea "no_cumple")
+    return ottawa.some(v => v !== "no_cumple");
+  },
+  options: [
+    { value: "si", label: "Sí" },
+    { value: "no", label: "No" }
+  ]
+},
+
     // MANDA A RX SI TIENE DEFORMIDAD EVIDENTE
-  {
-    id: "rx_deformidad",
-    text: "Realizar Radiografía Ap-Lat_Obl",
-    type: "options",
-    group: "risk",
-    showIf: (ans) => ans.deformidad_evidente === "si",
-    options: [
-        { value: "listo", label: "✅ Realizada" }
-    ]
-  }, // esto después debe conectarse con un ¿Presenta fractura?
+ {
+  id: "rx_deformidad",
+  text: "Realizar Radiografía tobillo Ap-Lat_Obl sin carga.",
+  textFn: (ans) => {
+    const base = "Realizar Radiografía tobillo Ap-Lat_Obl sin carga";
+    const tieneMetatarsiano = Array.isArray(ans.criterios_ottawa2) && 
+      ans.criterios_ottawa2.includes("dolor_metatarsiano");
+    return tieneMetatarsiano 
+      ? `${base}\nAdicional: Radiografía AP-Lat y Obl del Pie.`
+      : base;
+  },
+  type: "options",
+  group: "risk",
+  showIf: (ans) => ans.deformidad_evidente === "si" || ans.tolera_carga_difuso === "no_tolera",
+  options: [
+    { value: "listo", label: "✅ Realizada" }
+  ]
+},
 
   // NUEVA: Pregunta de dolor siempre (independiente de deformidad)
   {
@@ -197,11 +228,10 @@ export const questions = [
     text: "¿Cómo se presenta el dolor?",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.criterios_ottawa === "cumple",
+    showIf: (ans) => ans.deformidad_evidente === "no",
     options: [
         { value: "difuso", label: "Difuso" },
-        { value: "local", label: "Local" },
-        { value: "local_no_equimosis", label: "Local - Sin Equimosis" }
+        { value: "local", label: "Local" }
     ]
   },
 
@@ -221,77 +251,89 @@ export const questions = [
   },
 
   
-
-  // Estabilidad (solo si dolor local o local sin equimosis)
-  {
-    id: "estabilidad",
-    text: "Evaluación de estabilidad / Localización:",
-    type: "options",
-    group: "risk",
-    // showIf: (ans) => ans.tipo_dolor === "local" || ans.tipo_dolor === "local_no_equimosis",
-    showIf: (ans) => ans.tipo_dolor === "local_no_equimosis",
-    options: [
-        { value: "inestable", label: "Leve inestabilidad" },
-        { value: "estable", label: "Sin inestabilidad" }
-    ]
+   // MANDA A RX SI TIENE DEFORMIDAD EVIDENTE
+ {
+  id: "rx_no_tolera_carga",
+  text: "Realizar Radiografía tobillo Ap-Lat_Obl sin carga.",
+  textFn: (ans) => {
+    const base = "Realizar Radiografía tobillo Ap-Lat_Obl sin carga";
+    const tieneMetatarsiano = Array.isArray(ans.criterios_ottawa2) && 
+      ans.criterios_ottawa2.includes("dolor_metatarsiano");
+    return tieneMetatarsiano 
+      ? `${base}\nAdicional: Radiografía AP-Lat y Obl del Pie.`
+      : base;
   },
+  type: "options",
+  group: "risk",
+  showIf: (ans) => ans.tolera_carga_difuso === "no_tolera",
+  options: [
+    { value: "listo", label: "✅ Realizada" }
+  ]
+},
 
-
-
+  // // Estabilidad (solo si dolor local o local sin equimosis)
+  // {
+  //   id: "estabilidad",
+  //   text: "Evaluación de estabilidad / Localización:",
+  //   type: "options",
+  //   group: "risk",
+  //   // showIf: (ans) => ans.tipo_dolor === "local" || ans.tipo_dolor === "local_no_equimosis",
+  //   showIf: (ans) => ans.tipo_dolor === "local_no_equimosis",
+  //   options: [
+  //       { value: "inestable", label: "Leve inestabilidad" },
+  //       { value: "estable", label: "Sin inestabilidad" }
+  //   ]
+  // },
 
 
   // MANDA A RX SI CUMPLE CON ALGÚN CRITERIO DE OTTAWA
   {
-    id: "rx_ottawa",
-    text: "Realizar Radiografía Ap-Lat-Obl con carga",
-    type: "options",
-    group: "risk",
-    showIf: (ans) => ans.estabilidad === "estable",
-    options: [
-        { value: "listo", label: "✅ Realizada" }
-    ]
-  }, // esto después debe conectarse con un ¿Presenta fractura?
-
-  // MANDA A RX SI NO TOLERA CARGA
-  {
-    id: "rx_no_tolera_carga",
-    text: "Realizar Radiografía Ap-Lat-Obl con carga comparativa contralateral y Radiografía Ap-Lateral-Pie",
-    type: "options",
-    group: "risk",
-    showIf: (ans) => ans.tolera_carga_difuso === "no_tolera",
-    options: [
-        { value: "listo", label: "✅ Ambas Realizadas" }
-    ]
-  }, // esto después debe conectarse con un ¿Presenta fractura?
-
-
-  // Radiografía (múltiples condiciones)
-  {
-    // id: "evaluacion_radiografia",
-    id: "rx_varias",
-    text: "Realizar Radiografía AP-Lat-Obl sin carga:",
-    type: "options",
-    group: "risk",
-    showIf: (ans) => {
-        // Radiografía se pide si:
-        
-        // 3. Tolera carga con dificultad (dolor difuso)
-        if (ans.tolera_carga_difuso === "con_dificultad") return true;
-
-        // 3. Tolera carga con dificultad (dolor difuso)
-        if (ans.tolera_carga_difuso === "tolera") return true;
-        
-        // 4. Leve inestabilidad (dolor local)
-        if (ans.estabilidad === "inestable") return true;
-        
-        return false;
-    },
-    options: [
-        // { value: "fractura", label: "Fractura" },
-        // { value: "no_fractura", label: "No hay fractura" }
-        { value: "listo", label: "✅ Realizada" }
-    ]
+    id: "rx_tolera_carga",
+    textFn: (ans) => {
+    const base = "Realizar Radiografía Ap-Lat-Obl con carga, comparativa contralateral.";
+    const tieneMetatarsiano = Array.isArray(ans.criterios_ottawa2) && 
+      ans.criterios_ottawa2.includes("dolor_metatarsiano");
+    return tieneMetatarsiano 
+      ? `${base}\nAdicional: Radiografía AP-Lat y Obl del Pie.`
+      : base;
   },
+    type: "options",
+    group: "risk",
+    showIf: (ans) => ans.tolera_carga_difuso === "con_dificultad" || ans.tolera_carga_difuso === "tolera",
+    options: [
+        { value: "listo", label: "✅ Realizada" }
+    ]
+  }, // esto después debe conectarse con un ¿Presenta fractura?
+
+
+
+  // // Evaluación Radiografía (múltiples condiciones)
+  // {
+  //   // id: "evaluacion_radiografia",
+  //   id: "rx_varias",
+  //   text: "Realizar Radiografía AP-Lat-Obl sin carga:",
+  //   type: "options",
+  //   group: "risk",
+  //   showIf: (ans) => {
+  //       // Radiografía se pide si:
+        
+  //       // 3. Tolera carga con dificultad (dolor difuso)
+  //       if (ans.tolera_carga_difuso === "con_dificultad") return true;
+
+  //       // 3. Tolera carga con dificultad (dolor difuso)
+  //       if (ans.tolera_carga_difuso === "tolera") return true;
+        
+  //       // 4. Leve inestabilidad (dolor local)
+  //       if (ans.estabilidad === "inestable") return true;
+        
+  //       return false;
+  //   },
+  //   options: [
+  //       // { value: "fractura", label: "Fractura" },
+  //       // { value: "no_fractura", label: "No hay fractura" }
+  //       { value: "listo", label: "✅ Realizada" }
+  //   ]
+  // },
 
   // ¿Hay fractura?
   {
@@ -299,7 +341,7 @@ export const questions = [
     text: "¿Se detectó una fractura?",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.rx_varias === "listo" || ans.rx_no_tolera_carga === "listo" || ans.rx_ottawa === "listo" || ans.rx_deformidad === "listo",
+    showIf: (ans) => ans.rx_deformidad === "listo" || ans.rx_ottawa === "listo",// || ans.rx_ottawa === "listo" || ans.rx_deformidad === "listo",
     options: [
         { value: "no", label: "No" },
         { value: "si_cerrada", label: "Sí, cerrada" },
@@ -423,18 +465,6 @@ const PROTOCOL_WEBER = {
   weber_b_c: 'protocolo_weber_b_c'
 };
 
-// // Devuelve el texto de reposo sugerido según carga laboral SOLO para esguince grado I
-// export const restTextPorCarga = (answers, protocolId) => {
-//   if (protocolId !== 'protocolo_esguince_1') return null;
-//   const carga = Number(answers?.carga_laboral); // 1..3
-//   const map = {
-//     1: 'STP',
-//     2: 'Alta diferida 2 días',
-//     3: 'Alta diferida 3 días',
-//   };
-//   const indicacion = map[carga];
-//   return indicacion ? `Reposo sugerido según carga laboral: ${indicacion}` : null;
-// };
 
 // --- NUEVO: reposo dinámico por carga para esguinces I, II y III
 export const restTextPorCarga = (answers, protocolId) => {
@@ -446,20 +476,20 @@ export const restTextPorCarga = (answers, protocolId) => {
     // Mantengo tu lógica tal cual para Grado I
     protocolo_esguince_1: {
       1: 'STP',
-      2: 'Alta diferida 2 días',
-      3: 'Alta diferida 3 días',
+      2: 'Alta diferida 0 - 2 días',
+      3: 'Alta diferida 0 - 3 días',
     },
     // NUEVO: Grado II
     protocolo_esguince_2: {
-      1: '5 días',
-      2: '7 días',
-      3: '14 días',
+      1: '0 - 5 días',
+      2: 'hasta 7 días',
+      3: 'hasta 14 días',
     },
     // NUEVO: Grado III
     protocolo_esguince_3: {
-      1: '21 días',
-      2: '30 días',
-      3: '45 días',
+      1: 'hasta 21 días',
+      2: 'hasta 30 días',
+      3: 'hasta 45 días',
     },
   };
 
@@ -579,39 +609,54 @@ const SCENARIO_PRIORITY = ['escenario_4', 'escenario_3', 'escenario_2', 'escenar
     };
   };
 
-  // 1) Intentar con fractura
+// 1) Intentar con fractura
   const diagFractura = buildFracturaResult(answers);
   if (diagFractura) return diagFractura;
 
-  // 2) Si NO hay fractura -> lógica de esguinces (tu lógica previa)
-  if (answers.hay_fractura === "no") {
-    // No tolera carga → Esguince III
-    if (answers.tolera_carga_difuso === "no_tolera" || (answers.deformidad_evidente === "si" && answers.hay_fractura === "no")) {
+  // Helper: Ottawa negativo = seleccionó solo "no_cumple" o array vacío
+  const ottawaArray = Array.isArray(answers.criterios_ottawa2) ? answers.criterios_ottawa2 : [];
+  const ottawaNegativo = ottawaArray.length === 0 || 
+    (ottawaArray.length === 1 && ottawaArray.includes("no_cumple"));
+
+  // Lógica de esguinces — aplica tanto si hay_fractura === "no" como si no hubo RX (ottawa negativo)
+  const puedeEsguince = answers.hay_fractura === "no" || ottawaNegativo;
+
+  if (puedeEsguince) {
+    const inestabilidad = answers.inestabilidad;
+    const volumen = answers.aumento_volumen;
+    const equimosis = answers.equimosis;
+
+    // Grado III: con inestabilidad + edema + equimosis (ambos presentes)
+    if (
+      inestabilidad === "con_inestabilidad" &&
+      volumen !== "ninguno" && volumen != null &&
+      equimosis !== "ninguno" && equimosis != null
+    ) {
       return { id: "e3", text: "Esguince de Tobillo Grado III", color: "red", protocolId: "protocolo_esguince_3" };
     }
-    // if (answers.deformidad_evidente === "si" && answers.hay_fractura === "no") {
-    //   return { id: "e3", text: "Esguince de Tobillo Grado III", color: "red", protocolId: "protocolo_esguince_3" };
-    // }    
-    // Tolera con dificultad / hay inestabilidad / (o incluso 'tolera') -> Esguince II
+
+    // Grado II: sin inestabilidad o dudosa + edema presente + algo de equimosis
     if (
-      answers.tolera_carga_difuso === "con_dificultad" ||
-      answers.estabilidad === "inestable" ||
-      answers.tolera_carga_difuso === "tolera"
+      (inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
+      volumen !== "ninguno" && volumen != null &&
+      (equimosis === "leve" || equimosis === "moderado" || equimosis === "severo")
     ) {
       return { id: "e2", text: "Esguince de Tobillo Grado II", color: "green", protocolId: "protocolo_esguince_2" };
     }
-    // Ottawa negativo -> Esguince I
-    if (answers.criterios_ottawa === "no_cumple") {
+
+    // Grado I: sin inestabilidad + sin edema o leve
+    if (
+      inestabilidad === "sin_inestabilidad" &&
+      (volumen === "ninguno" || volumen === "leve")
+    ) {
       return { id: "e1", text: "Esguince de Tobillo Grado I", color: "green", protocolId: "protocolo_esguince_1" };
     }
   }
 
-  // 3) Sin RX (Ottawa negativo y estable) -> Esguince I
-  if (answers.criterios_ottawa === "no_cumple") {
-    return { id: "e1", text: "Esguince de Tobillo Grado I", color: "green", protocolId: "protocolo_esguince_1" };
-  }
-
-  // 4) Fallback: siempre retorna algo
+  // Detectar si cumple criterio metatarsiano
+  const tieneMetatarsiano = Array.isArray(answers.criterios_ottawa2) &&
+    answers.criterios_ottawa2.includes("dolor_metatarsiano");
+  // Fallback
   return { id: "e1", text: "Esguince de Tobillo Grado I", color: "green", protocolId: "protocolo_esguince_1" };
 };
 
