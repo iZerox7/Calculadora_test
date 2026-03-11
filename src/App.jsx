@@ -49,13 +49,16 @@ const MultiSelect = ({ question, value, onChange }) => {
   const [selected, setSelected] = useState(value || []);
   const handleSelect = (optionValue) => {
     let newSelected;
-    if (optionValue === "ninguno") {
-      newSelected = selected.includes("ninguno") ? [] : ["ninguno"];
+    if (optionValue === "no_cumple") {
+      // Si ya está seleccionado, deseleccionar; si no, seleccionar solo este
+      newSelected = selected.includes("no_cumple") ? [] : ["no_cumple"];
     } else {
+      // No permitir seleccionar otro si "no_cumple" está activo
+      if (selected.includes("no_cumple")) return;
       if (selected.includes(optionValue)) {
-        newSelected = selected.filter((v) => v !== optionValue && v !== "ninguno");
+        newSelected = selected.filter((v) => v !== optionValue);
       } else {
-        newSelected = [...selected.filter((v) => v !== "ninguno"), optionValue];
+        newSelected = [...selected, optionValue];
       }
     }
     setSelected(newSelected);
@@ -64,11 +67,27 @@ const MultiSelect = ({ question, value, onChange }) => {
 
   return (
     <div className="flex flex-col space-y-2">
-      {question.options.map((option) => (
-        <button key={option.value} type="button" onClick={() => handleSelect(option.value)} className={`p-3 rounded-lg text-left transition-colors border ${selected.includes(option.value) ? "bg-blue-700 text-white border-blue-800 ring-2 ring-blue-500" : "bg-gray-100 hover:bg-gray-200 border-gray-300"}`}>
-          {option.label}
-        </button>
-      ))}
+      {question.options.map((option) => {
+        const isSelected = selected.includes(option.value);
+        const isDisabled = option.value !== "no_cumple" && selected.includes("no_cumple");
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => handleSelect(option.value)}
+            disabled={isDisabled}
+            className={`p-3 rounded-lg text-left transition-colors border ${
+              isSelected
+                ? "bg-blue-700 text-white border-blue-800 ring-2 ring-blue-500"
+                : isDisabled
+                ? "bg-gray-50 text-gray-300 border-gray-200 cursor-not-allowed"
+                : "bg-gray-100 hover:bg-gray-200 border-gray-300"
+            }`}
+          >
+            {option.label}
+          </button>
+        );
+      })}
     </div>
   );
 };
@@ -815,16 +834,14 @@ if (step === "questionnaire") {
 
   const requiresAnamnesis = questionnaireModule?.requiresAnamnesis ?? false;
   const anamnesisComplete = !requiresAnamnesis || anamnesis.every(q => {
-    if (q.type === 'textarea') return answers[q.id] !== undefined && answers[q.id].trim() !== '';
+    if (q.type === 'textarea') return true; // ← opcional, siempre válido
     return answers[q.id] !== undefined && answers[q.id] !== '';
   });
 
-  const visibleRisk = questionnaireModule.questions.filter(q =>
-    q.group === 'risk' && (!q.showIf || q.showIf(answers))
-  );
-  const totalRisk = visibleRisk.length;
-  const answeredCurrent = answers[currentRiskQuestionId] !== undefined ? 1 : 0;
-  const progressCount = riskHistory.length + answeredCurrent;
+const allRiskQuestions = questionnaireModule.questions.filter(q => q.group === 'risk');
+const totalRisk = allRiskQuestions.length;
+const answeredRisk = allRiskQuestions.filter(q => answers[q.id] !== undefined).length;
+const progressCount = wizardFinished ? totalRisk : answeredRisk;
   const hasEvaluationAnswers = riskHistory.length > 0 || answers[currentRiskQuestionId] !== undefined;
 
   // ─────────────────────────────────────────────
@@ -1014,7 +1031,7 @@ if (tab === "anamnesis") {
 
     if (step === "result" && finalResult) {
       const isTobillo = selectedCategory === "tobillo_pie";
-      const tieneMetatarsiano = Array.isArray(answers.criterios_ottawa2) && answers.criterios_ottawa2.includes("dolor_metatarsiano");
+      const tieneMetatarsiano = Array.isArray(answers.criterios_ottawa2) && answers.criterios_ottawa2.includes("dolor_metatarsiano") && answers.hay_fractura === "no" ;
       const reportText = questionnaireModule.generateClinicalReport({ 
           caseId, 
           answers, 
