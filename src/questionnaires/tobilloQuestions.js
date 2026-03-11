@@ -341,13 +341,15 @@ export const questions = [
     text: "¿Se detectó una fractura?",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.rx_deformidad === "listo" || ans.rx_ottawa === "listo",// || ans.rx_ottawa === "listo" || ans.rx_deformidad === "listo",
+    showIf: (ans) => ans.rx_deformidad === "listo" || ans.rx_no_tolera_carga === "listo" || ans.rx_tolera_carga === "listo" ,
     options: [
         { value: "no", label: "No" },
         { value: "si_cerrada", label: "Sí, cerrada" },
         { value: "si_abierta", label: "Sí, abierta" }
     ]
   },
+
+
 
 
   // Clasificación específica (solo si hay fractura)
@@ -674,6 +676,28 @@ export const generateClinicalReport = ({ caseId, answers, resultQuestion, protoc
     pasos.unshift(reposoDinamico);
   }
 
+    // Determinar qué radiografías se solicitaron
+  const rxSolicitadas = [];
+  if (answers.rx_deformidad === 'listo') rxSolicitadas.push('Rx tobillo Ap-Lat-Obl sin carga (deformidad)');
+  if (answers.rx_no_tolera_carga === 'listo') rxSolicitadas.push('Rx tobillo Ap-Lat-Obl sin carga (no tolera carga)');
+  if (answers.rx_tolera_carga === 'listo') rxSolicitadas.push('Rx tobillo Ap-Lat-Obl con carga, comparativa contralateral');
+
+  // Agregar RX de pie si corresponde
+  const tieneMetatarsiano = Array.isArray(answers.criterios_ottawa2) &&
+    answers.criterios_ottawa2.includes('dolor_metatarsiano');
+  if (tieneMetatarsiano && rxSolicitadas.length > 0) {
+    rxSolicitadas.push('Rx AP-Lat y Obl del Pie (dolor metatarsiano)');
+  }
+
+  const rxTexto = rxSolicitadas.length > 0
+    ? rxSolicitadas.join(' | ')
+    : 'No solicitada';
+
+  const fracturaTexto = answers.hay_fractura === 'si_cerrada' ? 'FRACTURA CERRADA DETECTADA'
+    : answers.hay_fractura === 'si_abierta' ? 'FRACTURA ABIERTA DETECTADA'
+    : answers.hay_fractura === 'no' ? 'Sin fractura en radiografía'
+    : 'Resultado pendiente';
+
   // Mapeos auxiliares (como ya los tienes)
   const edemaTexto = {
     "ninguno": "Sin aumento de volumen",
@@ -717,8 +741,8 @@ DIAGNÓSTICO SUGERIDO: ${resultQuestion.text}
 
 I. EXAMEN FÍSICO
 - Carga Laboral: ${cargaTexto[Number(answers.carga_laboral)] || 'No registrada'}
-- Nivel Dolor (EVA): ${answers.eva || 0}/10
-- Edema: ${edemaTexto[answers.aumento_volumen] || 'No evaluado'}
+- Dolor (EVA): ${answers.eva || 0}/10
+- Aumento de volumen (AVO): : ${edemaTexto[answers.aumento_volumen] || 'No evaluado'}
 - Equimosis: ${equimosisTexto[answers.equimosis] || 'No evaluado'}
 - Inestabilidad: ${inestabilidadTexto[answers.inestabilidad] || 'No evaluado'}
 - Hallazgos Físicos: ${answers.hallazgos_fisicos || 'Sin otros hallazgos'}
@@ -729,27 +753,15 @@ I. EXAMEN FÍSICO
 - Criterios Ottawa: ${answers.criterios_ottawa === 'cumple' ? 'Positivo (+)' : answers.criterios_ottawa === 'no_cumple' ? 'Negativo (-)' : 'No evaluado'}
 
 II. IMAGENOLOGÍA
-- Radiografía: ${
-  answers.hay_fractura == null
-    ? 'No solicitada'
-    : (answers.hay_fractura === 'si_cerrada' || answers.hay_fractura === 'si_abierta')
-      ? 'FRACTURA DETECTADA'
-      : 'Sin fractura'
-}
-${
-  (answers.hay_fractura === 'si_cerrada' || answers.hay_fractura === 'si_abierta')
-    ? `- Tipo Fractura: ${answers.hay_fractura === 'si_cerrada' ? 'CERRADA' : 'ABIERTA'}`
-    : ''
-}
+II. IMAGENOLOGÍA
+- Radiografía solicitada: ${rxTexto}
+- Resultado: ${fracturaTexto}
 ${
   (answers.clasificacion_especifica_cerrada || answers.clasificacion_especifica_abierta)
-    ? `- Clasificación: ${
-        answers.clasificacion_especifica_cerrada
-          ? answers.clasificacion_especifica_cerrada
-          : answers.clasificacion_especifica_abierta
-      }`
+    ? `- Clasificación: ${answers.clasificacion_especifica_cerrada || answers.clasificacion_especifica_abierta}`
     : ''
 }
+
 
 III. DIAGNÓSTICO SUGERIDO
 ${resultQuestion.text}
