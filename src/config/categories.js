@@ -26,7 +26,7 @@ export const categoriesConfig = {
     name: "Tobillo y Pie",
     questionnaires: {
       torsion_tobillo: {
-        name: "(TEST) Consulta de torsión de tobillo",
+        name: "(Piloto) Consulta de torsión de tobillo",
         getQuestionsModule: () => import('../questionnaires/tobilloQuestions.js'),
       },
     },

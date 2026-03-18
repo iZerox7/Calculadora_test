@@ -803,7 +803,7 @@ const confirmTabBack = () => {
           <div className="text-left space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">ID Siniestro</label>
-              <input type="text" value={caseId} onChange={(e) => setCaseId(e.target.value)} placeholder="Ej: 8123456" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
+              <input type="number" value={caseId} onChange={(e) => setCaseId(e.target.value)} placeholder="Ej: 8123456" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Zona Lesional</label>
@@ -821,7 +821,7 @@ const confirmTabBack = () => {
                 </select>
               </div>
             )}
-            <button onClick={handleStart} disabled={!caseId || !selectedQuestionnaireKey} className="w-full bg-blue-700 text-white font-bold py-3 rounded-lg hover:bg-blue-800 disabled:bg-gray-400">COMENZAR</button>
+            <button onClick={handleStart} disabled={!caseId || !selectedQuestionnaireKey || isNaN(Number(caseId))} className="w-full bg-blue-700 text-white font-bold py-3 rounded-lg hover:bg-blue-800 disabled:bg-gray-400">COMENZAR</button>
           </div>
         </div>
       );
@@ -1039,7 +1039,12 @@ if (tab === "anamnesis") {
           protocols: questionnaireModule.protocols,
           allQuestions: questionnaireModule.questions // AGREGADO PARA LUMBAGO
       });
-      const currentProtocol = questionnaireModule.protocols[finalResult.protocolId];
+      // Resolución dinámica para esguince grado I
+const currentProtocol =
+  finalResult.protocolId === "protocolo_esguince_1"
+    ? questionnaireModule.getProtocoloEsguince1?.(answers) 
+      ?? questionnaireModule.protocols[finalResult.protocolId]
+    : questionnaireModule.protocols[finalResult.protocolId];
 
 // NUEVO: calcular reposo dinámico (usa el helper exportado)
 const reposoDinamico = questionnaireModule?.restTextPorCarga?.(answers, finalResult.protocolId) ?? null;
