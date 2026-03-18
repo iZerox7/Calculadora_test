@@ -1,19 +1,36 @@
 // questionnaires/tobilloQuestions.js
 
+// Reemplaza la entrada estática por una función generadora
+export const getProtocoloEsguince1 = (answers) => {
+  const carga = Number(answers?.carga_laboral);
+  const esSTP = carga === 1;
+
+  const pasosBase = [
+    "Realizar actividades habituales ",
+    "Realizar ejercicios indicados en pauta ",
+    "Reposo deportivo por 7-10 días ",
+    ...(!esSTP ? [
+      "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. En caso de persistir dolor posterior, aplicar calor local de forma intermitente o según necesidad ",
+    ] : []),
+    "Tubigrip opcional (máx 1 semana, retiro nocturno)",
+    "Al descansar, poner extremidad en alto ",
+    "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 3 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 3 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
+    "En caso de dolor invalidante, aumento de volumen o cambio de coloración del sitio lesionado acudir a agencia ACHS más cercana",
+  ];
+
+  return {
+    titulo: "PROTOCOLO DE MANEJO - ESGUINCE GRADO I",
+    pasos: pasosBase,
+  };
+};
+
+
+
 export const protocols = {
-    "protocolo_esguince_1": {
-        "titulo": "PROTOCOLO DE MANEJO - ESGUINCE GRADO I",
-        "pasos": [
-            "Realizar actividades habituales ",
-            "Realizar ejercicios indicados en pauta ",
-            "Reposo deportivo por 7-10 días ",
-            "Aplicar frio local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. En caso de persistir dolor posterior, aplicar calor local de forma intermitente o según necesidad ",
-            "Tubigrip opcional (máx 1 semana, retiro nocturno)",
-            "Al descansar, poner extremidad en alto ",
-            "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 3 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 3 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
-            "En caso de dolor invalidante, aumento de volumen o cambio de coloración del sitio lesionado acudir a agencia ACHS más cercana"
-                    ]
-    },
+  "protocolo_esguince_1": {
+    titulo: "PROTOCOLO DE MANEJO - ESGUINCE GRADO I",
+    pasos: [], // placeholder; se sobreescribe dinámicamente
+  },
     "protocolo_esguince_2": {
         "titulo": "PROTOCOLO DE MANEJO - ESGUINCE GRADO II",
         "pasos": [
@@ -26,7 +43,7 @@ export const protocols = {
           "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.", 
           "Control con médico AP en agencia en 5 a 7 días. ",
           "En caso de dolor invalidante, acudir a agencia ACHS más cercana."
- 
+
         ]
     },
     "protocolo_esguince_3": {
@@ -156,19 +173,6 @@ export const questions = [
   // --- GRUPO RIESGO (Árbol de Decisión corregido) ---
 
 
-  // // Criterios de Ottawa (solo si estable o local sin equimosis)
-  // {
-  //   id: "criterios_ottawa",
-  //   text: "¿Cumple alguno de los Criterios de Ottawa?",
-  //   type: "options",
-  //   group: "risk",
-  //   showIf: (ans) => ans.deformidad_evidente === "no",
-  //   options: [
-  //       { value: "cumple", label: "Cumple criterios (Ottawa +)" },
-  //       { value: "no_cumple", label: "No cumple ninguno (Ottawa -)" }
-  //   ]
-  // },
-
 // Criterios de Ottawa (solo si estable o local sin equimosis)
   {
     id: "criterios_ottawa2",
@@ -271,20 +275,6 @@ export const questions = [
   ]
 },
 
-  // // Estabilidad (solo si dolor local o local sin equimosis)
-  // {
-  //   id: "estabilidad",
-  //   text: "Evaluación de estabilidad / Localización:",
-  //   type: "options",
-  //   group: "risk",
-  //   // showIf: (ans) => ans.tipo_dolor === "local" || ans.tipo_dolor === "local_no_equimosis",
-  //   showIf: (ans) => ans.tipo_dolor === "local_no_equimosis",
-  //   options: [
-  //       { value: "inestable", label: "Leve inestabilidad" },
-  //       { value: "estable", label: "Sin inestabilidad" }
-  //   ]
-  // },
-
 
   // MANDA A RX SI CUMPLE CON ALGÚN CRITERIO DE OTTAWA
   {
@@ -305,35 +295,6 @@ export const questions = [
     ]
   }, // esto después debe conectarse con un ¿Presenta fractura?
 
-
-
-  // // Evaluación Radiografía (múltiples condiciones)
-  // {
-  //   // id: "evaluacion_radiografia",
-  //   id: "rx_varias",
-  //   text: "Realizar Radiografía AP-Lat-Obl sin carga:",
-  //   type: "options",
-  //   group: "risk",
-  //   showIf: (ans) => {
-  //       // Radiografía se pide si:
-        
-  //       // 3. Tolera carga con dificultad (dolor difuso)
-  //       if (ans.tolera_carga_difuso === "con_dificultad") return true;
-
-  //       // 3. Tolera carga con dificultad (dolor difuso)
-  //       if (ans.tolera_carga_difuso === "tolera") return true;
-        
-  //       // 4. Leve inestabilidad (dolor local)
-  //       if (ans.estabilidad === "inestable") return true;
-        
-  //       return false;
-  //   },
-  //   options: [
-  //       // { value: "fractura", label: "Fractura" },
-  //       // { value: "no_fractura", label: "No hay fractura" }
-  //       { value: "listo", label: "✅ Realizada" }
-  //   ]
-  // },
 
   // ¿Hay fractura?
   {
@@ -753,7 +714,6 @@ I. EXAMEN FÍSICO
 - Criterios Ottawa: ${answers.criterios_ottawa === 'cumple' ? 'Positivo (+)' : answers.criterios_ottawa === 'no_cumple' ? 'Negativo (-)' : 'No evaluado'}
 
 II. IMAGENOLOGÍA
-II. IMAGENOLOGÍA
 - Radiografía solicitada: ${rxTexto}
 - Resultado: ${fracturaTexto}
 ${
@@ -781,6 +741,7 @@ const questionnaireModule = {
   evaluateRisk,
   generateClinicalReport,
   restTextPorCarga,
+  getProtocoloEsguince1,
   requiresAnamnesis: true,
   // guideImage: "arbol_decision.png",
 };
