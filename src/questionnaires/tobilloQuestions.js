@@ -110,6 +110,10 @@ export const protocols = {
             "Medicamentos: Analgesia ev, tratamiento antibiótivo ev (en caso de fractura expuesta)",
             "Vacunación antitetánica (en caso de fractura expuesta)"
        ]
+    },
+    "protocolo_fractura_pie": {
+  "titulo": "PROTOCOLO DE MANEJO - FRACTURA DE PIE",
+  "pasos": ["Pendiente de integración"]
     }
 };
 
@@ -306,11 +310,49 @@ export const questions = [
     options: [
         { value: "no", label: "No" },
         { value: "si_cerrada", label: "Sí, cerrada" },
-        { value: "si_abierta", label: "Sí, abierta" }
+        { value: "si_abierta", label: "Sí, abierta" },
+        { value: "si_otra", label: "Sí, pero no en tobillo" }
     ]
   },
 
+// Fractura de pie: lista desplegable
+{
+  id: "fractura_pie_tipo",
+  text: "Seleccione la fractura detectada:",
+  type: "select",
+  group: "risk",
+  showIf: (ans) => ans.hay_fractura === "si_otra",
+  options: [
+    { value: "fractura_astragalo_abierta",             label: "Fractura Astragalo Abierta" },
+    { value: "fractura_astragalo_cerrada",             label: "Fractura Astragalo Cerrada" },
+    { value: "fractura_calcaneo_abierta",              label: "Fractura Calcáneo Abierta" },
+    { value: "fractura_calcaneo_cerrada",              label: "Fractura Calcáneo Cerrada" },
+    { value: "fractura_cuello_talo_cerrada",           label: "Fractura Cuello Talo Cerrada" },
+    { value: "fractura_cuerpo_talo_cerrada",           label: "Fractura Cuerpo Talo Cerrada" },
+    { value: "fractura_escafoides_tarso_cerrada",      label: "Fractura Escafoides Tarso del Pie Cerrada" },
+    { value: "fractura_huesos_tarso_cerrada",          label: "Fractura Huesos del Tarso (excepto Escafoides) Cerrada" },
+    { value: "fractura_metatarsiano_abierta",          label: "Fractura Metatarsiano Abierta" },
+    { value: "fractura_metatarsiano_cerrada",          label: "Fractura Metatarsiano Cerrada" },
+    { value: "fracturas_perifericas_talo_abiertas",    label: "Fracturas Periféricas Talo Abiertas" },
+    { value: "fracturas_perifericas_talo_cerradas",    label: "Fracturas Periféricas Talo Cerradas" },
+    { value: "luxafractura_lisfranc_abierta",          label: "Luxafractura de Lisfranc Abierta" },
+    { value: "luxofractura_chopart_cerrada",           label: "Luxofractura de Chopart Cerrada" },
+    { value: "luxofractura_lisfranc_cerrada",          label: "Luxofractura de Lisfranc Cerrada" },
+    { value: "luxofractura_pie_abierta",               label: "Luxofractura del Pie Abierta" },
+    { value: "luxofractura_pie_cerrada",               label: "Luxofractura del Pie Cerrada" },
+    { value: "otra",                                   label: "Otra" },
+  ]
+},
 
+// Fractura de pie: texto libre si seleccionó "Otra"
+{
+  id: "fractura_pie_otra",
+  text: "Especifique la fractura:",
+  type: "textarea",
+  group: "risk",
+  showIf: (ans) => ans.hay_fractura === "si_otra" && ans.fractura_pie_tipo === "otra",
+  placeholder: "Describa la fractura detectada..."
+},
 
 
   // Clasificación específica (solo si hay fractura)
@@ -439,12 +481,12 @@ export const restTextPorCarga = (answers, protocolId) => {
     // Mantengo tu lógica tal cual para Grado I
     protocolo_esguince_1: {
       1: 'STP',
-      2: 'Alta diferida 0 - 2 días',
-      3: 'Alta diferida 0 - 3 días',
+      2: 'Alta diferida hasta 2 días',
+      3: 'Alta diferida hasta 3 días',
     },
     // NUEVO: Grado II
     protocolo_esguince_2: {
-      1: '0 - 5 días',
+      1: 'hasta 5 días',
       2: 'hasta 7 días',
       3: 'hasta 14 días',
     },
@@ -515,8 +557,47 @@ const SCENARIO_PRIORITY = ['escenario_4', 'escenario_3', 'escenario_2', 'escenar
 
   // Builder de diagnóstico de fractura
   const buildFracturaResult = (ans) => {
-    const tipo = ans.hay_fractura; // 'si_abierta' | 'si_cerrada' | 'no'
-    if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
+    const tipo = ans.hay_fractura;
+
+// Fractura de pie (no tobillo)
+if (tipo === 'si_otra') {
+  const opcionSeleccionada = ans.fractura_pie_tipo;
+  if (!opcionSeleccionada) return null; // aún no respondió
+
+  // Buscar el label de la opción seleccionada
+  const FRACTURA_PIE_LABELS = {
+    fractura_astragalo_abierta:          'Fractura Astragalo Abierta',
+    fractura_astragalo_cerrada:          'Fractura Astragalo Cerrada',
+    fractura_calcaneo_abierta:           'Fractura Calcáneo Abierta',
+    fractura_calcaneo_cerrada:           'Fractura Calcáneo Cerrada',
+    fractura_cuello_talo_cerrada:        'Fractura Cuello Talo Cerrada',
+    fractura_cuerpo_talo_cerrada:        'Fractura Cuerpo Talo Cerrada',
+    fractura_escafoides_tarso_cerrada:   'Fractura Escafoides Tarso del Pie Cerrada',
+    fractura_huesos_tarso_cerrada:       'Fractura Huesos del Tarso (excepto Escafoides) Cerrada',
+    fractura_metatarsiano_abierta:       'Fractura Metatarsiano Abierta',
+    fractura_metatarsiano_cerrada:       'Fractura Metatarsiano Cerrada',
+    fracturas_perifericas_talo_abiertas: 'Fracturas Periféricas Talo Abiertas',
+    fracturas_perifericas_talo_cerradas: 'Fracturas Periféricas Talo Cerradas',
+    luxafractura_lisfranc_abierta:       'Luxafractura de Lisfranc Abierta',
+    luxofractura_chopart_cerrada:        'Luxofractura de Chopart Cerrada',
+    luxofractura_lisfranc_cerrada:       'Luxofractura de Lisfranc Cerrada',
+    luxofractura_pie_abierta:            'Luxofractura del Pie Abierta',
+    luxofractura_pie_cerrada:            'Luxofractura del Pie Cerrada',
+  };
+
+  const diagText = opcionSeleccionada === 'otra'
+    ? (ans.fractura_pie_otra?.trim() || 'Fractura de Pie - Sin especificar')
+    : (FRACTURA_PIE_LABELS[opcionSeleccionada] || opcionSeleccionada);
+
+  return {
+    id: 'fractura_pie',
+    text: diagText,
+    color: 'red',
+    protocolId: 'protocolo_fractura_pie',
+  };
+}
+
+if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
 
     const isAbierta = tipo === 'si_abierta';
     const clasVal   = isAbierta ? ans.clasificacion_especifica_abierta : ans.clasificacion_especifica_cerrada;
@@ -654,10 +735,11 @@ export const generateClinicalReport = ({ caseId, answers, resultQuestion, protoc
     ? rxSolicitadas.join(' | ')
     : 'No solicitada';
 
-  const fracturaTexto = answers.hay_fractura === 'si_cerrada' ? 'FRACTURA CERRADA DETECTADA'
-    : answers.hay_fractura === 'si_abierta' ? 'FRACTURA ABIERTA DETECTADA'
-    : answers.hay_fractura === 'no' ? 'Sin fractura en radiografía'
-    : 'Resultado pendiente';
+const fracturaTexto = answers.hay_fractura === 'si_cerrada' ? 'FRACTURA CERRADA DETECTADA'
+  : answers.hay_fractura === 'si_abierta' ? 'FRACTURA ABIERTA DETECTADA'
+  : answers.hay_fractura === 'si_otra' ? 'FRACTURA DE PIE DETECTADA'
+  : answers.hay_fractura === 'no' ? 'Sin fractura en radiografía'
+  : 'Resultado pendiente';
 
   // Mapeos auxiliares (como ya los tienes)
   const edemaTexto = {
@@ -711,17 +793,55 @@ I. EXAMEN FÍSICO
 - Tipo de Dolor: ${answers.tipo_dolor || 'No especificado'}
 - Tolerancia Carga: ${toleranciaTexto[answers.tolera_carga_difuso] || 'No evaluado'}
 - Estabilidad: ${answers.estabilidad || 'No evaluado'}
-- Criterios Ottawa: ${answers.criterios_ottawa === 'cumple' ? 'Positivo (+)' : answers.criterios_ottawa === 'no_cumple' ? 'Negativo (-)' : 'No evaluado'}
+- Criterios Ottawa: ${(() => {
+  const ottawa = answers.criterios_ottawa2;
+  if (!Array.isArray(ottawa) || ottawa.length === 0) return 'No evaluado';
+  if (ottawa.length === 1 && ottawa.includes('no_cumple')) return 'Negativo (-)';
+  return 'Positivo (+)';})()}
 
 II. IMAGENOLOGÍA
 - Radiografía solicitada: ${rxTexto}
 - Resultado: ${fracturaTexto}
-${
-  (answers.clasificacion_especifica_cerrada || answers.clasificacion_especifica_abierta)
-    ? `- Clasificación: ${answers.clasificacion_especifica_cerrada || answers.clasificacion_especifica_abierta}`
-    : ''
+${(() => {
+  const LABELS = {
+    maleolo_perone_cerrada: 'Maléolo Peroneo Cerrada',
+    maleolo_tibial_cerrada: 'Maléolo Tibial Cerrada',
+    bimaleolar_cerrada:     'Bimaleolar Cerrada',
+    trimaleolar_cerrada:    'Trimaleolar Cerrada',
+    maleolo_perone_abierta: 'Maléolo Peroneo Abierta',
+    maleolo_tibial_abierta: 'Maléolo Tibial Abierta',
+    bimaleolar_abierta:     'Bimaleolar Abierta',
+    trimaleolar_abierta:    'Trimaleolar Abierta',
+  };
+  const val = answers.clasificacion_especifica_cerrada || answers.clasificacion_especifica_abierta;
+  return val ? `- Clasificación: ${LABELS[val] || val}` : '';})()} ${answers.hay_fractura === 'si_otra' && answers.fractura_pie_tipo
+  ? `- Fractura de pie: ${(() => {
+      if (answers.fractura_pie_tipo === 'otra') {
+        return answers.fractura_pie_otra?.trim() || 'Sin especificar';
+      }
+      const FRACTURA_PIE_LABELS = {
+        fractura_astragalo_abierta:          'Fractura Astragalo Abierta',
+        fractura_astragalo_cerrada:          'Fractura Astragalo Cerrada',
+        fractura_calcaneo_abierta:           'Fractura Calcáneo Abierta',
+        fractura_calcaneo_cerrada:           'Fractura Calcáneo Cerrada',
+        fractura_cuello_talo_cerrada:        'Fractura Cuello Talo Cerrada',
+        fractura_cuerpo_talo_cerrada:        'Fractura Cuerpo Talo Cerrada',
+        fractura_escafoides_tarso_cerrada:   'Fractura Escafoides Tarso del Pie Cerrada',
+        fractura_huesos_tarso_cerrada:       'Fractura Huesos del Tarso (excepto Escafoides) Cerrada',
+        fractura_metatarsiano_abierta:       'Fractura Metatarsiano Abierta',
+        fractura_metatarsiano_cerrada:       'Fractura Metatarsiano Cerrada',
+        fracturas_perifericas_talo_abiertas: 'Fracturas Periféricas Talo Abiertas',
+        fracturas_perifericas_talo_cerradas: 'Fracturas Periféricas Talo Cerradas',
+        luxafractura_lisfranc_abierta:       'Luxafractura de Lisfranc Abierta',
+        luxofractura_chopart_cerrada:        'Luxofractura de Chopart Cerrada',
+        luxofractura_lisfranc_cerrada:       'Luxofractura de Lisfranc Cerrada',
+        luxofractura_pie_abierta:            'Luxofractura del Pie Abierta',
+        luxofractura_pie_cerrada:            'Luxofractura del Pie Cerrada',
+      };
+      return FRACTURA_PIE_LABELS[answers.fractura_pie_tipo] || answers.fractura_pie_tipo;
+    })()}`
+  : ''
 }
-
 
 III. DIAGNÓSTICO SUGERIDO
 ${resultQuestion.text}

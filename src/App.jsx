@@ -319,7 +319,21 @@ case 'button-group': {
           className={commonInputClass}
         />
       );
-
+case 'select':
+  return (
+    <div className="space-y-2">
+      <select
+        value={value || ''}
+        onChange={(e) => onChange(question.id, e.target.value)}
+        className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+      >
+        <option value="" disabled>Seleccione una opción...</option>
+        {(question.options || []).map(opt => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
+    </div>
+  );
     default:
       return null;
   }
@@ -688,11 +702,22 @@ const handleFormChange = (id, val) => {
     return next;
   });
 };
-``
 
-const handleWizardNext = async  () => {
+
+const handleWizardNext = async () => {
   const allRisk = questionnaireModule.questions.filter(q => q.group === 'risk');
   const currentIndex = allRisk.findIndex(q => q.id === currentRiskQuestionId);
+
+  // Caso especial: si estamos en fractura_pie_tipo con opción != "otra", terminar
+  if (currentRiskQuestionId === 'fractura_pie_tipo' && answers.fractura_pie_tipo && answers.fractura_pie_tipo !== 'otra') {
+    setWizardFinished(true);
+    return;
+  }
+  // Caso especial: si estamos en fractura_pie_otra (texto libre), terminar
+  if (currentRiskQuestionId === 'fractura_pie_otra') {
+    setWizardFinished(true);
+    return;
+  }
 
   let nextIndex = currentIndex + 1;
   while (nextIndex < allRisk.length) {
@@ -701,18 +726,15 @@ const handleWizardNext = async  () => {
       setRiskHistory(prev => [...prev, currentRiskQuestionId]);
       setCurrentRiskQuestionId(nextQ.id);
 
-      // Si llegamos a un checkpoint → guardar
-
-    if (RX_CHECKPOINT_IDS.has(nextQ.id)) {
-      await openCheckpointModal(nextQ.id);  // <<-- espera antes de seguir
-    }
+      if (RX_CHECKPOINT_IDS.has(nextQ.id)) {
+        await openCheckpointModal(nextQ.id);
+      }
       return;
     }
     nextIndex++;
   }
   setWizardFinished(true);
 };
-
 
   useEffect(() => {
   const run = async () => {
@@ -879,7 +901,10 @@ const progressCount = wizardFinished ? totalRisk : answeredRisk;
                   >← VOLVER</button>
                   <button
                     onClick={handleWizardNext}
-                    disabled={answers[currentRiskQuestionId] === undefined}
+                    disabled={
+                        answers[currentRiskQuestionId] === undefined ||
+                        (currentRiskQuestionId === 'fractura_pie_otra' && !answers.fractura_pie_otra?.trim())
+                      }
                     className="bg-blue-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-800 shadow-md disabled:bg-gray-400"
                   >SIGUIENTE</button>
                 </div>
