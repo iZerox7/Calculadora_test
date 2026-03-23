@@ -150,11 +150,11 @@ export const questions = [
     group: "anamnesis",
     options: [
       { value: "ninguno", label: "Sin equimosis" },
-      { value: "leve", label: "Leve (+)" },
-      { value: "moderado", label: "Moderado (++)" },
-      { value: "severo", label: "Severo (+++)" }
+      { value: "localizada", label: "Localizada" },
+      { value: "difusa", label: "Difusa"}
     ]
   },
+
   { 
     id: "inestabilidad", 
     text: "Inestabilidad", 
@@ -168,10 +168,10 @@ export const questions = [
   },
   { 
     id: "hallazgos_fisicos", 
-    text: "Examen Físico: Equimosis / Deformidad / Heridas / Maniobras", 
+    text: "Examen Físico: Marcha / Heridas / Maniobras", 
     type: "textarea", 
     group: "anamnesis",
-    placeholder: "Describa presencia de equimosis en abanico, deformidad evidente o heridas..."
+    placeholder: "Describa presencia de heridas, tipo de marcha..."
   },
 
   // --- GRUPO RIESGO (Árbol de Decisión corregido) ---
@@ -674,7 +674,7 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
     if (
       inestabilidad === "con_inestabilidad" &&
       volumen !== "ninguno" && volumen != null &&
-      equimosis !== "ninguno" && equimosis != null
+      equimosis === "difusa" && equimosis != null
     ) {
       return { id: "e3", text: "Esguince de Tobillo Grado III", color: "red", protocolId: "protocolo_esguince_3" };
     }
@@ -682,8 +682,8 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
     // Grado II: sin inestabilidad o dudosa + edema presente + algo de equimosis
     if (
       (inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
-      volumen !== "ninguno" && volumen != null &&
-      (equimosis === "leve" || equimosis === "moderado" || equimosis === "severo")
+      (volumen === "moderado" || volumen === "severo") &&
+      (equimosis === "localizada" || equimosis === "difusa" )
     ) {
       return { id: "e2", text: "Esguince de Tobillo Grado II", color: "green", protocolId: "protocolo_esguince_2" };
     }
@@ -763,9 +763,8 @@ const fracturaTexto = answers.hay_fractura === 'si_cerrada' ? 'FRACTURA CERRADA 
 
   const equimosisTexto = {
     "ninguno": "Sin equimosis",
-    "leve": "Leve (+/+++)",
-    "moderado": "Moderado (++/+++)",
-    "severo": "Severo (+++/+++)"
+    "localizada": "Localizada",
+    "difusa": "Difusa"
   };
 
 const inestabilidadTexto = {
