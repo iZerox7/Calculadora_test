@@ -755,12 +755,34 @@ const handleEvaluate = async () => {
   const evaluation = questionnaireModule.evaluateRisk(answers, true);
   setFinalResult(evaluation);
 
+  // ── Construir indicaciones solo para tobillo ──────────────────────────
+  let indicacionesTexto = null;
+  if (selectedCategory === "tobillo_pie") {
+    const currentProtocol =
+      evaluation.protocolId === "protocolo_esguince_1"
+        ? questionnaireModule.getProtocoloEsguince1?.(answers)
+          ?? questionnaireModule.protocols[evaluation.protocolId]
+        : questionnaireModule.protocols[evaluation.protocolId];
+
+    const reposoDinamico = questionnaireModule?.restTextPorCarga?.(answers, evaluation.protocolId) ?? null;
+
+    const displayedSteps = [
+      ...(reposoDinamico ? [reposoDinamico] : []),
+      ...((currentProtocol?.pasos ?? [])),
+    ];
+
+    indicacionesTexto = displayedSteps.map((paso, i) => `${i + 1}. ${paso}`).join('\n');
+  }
+  // ─────────────────────────────────────────────────────────────────────
+
   const resultData = {
     id_caso: caseId,
     cuestionario: selectedQuestionnaireKey,
     respuestas: answers,
     resultado: evaluation.text,
     timestamp: new Date().toISOString(),
+    // Solo se incluye si es tobillo; lumbago queda como null (columna acepta null)
+    ...(indicacionesTexto !== null && { indicaciones: indicacionesTexto }),
   };
 
   try {
@@ -779,7 +801,7 @@ const handleEvaluate = async () => {
   }
 
   setStep('result');
-  };
+};
 
 
   const handleRestart = () => {
