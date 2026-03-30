@@ -118,7 +118,16 @@ export const protocols = {
 };
 
 export const questions = [
-  // --- GRUPO ANAMNESIS (Basado en estándares ACHS) ---
+{
+  id: "tobillo",
+  text: "Tobillo",
+  type: "options",
+  group: "anamnesis",
+  options: [
+      { value: "izquierdo", label: "Izquierdo" },
+      { value: "derecho", label: "Derecho" }
+  ]
+},
 {
   id: "carga_laboral",
   text: "Carga laboral habitual",
@@ -390,7 +399,7 @@ export const questions = [
     text: "¿A cuál escenario pertenece la fractura?:",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.hay_fractura === "si_abierta" || ans.hay_fractura === "si_cerrada",
+    showIf: (ans) =>  ans.hay_fractura === "si_cerrada",
     options: [
         { value: "escenario_1", label: "Escenario 1: Fractura unimaleolar no luxada" },
         { value: "escenario_2", label: "Escenario 2: Fractura bimaleolar no luxada" },
@@ -875,6 +884,7 @@ export const generateClinicalReport = ({ caseId, answers, resultQuestion, protoc
     `=========================================`,
     `ID CASO: ${caseId}`,
     `FECHA: ${new Date().toLocaleDateString()}`,
+    `TOBILLO: ${answers.tobillo}`,
     `DIAGNÓSTICO SUGERIDO: ${resultQuestion.text}`,
     ``,
     `EXAMEN FÍSICO`,
