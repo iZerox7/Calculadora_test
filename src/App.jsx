@@ -944,7 +944,7 @@ if (tab === "anamnesis") {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Columna izquierda: carga, EVA, edema, equimosis */}
           <div className="space-y-4">
-            {anamnesis.slice(0, 3).map(q => (
+            {anamnesis.slice(0, 4).map(q => (
               <div key={q.id} className="pb-2">
                 <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
                 <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} />
@@ -954,7 +954,7 @@ if (tab === "anamnesis") {
 
           {/* Columna derecha: inestabilidad + examen físico */}
           <div className="space-y-4">
-            {anamnesis.slice(3).map(q => (
+            {anamnesis.slice(4).map(q => (
               <div key={q.id} className="pb-2">
                 <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
                 <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} />
