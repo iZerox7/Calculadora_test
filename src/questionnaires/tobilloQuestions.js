@@ -213,13 +213,13 @@ export const questions = [
     // MANDA A RX SI TIENE DEFORMIDAD EVIDENTE
  {
   id: "rx_deformidad",
-  text: "Realizar Radiografía tobillo Ap-Lat_Obl sin carga.",
+  text: "Realizar Radiografía tobillo Ap-Lat-Obl sin carga.",
   textFn: (ans) => {
-    const base = "Realizar Radiografía tobillo Ap-Lat_Obl sin carga";
+    const base = "Realizar Radiografía tobillo Ap-Lat-Obl sin carga";
     const tieneMetatarsiano = Array.isArray(ans.criterios_ottawa2) && 
       ans.criterios_ottawa2.includes("dolor_metatarsiano");
     return tieneMetatarsiano 
-      ? `${base}\nAdicional: Radiografía AP-Lat y Obl del Pie.`
+      ? `${base}\nAdicional: Radiografía AP-Lat-Obl del Pie.`
       : base;
   },
   type: "options",
@@ -262,13 +262,13 @@ export const questions = [
    // MANDA A RX SI TIENE DEFORMIDAD EVIDENTE
  {
   id: "rx_no_tolera_carga",
-  text: "Realizar Radiografía tobillo Ap-Lat_Obl sin carga.",
+  text: "Realizar Radiografía tobillo Ap-Lat-Obl sin carga.",
   textFn: (ans) => {
-    const base = "Realizar Radiografía tobillo Ap-Lat_Obl sin carga";
+    const base = "Realizar Radiografía tobillo Ap-Lat-Obl sin carga";
     const tieneMetatarsiano = Array.isArray(ans.criterios_ottawa2) && 
       ans.criterios_ottawa2.includes("dolor_metatarsiano");
     return tieneMetatarsiano 
-      ? `${base}\nAdicional: Radiografía AP-Lat y Obl del Pie.`
+      ? `${base}\nAdicional: Radiografía AP-Lat-Obl del Pie.`
       : base;
   },
   type: "options",
@@ -284,11 +284,11 @@ export const questions = [
   {
     id: "rx_tolera_carga",
     textFn: (ans) => {
-    const base = "Realizar Radiografía Ap-Lat-Obl con carga, comparativa contralateral.";
+    const base = "Realizar Radiografía tobillo Ap-Lat-Obl con carga, comparativa contralateral.";
     const tieneMetatarsiano = Array.isArray(ans.criterios_ottawa2) && 
       ans.criterios_ottawa2.includes("dolor_metatarsiano");
     return tieneMetatarsiano 
-      ? `${base}\nAdicional: Radiografía AP-Lat y Obl del Pie.`
+      ? `${base}\nAdicional: Radiografía AP-Lat-Obl del Pie.`
       : base;
   },
     type: "options",
@@ -410,9 +410,6 @@ export const questions = [
         { value: "weber_b_c", label: "Weber B o C" }
     ]
   }
-
-
-
 ];
 
 // Diccionario de los values
@@ -500,15 +497,12 @@ export const restTextPorCarga = (answers, protocolId) => {
 
   const map = reposoPorProtocolo[protocolId];
   const indicacion = map?.[carga];
-
   return indicacion ? `Reposo sugerido según carga laboral: ${indicacion}` : null;
 };
 
 // EVALUACIÓN PARA SUGERIR DIAGNÓSTICO
 export const evaluateRisk = (answers) => {
   // 1. Diagnósticos de Fractura (prioridad más alta)
-  
-
 
 // Prioridad de escenarios: 4 > 3 > 2 > 1
 const SCENARIO_PRIORITY = ['escenario_4', 'escenario_3', 'escenario_2', 'escenario_1'];
@@ -682,8 +676,9 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
     // Grado II: sin inestabilidad o dudosa + edema presente + algo de equimosis
     if (
       (inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
-      (volumen === "moderado" || volumen === "severo") &&
-      (equimosis === "localizada" || equimosis === "difusa" )
+      (volumen === "moderado" || volumen === "severo")
+      //  &&
+      // (equimosis === "localizada" || equimosis === "difusa" ) // Comentamos el criterio de equimosis para darle más importancia al AVO
     ) {
       return { id: "e2", text: "Esguince de Tobillo Grado II", color: "green", protocolId: "protocolo_esguince_2" };
     }
@@ -706,25 +701,26 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
 
 
 export const generateClinicalReport = ({ caseId, answers, resultQuestion, protocols }) => {
-  const prot = protocols[resultQuestion.protocolId];
+  // Para esguince grado I, los pasos vienen de getProtocoloEsguince1 (el array en protocols es placeholder vacío)
+  const prot = resultQuestion.protocolId === 'protocolo_esguince_1'
+    ? getProtocoloEsguince1(answers)
+    : protocols[resultQuestion.protocolId];
 
   // Reposo dinámico por carga (ahora soporta Esguince I, II y III)
   const reposoDinamico = restTextPorCarga(answers, resultQuestion.protocolId);
 
-  // Construimos la lista de indicaciones
+  // Construimos la lista de indicaciones (TODOS los pasos)
   const pasos = Array.isArray(prot?.pasos) ? [...prot.pasos] : [];
   if (reposoDinamico) {
-    // Lo agregamos como primera indicación (puedes ponerle énfasis si quieres)
     pasos.unshift(reposoDinamico);
   }
 
-    // Determinar qué radiografías se solicitaron
+  // Determinar qué radiografías se solicitaron
   const rxSolicitadas = [];
   if (answers.rx_deformidad === 'listo') rxSolicitadas.push('Rx tobillo Ap-Lat-Obl sin carga (deformidad)');
   if (answers.rx_no_tolera_carga === 'listo') rxSolicitadas.push('Rx tobillo Ap-Lat-Obl sin carga (no tolera carga)');
   if (answers.rx_tolera_carga === 'listo') rxSolicitadas.push('Rx tobillo Ap-Lat-Obl con carga, comparativa contralateral');
 
-  // Agregar RX de pie si corresponde
   const tieneMetatarsiano = Array.isArray(answers.criterios_ottawa2) &&
     answers.criterios_ottawa2.includes('dolor_metatarsiano');
   if (tieneMetatarsiano && rxSolicitadas.length > 0) {
@@ -735,13 +731,13 @@ export const generateClinicalReport = ({ caseId, answers, resultQuestion, protoc
     ? rxSolicitadas.join(' | ')
     : 'No solicitada';
 
-const fracturaTexto = answers.hay_fractura === 'si_cerrada' ? 'FRACTURA CERRADA DETECTADA'
-  : answers.hay_fractura === 'si_abierta' ? 'FRACTURA ABIERTA DETECTADA'
-  : answers.hay_fractura === 'si_otra' ? 'FRACTURA DE PIE DETECTADA'
-  : answers.hay_fractura === 'no' ? 'Sin fractura en radiografía'
-  : 'Resultado pendiente';
+  const fracturaTexto = answers.hay_fractura === 'si_cerrada' ? 'FRACTURA CERRADA DETECTADA'
+    : answers.hay_fractura === 'si_abierta' ? 'FRACTURA ABIERTA DETECTADA'
+    : answers.hay_fractura === 'si_otra' ? 'FRACTURA DE PIE DETECTADA'
+    : answers.hay_fractura === 'no' ? 'Sin fractura en radiografía'
+    : null; // Si no se llegó a responder, se omite
 
-  // Mapeos auxiliares (como ya los tienes)
+  // Mapeos auxiliares
   const edemaTexto = {
     "ninguno": "Sin aumento de volumen",
     "leve": "Leve (+/+++)",
@@ -756,10 +752,10 @@ const fracturaTexto = answers.hay_fractura === 'si_cerrada' ? 'FRACTURA CERRADA 
   };
 
   const cargaTexto = {
-  1: "Liviana (sedentario/escritorio)",
-  2: "Mediana (de pie y en movimiento; esfuerzos ocasionales)",
-  3: "Pesada (levanta peso/maquinaria)"
-};
+    1: "Liviana (sedentario/escritorio)",
+    2: "Mediana (de pie y en movimiento; esfuerzos ocasionales)",
+    3: "Pesada (levanta peso/maquinaria)"
+  };
 
   const equimosisTexto = {
     "ninguno": "Sin equimosis",
@@ -767,93 +763,138 @@ const fracturaTexto = answers.hay_fractura === 'si_cerrada' ? 'FRACTURA CERRADA 
     "difusa": "Difusa"
   };
 
-const inestabilidadTexto = {
-  "sin_inestabilidad": "Sin inestabilidad",
-  "dudosa": "Dudosa",
-  "con_inestabilidad": "Con inestabilidad"
-};
- 
-  return `
-=========================================
-      INFORME MÉDICO: TOBILLO Y PIE
-=========================================
-ID CASO: ${caseId}
-FECHA: ${new Date().toLocaleDateString()}
-DIAGNÓSTICO SUGERIDO: ${resultQuestion.text}
-
-I. EXAMEN FÍSICO
-- Carga Laboral: ${cargaTexto[Number(answers.carga_laboral)] || 'No registrada'}
-- Dolor (EVA): ${answers.eva || 0}/10
-- Aumento de volumen (AVO): : ${edemaTexto[answers.aumento_volumen] || 'No evaluado'}
-- Equimosis: ${equimosisTexto[answers.equimosis] || 'No evaluado'}
-- Inestabilidad: ${inestabilidadTexto[answers.inestabilidad] || 'No evaluado'}
-- Hallazgos Físicos: ${answers.hallazgos_fisicos || 'Sin otros hallazgos'}
-- Deformidad Evidente: ${answers.deformidad_evidente === 'si' ? 'SÍ' : 'NO'}
-- Tipo de Dolor: ${answers.tipo_dolor || 'No especificado'}
-- Tolerancia Carga: ${toleranciaTexto[answers.tolera_carga_difuso] || 'No evaluado'}
-- Estabilidad: ${answers.estabilidad || 'No evaluado'}
-- Criterios Ottawa: ${(() => {
-  const ottawa = answers.criterios_ottawa2;
-  if (!Array.isArray(ottawa) || ottawa.length === 0) return 'No evaluado';
-  if (ottawa.length === 1 && ottawa.includes('no_cumple')) return 'Negativo (-)';
-  return 'Positivo (+)';})()}
-
-II. IMAGENOLOGÍA
-- Radiografía solicitada: ${rxTexto}
-- Resultado: ${fracturaTexto}
-${(() => {
-  const LABELS = {
-    maleolo_perone_cerrada: 'Maléolo Peroneo Cerrada',
-    maleolo_tibial_cerrada: 'Maléolo Tibial Cerrada',
-    bimaleolar_cerrada:     'Bimaleolar Cerrada',
-    trimaleolar_cerrada:    'Trimaleolar Cerrada',
-    maleolo_perone_abierta: 'Maléolo Peroneo Abierta',
-    maleolo_tibial_abierta: 'Maléolo Tibial Abierta',
-    bimaleolar_abierta:     'Bimaleolar Abierta',
-    trimaleolar_abierta:    'Trimaleolar Abierta',
+  const inestabilidadTexto = {
+    "sin_inestabilidad": "Sin inestabilidad",
+    "dudosa": "Dudosa",
+    "con_inestabilidad": "Con inestabilidad"
   };
-  const val = answers.clasificacion_especifica_cerrada || answers.clasificacion_especifica_abierta;
-  return val ? `- Clasificación: ${LABELS[val] || val}` : '';})()} ${answers.hay_fractura === 'si_otra' && answers.fractura_pie_tipo
-  ? `- Fractura de pie: ${(() => {
-      if (answers.fractura_pie_tipo === 'otra') {
-        return answers.fractura_pie_otra?.trim() || 'Sin especificar';
-      }
-      const FRACTURA_PIE_LABELS = {
-        fractura_astragalo_abierta:          'Fractura Astragalo Abierta',
-        fractura_astragalo_cerrada:          'Fractura Astragalo Cerrada',
-        fractura_calcaneo_abierta:           'Fractura Calcáneo Abierta',
-        fractura_calcaneo_cerrada:           'Fractura Calcáneo Cerrada',
-        fractura_cuello_talo_cerrada:        'Fractura Cuello Talo Cerrada',
-        fractura_cuerpo_talo_cerrada:        'Fractura Cuerpo Talo Cerrada',
-        fractura_escafoides_tarso_cerrada:   'Fractura Escafoides Tarso del Pie Cerrada',
-        fractura_huesos_tarso_cerrada:       'Fractura Huesos del Tarso (excepto Escafoides) Cerrada',
-        fractura_metatarsiano_abierta:       'Fractura Metatarsiano Abierta',
-        fractura_metatarsiano_cerrada:       'Fractura Metatarsiano Cerrada',
-        fracturas_perifericas_talo_abiertas: 'Fracturas Periféricas Talo Abiertas',
-        fracturas_perifericas_talo_cerradas: 'Fracturas Periféricas Talo Cerradas',
-        luxafractura_lisfranc_abierta:       'Luxafractura de Lisfranc Abierta',
-        luxofractura_chopart_cerrada:        'Luxofractura de Chopart Cerrada',
-        luxofractura_lisfranc_cerrada:       'Luxofractura de Lisfranc Cerrada',
-        luxofractura_pie_abierta:            'Luxofractura del Pie Abierta',
-        luxofractura_pie_cerrada:            'Luxofractura del Pie Cerrada',
-      };
-      return FRACTURA_PIE_LABELS[answers.fractura_pie_tipo] || answers.fractura_pie_tipo;
-    })()}`
-  : ''
-}
 
-III. DIAGNÓSTICO SUGERIDO
-${resultQuestion.text}
+  // Helper: solo incluye una línea si el valor existe y no es "No evaluado"
+  const line = (label, value) => (value ? `- ${label}: ${value}` : null);
 
-IV. INDICACIONES SUGERIDAS
-${pasos.map((s, i) => `${i+1}. ${s}`).join('\n')}
+  // Construir sección I — solo campos con valor
+  const seccionI = [
+    line('Carga Laboral', cargaTexto[Number(answers.carga_laboral)]),
+    answers.eva !== undefined ? `- Dolor (EVA): ${answers.eva}/10` : null,
+    line('Aumento de volumen (AVO)', edemaTexto[answers.aumento_volumen]),
+    line('Equimosis', equimosisTexto[answers.equimosis]),
+    line('Inestabilidad', inestabilidadTexto[answers.inestabilidad]),
+    answers.hallazgos_fisicos ? `- Hallazgos Físicos: ${answers.hallazgos_fisicos}` : null,
+  ].filter(Boolean).join('\n');
 
-=========================================
-Sistema de Apoyo al Diagnóstico - ACHS
-=========================================
-`.trim();
+  // Construir sección II — solo si hubo RX o fractura
+  const clasificacionLinea = (() => {
+    const LABELS = {
+      maleolo_perone_cerrada: 'Maléolo Peroneo Cerrada',
+      maleolo_tibial_cerrada: 'Maléolo Tibial Cerrada',
+      bimaleolar_cerrada:     'Bimaleolar Cerrada',
+      trimaleolar_cerrada:    'Trimaleolar Cerrada',
+      maleolo_perone_abierta: 'Maléolo Peroneo Abierta',
+      maleolo_tibial_abierta: 'Maléolo Tibial Abierta',
+      bimaleolar_abierta:     'Bimaleolar Abierta',
+      trimaleolar_abierta:    'Trimaleolar Abierta',
+    };
+    const val = answers.clasificacion_especifica_cerrada || answers.clasificacion_especifica_abierta;
+    return val ? `- Clasificación: ${LABELS[val] || val}` : null;
+  })();
+
+  const fracturaPieLinea = (() => {
+    if (answers.hay_fractura !== 'si_otra' || !answers.fractura_pie_tipo) return null;
+    if (answers.fractura_pie_tipo === 'otra') {
+      return `- Fractura de pie: ${answers.fractura_pie_otra?.trim() || 'Sin especificar'}`;
+    }
+    const FRACTURA_PIE_LABELS = {
+      fractura_astragalo_abierta:          'Fractura Astragalo Abierta',
+      fractura_astragalo_cerrada:          'Fractura Astragalo Cerrada',
+      fractura_calcaneo_abierta:           'Fractura Calcáneo Abierta',
+      fractura_calcaneo_cerrada:           'Fractura Calcáneo Cerrada',
+      fractura_cuello_talo_cerrada:        'Fractura Cuello Talo Cerrada',
+      fractura_cuerpo_talo_cerrada:        'Fractura Cuerpo Talo Cerrada',
+      fractura_escafoides_tarso_cerrada:   'Fractura Escafoides Tarso del Pie Cerrada',
+      fractura_huesos_tarso_cerrada:       'Fractura Huesos del Tarso (excepto Escafoides) Cerrada',
+      fractura_metatarsiano_abierta:       'Fractura Metatarsiano Abierta',
+      fractura_metatarsiano_cerrada:       'Fractura Metatarsiano Cerrada',
+      fracturas_perifericas_talo_abiertas: 'Fracturas Periféricas Talo Abiertas',
+      fracturas_perifericas_talo_cerradas: 'Fracturas Periféricas Talo Cerradas',
+      luxafractura_lisfranc_abierta:       'Luxafractura de Lisfranc Abierta',
+      luxofractura_chopart_cerrada:        'Luxofractura de Chopart Cerrada',
+      luxofractura_lisfranc_cerrada:       'Luxofractura de Lisfranc Cerrada',
+      luxofractura_pie_abierta:            'Luxofractura del Pie Abierta',
+      luxofractura_pie_cerrada:            'Luxofractura del Pie Cerrada',
+    };
+    return `- Fractura de pie: ${FRACTURA_PIE_LABELS[answers.fractura_pie_tipo] || answers.fractura_pie_tipo}`;
+  })();
+
+  // Solo incluir sección de imagenología si hubo alguna radiografía
+  const huboRx = rxSolicitadas.length > 0;
+  const seccionII_lineas = [
+    huboRx ? `- Radiografía solicitada: ${rxTexto}` : null,
+    fracturaTexto ? `- Resultado: ${fracturaTexto}` : null,
+    clasificacionLinea,
+    fracturaPieLinea,
+  ].filter(Boolean);
+
+  const seccionII = seccionII_lineas.length > 0
+    ? `IMAGENOLOGÍA\n${seccionII_lineas.join('\n')}`
+    : null;
+
+  // Criterios Ottawa — solo si se respondió
+  const ottawaLinea = (() => {
+    const ottawa = answers.criterios_ottawa2;
+    if (!Array.isArray(ottawa) || ottawa.length === 0) return null;
+    const texto = (ottawa.length === 1 && ottawa.includes('no_cumple'))
+      ? 'Negativo (-)'
+      : 'Positivo (+)';
+    return `- Criterios Ottawa: ${texto}`;
+  })();
+
+  // Deformidad y tolerancia — solo si se respondieron
+  const deformidadLinea = answers.deformidad_evidente
+    ? `- Deformidad Evidente: ${answers.deformidad_evidente === 'si' ? 'SÍ' : 'NO'}`
+    : null;
+  const tipoDolorLinea = answers.tipo_dolor
+    ? `- Tipo de Dolor: ${answers.tipo_dolor}`
+    : null;
+  const toleranciaLinea = answers.tolera_carga_difuso
+    ? `- Tolerancia Carga: ${toleranciaTexto[answers.tolera_carga_difuso]}`
+    : null;
+
+  // Agregamos a sección I los campos de evaluación que apliquen
+  const seccionI_extra = [ottawaLinea, deformidadLinea, tipoDolorLinea, toleranciaLinea]
+    .filter(Boolean).join('\n');
+
+  const seccionI_completa = [seccionI, seccionI_extra].filter(Boolean).join('\n');
+
+  // Sección IV — guiones en vez de números, TODOS los pasos
+  const seccionIV = pasos.map(s => `- ${s}`).join('\n');
+
+  // Armar el informe final
+  const secciones = [
+    `=========================================`,
+    `      INFORME MÉDICO: TOBILLO Y PIE`,
+    `=========================================`,
+    `ID CASO: ${caseId}`,
+    `FECHA: ${new Date().toLocaleDateString()}`,
+    `DIAGNÓSTICO SUGERIDO: ${resultQuestion.text}`,
+    ``,
+    `EXAMEN FÍSICO`,
+    seccionI_completa,
+    ``,
+    seccionII,
+    seccionII ? `` : null,
+    `DIAGNÓSTICO SUGERIDO`,
+    resultQuestion.text,
+    ``,
+    `INDICACIONES SUGERIDAS`,
+    seccionIV,
+    ``,
+    `=========================================`,
+    `Sistema de Apoyo al Diagnóstico - ACHS`,
+    `=========================================`,
+  ].filter(s => s !== null).join('\n');
+
+  return secciones.trim();
 };
-
 const questionnaireModule = {
   questions,
   protocols,

@@ -197,27 +197,6 @@ case 'button-group': {
   );
 }
 
-
-    // case 'slider':
-    //   return (
-    //     <div className="space-y-3 mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200">
-    //       <input
-    //         type="range"
-    //         min={question.min || 0}
-    //         max={question.max || 10}
-    //         value={value || 0}
-    //         onChange={(e) => onChange(question.id, parseInt(e.target.value))}
-    //         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-700"
-    //       />
-    //       <div className="flex justify-between text-[10px] font-bold text-gray-500 uppercase">
-    //         <span>Sin dolor (0)</span><span>Máximo (10)</span>
-    //       </div>
-    //       <div className={`p-2 text-center rounded-md font-bold text-lg ${(value || 0) <= 3 ? 'bg-green-100 text-green-800' : (value || 0) <= 6 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-    //         EVA: {value || 0}
-    //       </div>
-    //     </div>
-    //   );
-
   case 'slider': {
   const val = value || 0;
   // Color del thumb y track según valor
@@ -303,7 +282,7 @@ case 'button-group': {
           value={value || ''}
           onChange={(e) => onChange(question.id, e.target.value)}
           placeholder={question.placeholder || ''}
-          className={`${commonInputClass} h-24`}
+          className={`${commonInputClass} h-35`}
         />
       );
 
