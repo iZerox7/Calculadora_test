@@ -1088,9 +1088,11 @@ const mensajeTF = (() => {
 // Mensaje Control (amarillo)
 const mensajeControl = (() => {
   if (esGrado3) return 'Agendar primer control al día 7';
-  if (esGrado2 && (carga === 2 || carga === 3)) return 'Agendar primer control al día 7';
+  if (esGrado2 && (carga === 2 || carga === 3)) return 'Agendar primer control al día 5';
   return null;
 })();
+
+
       // Resolución dinámica para esguince grado I
 const currentProtocol =
   finalResult.protocolId === "protocolo_esguince_1"
@@ -1140,6 +1142,7 @@ const displayedSteps = [
     </p>
   </div>
 )}
+
 
           <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
             <h3 className="text-blue-800 font-bold text-lg mb-4 flex items-center">
