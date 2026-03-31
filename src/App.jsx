@@ -1092,7 +1092,17 @@ const mensajeControl = (() => {
   return null;
 })();
 
-
+// Transporte
+const transporteTexto = (() => {
+  if (finalResult.protocolId === 'protocolo_esguince_1') return 'No requiere transporte';
+  if (finalResult.protocolId === 'protocolo_esguince_2') return 'Furgón hasta retiro de ayudas técnicas u órtesis';
+  if (finalResult.protocolId === 'protocolo_esguince_3') return 'Furgón hasta retiro de ayudas técnicas u órtesis';
+  // Cualquier fractura (weber, escenarios, pie)
+  const esFractura = ['protocolo_weber_a', 'protocolo_weber_b_c', 'protocolo_escenario_2',
+    'protocolo_escenario_3', 'protocolo_escenario_4', 'protocolo_fractura_pie'].includes(finalResult.protocolId);
+  if (esFractura) return 'Requiere transporte';
+  return null;
+})();
       // Resolución dinámica para esguince grado I
 const currentProtocol =
   finalResult.protocolId === "protocolo_esguince_1"
@@ -1161,6 +1171,11 @@ const displayedSteps = [
               </ul>
 
             </div>
+                {transporteTexto && (
+                <p className="font-bold text-blue-900 text-sm mt-3">
+                  TRANSPORTE: {transporteTexto}
+                </p>
+              )}
           </div>
 
           <div className="space-y-4">
