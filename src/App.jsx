@@ -736,33 +736,47 @@ const handleEvaluate = async () => {
 
   // ── Construir indicaciones solo para tobillo ──────────────────────────
   let indicacionesTexto = null;
-  if (selectedCategory === "tobillo_pie") {
-    const currentProtocol =
-      evaluation.protocolId === "protocolo_esguince_1"
-        ? questionnaireModule.getProtocoloEsguince1?.(answers)
-          ?? questionnaireModule.protocols[evaluation.protocolId]
-        : questionnaireModule.protocols[evaluation.protocolId];
+// ── Calcular mensajes de agendamiento (solo tobillo) ─────────────────
+let mensajeTFGuardar = null;
+let mensajeControlGuardar = null;
+let transporteGuardar = null;
 
-    const reposoDinamico = questionnaireModule?.restTextPorCarga?.(answers, evaluation.protocolId) ?? null;
+if (selectedCategory === "tobillo_pie") {
+  const esGrado2 = evaluation.protocolId === 'protocolo_esguince_2';
+  const esGrado3 = evaluation.protocolId === 'protocolo_esguince_3';
+  const vol = answers.aumento_volumen;
+  const carg = Number(answers.carga_laboral);
 
-    const displayedSteps = [
-      ...(reposoDinamico ? [reposoDinamico] : []),
-      ...((currentProtocol?.pasos ?? [])),
-    ];
-
-    indicacionesTexto = displayedSteps.map((paso, i) => `${i + 1}. ${paso}`).join('\n');
+  if (esGrado3) mensajeTFGuardar = 'Agendar primera TF al día 3';
+  else if (esGrado2) {
+    if (vol === 'moderado' || vol === 'severo') mensajeTFGuardar = 'Agendar primera TF al día 3';
+    else if (vol === 'leve') mensajeTFGuardar = 'Agendar primera TF al día 5';
   }
-  // ─────────────────────────────────────────────────────────────────────
 
-  const resultData = {
-    id_caso: caseId,
-    cuestionario: selectedQuestionnaireKey,
-    respuestas: answers,
-    resultado: evaluation.text,
-    timestamp: new Date().toISOString(),
-    // Solo se incluye si es tobillo; lumbago queda como null (columna acepta null)
-    ...(indicacionesTexto !== null && { indicaciones: indicacionesTexto }),
-  };
+  if (esGrado3) mensajeControlGuardar = 'Agendar primer control al día 7';
+  else if (esGrado2 && (carg === 2 || carg === 3)) mensajeControlGuardar = 'Agendar primer control al día 5';
+
+  if (evaluation.protocolId === 'protocolo_esguince_1') transporteGuardar = 'No requiere transporte';
+  else if (evaluation.protocolId === 'protocolo_esguince_2') transporteGuardar = 'Furgón hasta retiro de ayudas técnicas u órtesis';
+  else if (evaluation.protocolId === 'protocolo_esguince_3') transporteGuardar = 'Furgón hasta retiro de ayudas técnicas u órtesis';
+  else if (['protocolo_weber_a', 'protocolo_weber_b_c', 'protocolo_escenario_2',
+    'protocolo_escenario_3', 'protocolo_escenario_4', 'protocolo_fractura_pie'].includes(evaluation.protocolId)) {
+    transporteGuardar = 'Requiere transporte';
+  }
+}
+// ─────────────────────────────────────────────────────────────────────
+
+const resultData = {
+  id_caso: caseId,
+  cuestionario: selectedQuestionnaireKey,
+  respuestas: answers,
+  resultado: evaluation.text,
+  timestamp: new Date().toISOString(),
+  ...(indicacionesTexto !== null && { indicaciones: indicacionesTexto }),
+  ...(mensajeTFGuardar !== null && { mensaje_tf: mensajeTFGuardar }),
+  ...(mensajeControlGuardar !== null && { mensaje_control: mensajeControlGuardar }),
+  ...(transporteGuardar !== null && { transporte: transporteGuardar }),
+};
 
   try {
     const { error } = await supabase.from('respuestas').insert([resultData]);
