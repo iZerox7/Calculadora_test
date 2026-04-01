@@ -1185,11 +1185,11 @@ const displayedSteps = [
               </ul>
 
             </div>
-                {transporteTexto && (
-                <p className="font-bold text-blue-900 text-sm mt-3">
-                  TRANSPORTE: {transporteTexto}
-                </p>
-              )}
+                {/* {transporteTexto && ( */}
+                {/* <p className="font-bold text-blue-900 text-sm mt-3"> */}
+                  {/* TRANSPORTE: {transporteTexto} */}
+                {/* </p> */}
+              {/* )} */}
           </div>
 
           <div className="space-y-4">
