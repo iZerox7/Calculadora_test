@@ -124,8 +124,9 @@ export const questions = [
   type: "options",
   group: "anamnesis",
   options: [
-      { value: "izquierdo", label: "Izquierdo" },
-      { value: "derecho", label: "Derecho" }
+      { value: "Izquierdo", label: "Izquierdo" },
+      { value: "Derecho", label: "Derecho" },
+      { value: "Bilateral", label: "Bilateral" }
   ]
 },
 {

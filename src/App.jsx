@@ -1064,7 +1064,45 @@ if (tab === "anamnesis") {
           resultQuestion: finalResult, 
           protocols: questionnaireModule.protocols,
           allQuestions: questionnaireModule.questions // AGREGADO PARA LUMBAGO
+          
       });
+      // Justo después de esta línea:
+// const tieneMetatarsiano = Array.isArray(answers.criterios_ottawa2) && ...
+
+// --- Mensajes de agendamiento TF y Control ---
+const esGrado2 = finalResult.protocolId === 'protocolo_esguince_2';
+const esGrado3 = finalResult.protocolId === 'protocolo_esguince_3';
+const volumen = answers.aumento_volumen;
+const carga = Number(answers.carga_laboral);
+
+// Mensaje TF (morado)
+const mensajeTF = (() => {
+  if (esGrado3) return 'Agendar primera TF al día 3';
+  if (esGrado2) {
+    if (volumen === 'moderado' || volumen === 'severo') return 'Agendar primera TF al día 3';
+    if (volumen === 'leve') return 'Agendar primera TF al día 5';
+  }
+  return null;
+})();
+
+// Mensaje Control (amarillo)
+const mensajeControl = (() => {
+  if (esGrado3) return 'Agendar primer control al día 7';
+  if (esGrado2 && (carga === 2 || carga === 3)) return 'Agendar primer control al día 5';
+  return null;
+})();
+
+// Transporte
+const transporteTexto = (() => {
+  if (finalResult.protocolId === 'protocolo_esguince_1') return 'No requiere transporte';
+  if (finalResult.protocolId === 'protocolo_esguince_2') return 'Furgón hasta retiro de ayudas técnicas u órtesis';
+  if (finalResult.protocolId === 'protocolo_esguince_3') return 'Furgón hasta retiro de ayudas técnicas u órtesis';
+  // Cualquier fractura (weber, escenarios, pie)
+  const esFractura = ['protocolo_weber_a', 'protocolo_weber_b_c', 'protocolo_escenario_2',
+    'protocolo_escenario_3', 'protocolo_escenario_4', 'protocolo_fractura_pie'].includes(finalResult.protocolId);
+  if (esFractura) return 'Requiere transporte';
+  return null;
+})();
       // Resolución dinámica para esguince grado I
 const currentProtocol =
   finalResult.protocolId === "protocolo_esguince_1"
@@ -1088,13 +1126,33 @@ const displayedSteps = [
             <h2 className="text-3xl font-black uppercase tracking-tighter">{finalResult.text}</h2>
           </div>
 
-      {tieneMetatarsiano && (
-        <div className="p-4 bg-orange-50 border-l-4 border-orange-400 rounded-lg">
-          <p className="text-orange-800 text-sm font-semibold">
-            ⚠️ Dado que presenta dolor en metatarso, ver protocolo de esguince de pie previo a determinar diagnóstico final.
-          </p>
-        </div>
-      )}
+{/* 1. Mensaje metatarsiano (naranja) — ya existente */}
+{tieneMetatarsiano && (
+  <div className="p-4 bg-orange-50 border-l-4 border-orange-400 rounded-lg">
+    <p className="text-orange-800 text-sm font-semibold">
+      ⚠️ Dado que presenta dolor en metatarso, ver protocolo de esguince de pie previo a determinar diagnóstico final.
+    </p>
+  </div>
+)}
+
+{/* 2. Mensaje TF (morado) */}
+{mensajeTF && (
+  <div className="p-4 bg-purple-50 border-l-4 border-purple-400 rounded-lg">
+    <p className="text-purple-800 text-sm font-semibold">
+      🗓️ {mensajeTF}
+    </p>
+  </div>
+)}
+
+{/* 3. Mensaje Control (amarillo) */}
+{mensajeControl && (
+  <div className="p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
+    <p className="text-yellow-800 text-sm font-semibold">
+      📅 {mensajeControl}
+    </p>
+  </div>
+)}
+
 
           <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
             <h3 className="text-blue-800 font-bold text-lg mb-4 flex items-center">
@@ -1113,6 +1171,11 @@ const displayedSteps = [
               </ul>
 
             </div>
+                {transporteTexto && (
+                <p className="font-bold text-blue-900 text-sm mt-3">
+                  TRANSPORTE: {transporteTexto}
+                </p>
+              )}
           </div>
 
           <div className="space-y-4">
