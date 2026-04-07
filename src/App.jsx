@@ -276,15 +276,93 @@ case 'button-group': {
     case 'multi':
       return <MultiSelect question={question} value={value} onChange={onChange} />;
 
-    case 'textarea':
-      return (
-        <textarea
-          value={value || ''}
-          onChange={(e) => onChange(question.id, e.target.value)}
-          placeholder={question.placeholder || ''}
-          className={`${commonInputClass} h-35`}
-        />
-      );
+    // case 'textarea':
+    //   return (
+    //     <textarea
+    //       value={value || ''}
+    //       onChange={(e) => onChange(question.id, e.target.value)}
+    //       placeholder={question.placeholder || ''}
+    //       className={`${commonInputClass} h-35`}
+    //     />
+    //   );
+
+// En QuestionRenderer, reemplaza el case 'textarea':
+case 'textarea': {
+  const [isListening, setIsListening] = React.useState(false);
+  const recognitionRef = React.useRef(null);
+
+  const toggleSpeech = () => {
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      alert('Tu navegador no soporta reconocimiento de voz');
+      return;
+    }
+
+    // Si ya está escuchando, detener
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+      setIsListening(false);
+      return;
+    }
+
+    // Crear nueva instancia y guardarla en el ref
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'es-CL';
+    recognition.continuous = true;
+    recognition.interimResults = false;
+
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map(r => r[0].transcript)
+        .join(' ');
+      onChange(question.id, (value ? value + ' ' : '') + transcript);
+    };
+
+    recognition.onend = () => {
+      recognitionRef.current = null;
+      setIsListening(false);
+    };
+
+    recognition.onerror = () => {
+      recognitionRef.current = null;
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+  };
+
+  return (
+    <div className="relative">
+      <textarea
+        value={value || ''}
+        onChange={(e) => onChange(question.id, e.target.value)}
+        placeholder={question.placeholder || ''}
+        className={`${commonInputClass} h-35 pr-12`}
+      />
+      <button
+        type="button"
+        onClick={toggleSpeech}
+        className={`absolute top-2 right-2 p-2 rounded-full transition-colors ${
+          isListening
+            ? 'bg-red-100 text-red-600 animate-pulse'
+            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+        }`}
+        title={isListening ? 'Detener dictado' : 'Iniciar dictado por voz'}
+      >
+        {isListening ? '⏹️' : '🎤'}
+      </button>
+      {isListening && (
+        <p className="text-xs text-red-500 mt-1 font-medium animate-pulse">
+          🔴 Escuchando... presiona ⏹️ para detener
+        </p>
+      )}
+    </div>
+  );
+}
+
 
     case 'number':
     case 'text':
