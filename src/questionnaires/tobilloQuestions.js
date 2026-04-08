@@ -487,7 +487,7 @@ export const restTextPorCarga = (answers, protocolId) => {
   const reposoPorProtocolo = {
     // Mantengo tu lógica tal cual para Grado I
     protocolo_esguince_1: {
-      1: 'STP',
+      1: 'Sin reposo',
       2: 'Alta diferida hasta 2 días',
       3: 'Alta diferida hasta 3 días',
     },
