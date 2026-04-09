@@ -24,41 +24,67 @@ export const getProtocoloEsguince1 = (answers) => {
   };
 };
 
+// Después de getProtocoloEsguince1, agrega:
 
+export const getProtocoloEsguince2 = (answers) => {
+  const aumento = answers?.aumento_volumen;
+  const tolerancia = answers?.tolera_carga_difuso;
+  const usaBota = aumento === "severo" || tolerancia === "no_tolera";
+
+  return {
+    titulo: "PROTOCOLO DE MANEJO - ESGUINCE GRADO II",
+    pasos: [
+      "Reposo laboral.",
+      "Reposo deportivo.",
+      "Realizar ejercicios indicados en pauta ",
+      "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.",
+      usaBota
+        ? "Uso diurno de bota ortopédica, retirar para dormir y descansar."
+        : "Uso de tobillera con barras laterales durante el día hasta control con médico, retirar para dormir y descansar.",
+      "Descansar con extremidad en alto.",
+      "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
+      "Control con médico AP en agencia en 5 a 7 días. ",
+      "En caso de dolor invalidante, acudir a agencia ACHS más cercana."
+    ]
+  };
+};
+
+export const getProtocoloEsguince3 = (answers) => {
+  const aumento = answers?.aumento_volumen;
+  const tolerancia = answers?.tolera_carga_difuso;
+  const usaBota = aumento === "severo" || tolerancia === "no_tolera";
+
+  return {
+    titulo: "PROTOCOLO DE MANEJO - ESGUINCE GRADO III",
+    pasos: [
+      "Reposo laboral.",
+      "Reposo deportivo.",
+      "Realizar ejercicios indicados en pauta ",
+      "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.",
+      usaBota
+        ? "Uso de bota ortopédica y descarga con muletas."
+        : "Uso de tobillera con barras laterales durante el día hasta control con médico, retirar para dormir y descansar.",
+      "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 5 días. Ajustar según respuesta. En caso de no respuesta a los 7-10 días, considerar escalar a tramadol/paracetamol 37,5 mg/ 325 mg vo c/8-12 h."
+    ]
+  };
+};
 
 export const protocols = {
-  "protocolo_esguince_1": {
-    titulo: "PROTOCOLO DE MANEJO - ESGUINCE GRADO I",
-    pasos: [], // placeholder; se sobreescribe dinámicamente
-  },
-    "protocolo_esguince_2": {
-        "titulo": "PROTOCOLO DE MANEJO - ESGUINCE GRADO II",
-        "pasos": [
-          "Reposo laboral. ",
-          "Reposo deportivo.",  
-          "Realizar ejercicios indicados en pauta ",
-          "Aplicar frio local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.",  
-          "Uso de tobillera con barras laterales durante el día hasta control con médico, retirar para dormir y descansar.", 
-          "Descansar con extremidad en alto.", 
-          "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.", 
-          "Control con médico AP en agencia en 5 a 7 días. ",
-          "En caso de dolor invalidante, acudir a agencia ACHS más cercana."
-
-        ]
+    "protocolo_esguince_1": {
+      titulo: "PROTOCOLO DE MANEJO - ESGUINCE GRADO I",
+      pasos: [], // placeholder; se sobreescribe dinámicamente
     },
-    "protocolo_esguince_3": {
-        "titulo": "PROTOCOLO DE MANEJO - ESGUINCE GRADO III",
-        "pasos": [
-                    "Reposo laboral. ",
-            "Reposo deportivo.",  
-            "Realizar ejercicios indicados en pauta ",
-            "Aplicar frio local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.", 
-            "Uso de bota ortopédica y descarga con muletas.",
-            "Derivación a Traumatología para evaluar integridad ligamentaria.",
-            "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 5 días. Ajustar según respuesta.En caso de no respuesta a los 7-10 días, considerar escalara tramadol/paracetamol 37,5 mg/ 325 mg vo c/8-12 h."
-        ]
+
+    "protocolo_esguince_2": {
+      titulo: "PROTOCOLO DE MANEJO - ESGUINCE GRADO II",
+      pasos: [], // placeholder; se sobreescribe dinámicamente
     },
     
+    "protocolo_esguince_3": {
+      titulo: "PROTOCOLO DE MANEJO - ESGUINCE GRADO III",
+      pasos: [], // placeholder; se sobreescribe dinámicamente
+    },
+      
     // PROTOCOLOS ESCENARIOS FRACTURAS
     "protocolo_weber_a": {
         "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 1 - WEBER A",
@@ -69,21 +95,25 @@ export const protocols = {
         ]
     },
 
-    "protocolo_weber_b_c": {
+    "protocolo_weber_b_c": { // EDITADO
         "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 1 - Unimaleolar no luxada - WEBER B Y C",
         "pasos": [
+            "Derivación a especialista TMT según presentación del caso", //AGREGADO
             "Inmovilización: bota ortopédica con bastones canadienses",
             "Sin carga",
-            "Medicamentos: Profilaxis tromboembólica con heparina de bajo peso molecular (enoxaparina o dalteparina) hasta definición de especialista",
-            "Aplicar frio local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.", 
+            "Pie en alto",
+            "Medicamentos: Analgesia y profilaxis tromboembólica con aspirina o dabigatrán hasta definición de especialista",
+            "Aplicar frÍo local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.", 
         ]
     },    
 
     "protocolo_escenario_2": {
         "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 2 - Bimaleolar no luxada",
         "pasos": [
+            "Derivación a especialista TMT según presentación del caso", //AGREGADO
             "Inmovilización: bota ortopédica con bastones canadienses",
-            "Medicamentos: Profilaxis tromboembólica con heparina de bajo peso molecular (enoxaparina o dalteparina) para cirugía",
+            "Pie en alto",
+            "Medicamentos: Analgesia y profilaxis tromboembólica con aspirina o dabigatrán para cirugía",
             "Aplicar frío local" ,
             "Corroborar protocolo con TMT de urgencia"
         ]
@@ -95,10 +125,11 @@ export const protocols = {
             "🚨 Derivación inmediata a HT o centro hospitalario con capacidad resolutiva (reducción cerrada e instalación de yeso)🚨",
             "Inmovilización con valva de la ambulancia",
             "Aplicar frío local",
-            "Reducir fractura e inmovilizar con yeso",
-            "Medicamentos: Analgesia ev, profilaxis tromboembólica con heparina de bajo peso molecular (enoxaparina o dalteparina) una vez inmovilizada"
+            // "Reducir fractura e inmovilizar con yeso",
+            "Medicamentos: Analgesia ev, profilaxis tromboembólica con aspirina o dabigatrán una vez inmovilizada"
         ]
     }, 
+
     "protocolo_escenario_4": {
         "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 4 - Expuesta / SC / NV",
         "pasos": [
@@ -106,11 +137,12 @@ export const protocols = {
             "Derivación inmediata a HT o centro hospitalario con capacidad resolutiva o evaluar traslado a Santiago",
             "Inmovilización con valva de la ambulancia",
             "Aplicar frío local",
-            "Reducir fractura e inmovilizar con yeso",
+            // "Reducir fractura e inmovilizar con yeso",
             "Medicamentos: Analgesia ev, tratamiento antibiótivo ev (en caso de fractura expuesta)",
             "Vacunación antitetánica (en caso de fractura expuesta)"
        ]
     },
+
     "protocolo_fractura_pie": {
   "titulo": "PROTOCOLO DE MANEJO - FRACTURA DE PIE",
   "pasos": ["Pendiente de integración"]
@@ -686,9 +718,18 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
     // Grado II: sin inestabilidad o dudosa + edema presente + algo de equimosis
     if (
       (inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
-      (volumen === "moderado" || volumen === "severo")
+      (volumen === "moderado" || volumen === "severo") 
       //  &&
       // (equimosis === "localizada" || equimosis === "difusa" ) // Comentamos el criterio de equimosis para darle más importancia al AVO
+    ) {
+      return { id: "e2", text: "Esguince de Tobillo Grado II", color: "green", protocolId: "protocolo_esguince_2" };
+    }
+
+    // Grado II (fallback por Ottawa): incapacidad de dar pasos, aunque edema sea leve o ausente
+    const tieneIncapacidadPasos = ottawaArray.includes("incapacidad_pasos");
+    if (
+      (inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
+      tieneIncapacidadPasos
     ) {
       return { id: "e2", text: "Esguince de Tobillo Grado II", color: "green", protocolId: "protocolo_esguince_2" };
     }
@@ -712,8 +753,13 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
 
 export const generateClinicalReport = ({ caseId, answers, resultQuestion, protocols }) => {
   // Para esguince grado I, los pasos vienen de getProtocoloEsguince1 (el array en protocols es placeholder vacío)
-  const prot = resultQuestion.protocolId === 'protocolo_esguince_1'
+const prot =
+  resultQuestion.protocolId === 'protocolo_esguince_1'
     ? getProtocoloEsguince1(answers)
+    : resultQuestion.protocolId === 'protocolo_esguince_2'
+    ? getProtocoloEsguince2(answers)
+    : resultQuestion.protocolId === 'protocolo_esguince_3'
+    ? getProtocoloEsguince3(answers)
     : protocols[resultQuestion.protocolId];
 
   // Reposo dinámico por carga (ahora soporta Esguince I, II y III)
@@ -913,8 +959,8 @@ const questionnaireModule = {
   generateClinicalReport,
   restTextPorCarga,
   getProtocoloEsguince1,
+  getProtocoloEsguince2,  // ← agregar
+  getProtocoloEsguince3,  // ← agregar
   requiresAnamnesis: true,
-  // guideImage: "arbol_decision.png",
 };
-
 export default questionnaireModule;
