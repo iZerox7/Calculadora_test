@@ -1198,8 +1198,11 @@ const transporteTexto = (() => {
       // Resolución dinámica para esguince grado I
 const currentProtocol =
   finalResult.protocolId === "protocolo_esguince_1"
-    ? questionnaireModule.getProtocoloEsguince1?.(answers) 
-      ?? questionnaireModule.protocols[finalResult.protocolId]
+    ? questionnaireModule.getProtocoloEsguince1?.(answers) ?? questionnaireModule.protocols[finalResult.protocolId]
+    : finalResult.protocolId === "protocolo_esguince_2"
+    ? questionnaireModule.getProtocoloEsguince2?.(answers) ?? questionnaireModule.protocols[finalResult.protocolId]
+    : finalResult.protocolId === "protocolo_esguince_3"
+    ? questionnaireModule.getProtocoloEsguince3?.(answers) ?? questionnaireModule.protocols[finalResult.protocolId]
     : questionnaireModule.protocols[finalResult.protocolId];
 
 // NUEVO: calcular reposo dinámico (usa el helper exportado)
