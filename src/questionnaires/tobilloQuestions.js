@@ -751,26 +751,19 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
 };
 
 
-export const generateClinicalReport = ({ caseId, answers, resultQuestion, protocols }) => {
-  // Para esguince grado I, los pasos vienen de getProtocoloEsguince1 (el array en protocols es placeholder vacío)
-const prot =
-  resultQuestion.protocolId === 'protocolo_esguince_1'
+export const generateClinicalReport = ({ caseId, answers, resultQuestion, protocols, stepsOverride }) => {
+  const prot = resultQuestion.protocolId === 'protocolo_esguince_1'
     ? getProtocoloEsguince1(answers)
-    : resultQuestion.protocolId === 'protocolo_esguince_2'
-    ? getProtocoloEsguince2(answers)
-    : resultQuestion.protocolId === 'protocolo_esguince_3'
-    ? getProtocoloEsguince3(answers)
     : protocols[resultQuestion.protocolId];
 
-  // Reposo dinámico por carga (ahora soporta Esguince I, II y III)
   const reposoDinamico = restTextPorCarga(answers, resultQuestion.protocolId);
+  const pasosBase = Array.isArray(prot?.pasos) ? [...prot.pasos] : [];
+  if (reposoDinamico) pasosBase.unshift(reposoDinamico);
 
-  // Construimos la lista de indicaciones (TODOS los pasos)
-  const pasos = Array.isArray(prot?.pasos) ? [...prot.pasos] : [];
-  if (reposoDinamico) {
-    pasos.unshift(reposoDinamico);
-  }
+  // Si hay override (indicaciones seleccionadas), usar esas; si no, usar todas
+  const pasos = stepsOverride ?? pasosBase;
 
+  
   // Determinar qué radiografías se solicitaron
   const rxSolicitadas = [];
   if (answers.rx_deformidad === 'listo') rxSolicitadas.push('Rx tobillo Ap-Lat-Obl sin carga (deformidad)');

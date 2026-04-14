@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { categoriesConfig } from './config/categories';
 import { supabase } from './supabaseClient';
 import { OccupationSelect } from './OccupationSelect';
+import MultiSelect from './components/MultiSelect';
 
 // Añade un set de IDs que disparan el autosave
 const RX_CHECKPOINT_IDS = new Set(['rx_deformidad', 'rx_tolera_carga', 'rx_no_tolera_carga']);
@@ -40,54 +41,6 @@ const ProgressBar = ({ current, total }) => {
           style={{ width: `${pct}%` }}
         />
       </div>
-    </div>
-  );
-};
-
-// --- Componente MultiSelect ---
-const MultiSelect = ({ question, value, onChange }) => {
-  const [selected, setSelected] = useState(value || []);
-  const handleSelect = (optionValue) => {
-    let newSelected;
-    if (optionValue === "no_cumple") {
-      // Si ya está seleccionado, deseleccionar; si no, seleccionar solo este
-      newSelected = selected.includes("no_cumple") ? [] : ["no_cumple"];
-    } else {
-      // No permitir seleccionar otro si "no_cumple" está activo
-      if (selected.includes("no_cumple")) return;
-      if (selected.includes(optionValue)) {
-        newSelected = selected.filter((v) => v !== optionValue);
-      } else {
-        newSelected = [...selected, optionValue];
-      }
-    }
-    setSelected(newSelected);
-    onChange(question.id, newSelected);
-  };
-
-  return (
-    <div className="flex flex-col space-y-2">
-      {question.options.map((option) => {
-        const isSelected = selected.includes(option.value);
-        const isDisabled = option.value !== "no_cumple" && selected.includes("no_cumple");
-        return (
-          <button
-            key={option.value}
-            type="button"
-            onClick={() => handleSelect(option.value)}
-            disabled={isDisabled}
-            className={`p-3 rounded-lg text-left transition-colors border ${
-              isSelected
-                ? "bg-blue-700 text-white border-blue-800 ring-2 ring-blue-500"
-                : isDisabled
-                ? "bg-gray-50 text-gray-300 border-gray-200 cursor-not-allowed"
-                : "bg-gray-100 hover:bg-gray-200 border-gray-300"
-            }`}
-          >
-            {option.label}
-          </button>
-        );
-      })}
     </div>
   );
 };
@@ -474,6 +427,49 @@ function filterOptions(options, allowedValues) {
   return options.filter(o => allow.has(o.value));
 }
 
+const SelectableSteps = ({ steps, onConfirm }) => {
+  const [selected, setSelected] = React.useState(() => new Set(steps.map((_, i) => i)));
+
+  const toggle = (i) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+  };
+
+  return (
+    <div className="space-y-2">
+      {steps.map((paso, i) => (
+        <button
+          key={i}
+          type="button"
+          onClick={() => toggle(i)}
+          className={`w-full flex items-start gap-3 p-3 rounded-lg border text-left transition-colors ${
+            selected.has(i)
+              ? 'bg-blue-100 border-blue-400'
+              : 'bg-white border-gray-200 opacity-50'
+          }`}
+        >
+          <div className={`mt-0.5 w-5 h-5 flex-shrink-0 rounded border-2 flex items-center justify-center transition-colors ${
+            selected.has(i) ? 'bg-blue-600 border-blue-600' : 'border-gray-300 bg-white'
+          }`}>
+            {selected.has(i) && <span className="text-white text-xs font-bold">✓</span>}
+          </div>
+          <span className="text-sm text-blue-800">{paso}</span>
+        </button>
+      ))}
+      <button
+        type="button"
+        onClick={() => onConfirm(steps.filter((_, i) => selected.has(i)))}
+        className="w-full mt-4 bg-blue-700 text-white font-bold py-3 rounded-lg hover:bg-blue-800 shadow-md transition-all"
+      >
+        Confirmar indicaciones →
+      </button>
+    </div>
+  );
+};
+
 const StepBar = ({ step, tab }) => {
   const steps = [
     { key: "inicio",     label: "Inicio" },
@@ -534,6 +530,7 @@ function App() {
   const [draftModal, setDraftModal] = useState({ open: false, draft: null });
   const [tab, setTab] = useState("anamnesis"); // "anamnesis" | "evaluation"
   const [backWarningModal, setBackWarningModal] = useState(false);
+  const [indicacionesSeleccionadas, setIndicacionesSeleccionadas] = useState(null);
 
  
   // Modal pequeño para RX Checkpoint
@@ -878,6 +875,7 @@ const resultData = {
   const handleRestart = () => {
     setStep("selection"); setCaseId(""); setAnswers({}); setWizardFinished(false);
     setSelectedCategory(null); setSelectedQuestionnaireKey(null);
+    setIndicacionesSeleccionadas(null);
     setTab("anamnesis");
   };
 
@@ -1150,16 +1148,39 @@ if (tab === "anamnesis") {
     if (step === "result" && finalResult) {
       const isTobillo = selectedCategory === "tobillo_pie";
       const tieneMetatarsiano = Array.isArray(answers.criterios_ottawa2) && answers.criterios_ottawa2.includes("dolor_metatarsiano") && answers.hay_fractura === "no" ;
-      const reportText = questionnaireModule.generateClinicalReport({ 
-          caseId, 
-          answers, 
-          resultQuestion: finalResult, 
-          protocols: questionnaireModule.protocols,
-          allQuestions: questionnaireModule.questions // AGREGADO PARA LUMBAGO
-          
-      });
+      // Reemplaza la línea del reportText por esto:
       // Justo después de esta línea:
 // const tieneMetatarsiano = Array.isArray(answers.criterios_ottawa2) && ...
+
+      // Resolución dinámica para esguince grado I
+const currentProtocol =
+  finalResult.protocolId === "protocolo_esguince_1"
+    ? questionnaireModule.getProtocoloEsguince1?.(answers) ?? questionnaireModule.protocols[finalResult.protocolId]
+    : finalResult.protocolId === "protocolo_esguince_2"
+    ? questionnaireModule.getProtocoloEsguince2?.(answers) ?? questionnaireModule.protocols[finalResult.protocolId]
+    : finalResult.protocolId === "protocolo_esguince_3"
+    ? questionnaireModule.getProtocoloEsguince3?.(answers) ?? questionnaireModule.protocols[finalResult.protocolId]
+    : questionnaireModule.protocols[finalResult.protocolId];
+
+// NUEVO: calcular reposo dinámico (usa el helper exportado)
+const reposoDinamico = questionnaireModule?.restTextPorCarga?.(answers, finalResult.protocolId) ?? null;
+// Pasos a mostrar en la UI (reposo primero, luego protocolo base)
+const displayedSteps = [
+  ...(reposoDinamico ? [reposoDinamico] : []),
+  ...((currentProtocol?.pasos ?? []))
+];
+
+// 4. AHORA sí stepsParaInforme y reportText (que dependen de displayedSteps)
+const stepsParaInforme = indicacionesSeleccionadas !== null ? indicacionesSeleccionadas : displayedSteps;
+
+const reportText = questionnaireModule.generateClinicalReport({ 
+    caseId, 
+    answers, 
+    resultQuestion: finalResult, 
+    protocols: questionnaireModule.protocols,
+    allQuestions: questionnaireModule.questions,
+    stepsOverride: stepsParaInforme
+});
 
 // --- Mensajes de agendamiento TF y Control ---
 const esGrado2 = finalResult.protocolId === 'protocolo_esguince_2';
@@ -1195,23 +1216,6 @@ const transporteTexto = (() => {
   if (esFractura) return 'Requiere transporte';
   return null;
 })();
-      // Resolución dinámica para esguince grado I
-const currentProtocol =
-  finalResult.protocolId === "protocolo_esguince_1"
-    ? questionnaireModule.getProtocoloEsguince1?.(answers) ?? questionnaireModule.protocols[finalResult.protocolId]
-    : finalResult.protocolId === "protocolo_esguince_2"
-    ? questionnaireModule.getProtocoloEsguince2?.(answers) ?? questionnaireModule.protocols[finalResult.protocolId]
-    : finalResult.protocolId === "protocolo_esguince_3"
-    ? questionnaireModule.getProtocoloEsguince3?.(answers) ?? questionnaireModule.protocols[finalResult.protocolId]
-    : questionnaireModule.protocols[finalResult.protocolId];
-
-// NUEVO: calcular reposo dinámico (usa el helper exportado)
-const reposoDinamico = questionnaireModule?.restTextPorCarga?.(answers, finalResult.protocolId) ?? null;
-// Pasos a mostrar en la UI (reposo primero, luego protocolo base)
-const displayedSteps = [
-  ...(reposoDinamico ? [reposoDinamico] : []),
-  ...((currentProtocol?.pasos ?? []))
-];
 
       return (
       <div className="space-y-6">
@@ -1249,29 +1253,41 @@ const displayedSteps = [
 )}
 
 
-          <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
-            <h3 className="text-blue-800 font-bold text-lg mb-4 flex items-center">
-              <span className="mr-2">📋</span> Protocolo de Manejo Sugerido:
-            </h3>
-            <div className="space-y-3">
-              <p className="font-bold text-blue-900 text-sm">{currentProtocol?.titulo}</p>
-                            
-              <ul className="space-y-2">
-                {displayedSteps.map((paso, i) => (
-                  <li key={i} className="flex items-start text-sm text-blue-800">
-                    <span className="font-bold mr-2 text-blue-400">{i + 1}.</span>
-                    {paso}
-                  </li>
-                ))}
-              </ul>
+      <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
+        <h3 className="text-blue-800 font-bold text-lg mb-4 flex items-center">
+          <span className="mr-2">📋</span> Protocolo de Manejo Sugerido:
+        </h3>
+        <div className="space-y-3">
+          <p className="font-bold text-blue-900 text-sm">{currentProtocol?.titulo}</p>
 
-            </div>
-                {/* {transporteTexto && ( */}
-                {/* <p className="font-bold text-blue-900 text-sm mt-3"> */}
-                  {/* TRANSPORTE: {transporteTexto} */}
-                {/* </p> */}
-              {/* )} */}
-          </div>
+          {/* Si aún no confirmó selección: modo selección */}
+          {indicacionesSeleccionadas === null ? (
+            <>
+              {/* ELIGE AQUÍ EL ESTILO DE CAJILLA — ver opciones abajo */}
+              <SelectableSteps
+                steps={displayedSteps}
+                onConfirm={(seleccionadas) => setIndicacionesSeleccionadas(seleccionadas)}
+              />
+            </>
+          ) : (
+            /* Modo lectura: muestra solo las seleccionadas */
+            <ul className="space-y-2">
+              {indicacionesSeleccionadas.map((paso, i) => (
+                <li key={i} className="flex items-start text-sm text-blue-800">
+                  <span className="font-bold mr-2 text-blue-400">{i + 1}.</span>
+                  {paso}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* {transporteTexto && (
+            <p className="font-bold text-blue-900 text-sm mt-3">
+              TRANSPORTE: {transporteTexto}
+            </p>
+          )} */}
+        </div>
+      </div>
 
           <div className="space-y-4">
             <div className="flex justify-between items-end">
