@@ -89,9 +89,16 @@ export const protocols = {
     "protocolo_weber_a": {
         "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 1 - WEBER A",
         "pasos": [
-            "Inmovilización: bota con bastones. Se puede retirar en la noche",
-            "Carga a tolerancia por 4 semanas",
-            "Medicamentos: Profilaxis anticoagulante (aspirina 100mg c/12 hrs)"
+            "Reposo",
+            "Inmovilización: bota ortopédica con bastones. Retirar en la noche",
+            "Carga a tolerancia",
+            "Pie en alto",
+            "Frío local por 15 minutos 3 veces al día por 48 hrs luego calor local por 15 minutos, 3 veces al dia hasta control",
+            "Analgesia VO",
+            "Medicamentos: tromboprofilaxis según protocolo, sólo si no tolera carga",
+            "Control con medico AP a los 8 días ",
+            "Control SOS",
+            "Transporte hasta retiro de ayudas técnicas"
         ]
     },
 
@@ -763,7 +770,7 @@ export const generateClinicalReport = ({ caseId, answers, resultQuestion, protoc
   // Si hay override (indicaciones seleccionadas), usar esas; si no, usar todas
   const pasos = stepsOverride ?? pasosBase;
 
-  
+
   // Determinar qué radiografías se solicitaron
   const rxSolicitadas = [];
   if (answers.rx_deformidad === 'listo') rxSolicitadas.push('Rx tobillo Ap-Lat-Obl sin carga (deformidad)');
