@@ -525,7 +525,7 @@ export const restTextPorCarga = (answers, protocolId) => {
     },
     // NUEVO: Grado II
     protocolo_esguince_2: {
-      1: 'hasta 5 días',
+      1: 'Alta diferida 5 días',
       2: 'hasta 7 días',
       3: 'hasta 14 días',
     },
