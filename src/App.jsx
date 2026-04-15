@@ -46,7 +46,7 @@ const ProgressBar = ({ current, total }) => {
 };
 
 // --- Componente QuestionRenderer ---
-const QuestionRenderer = ({ question, value, onChange, answers }) => {
+const QuestionRenderer = ({ question, value, onChange, answers, onVoiceUsed }) => {
   if (!question) return null;
   const commonInputClass = "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 placeholder:text-sm";
 
@@ -285,6 +285,7 @@ case 'textarea': {
     recognitionRef.current = recognition;
     recognition.start();
     setIsListening(true);
+    onVoiceUsed?.()
   };
 
   return (
@@ -440,6 +441,9 @@ const SelectableSteps = ({ steps, onConfirm }) => {
 
   return (
     <div className="space-y-2">
+     <p className="text-sm text-blue-600 font-medium mb-2">
+        Puede quitar las indicaciones que <span className="font-bold">no</span> desea incluir en el informe.
+      </p>
       {steps.map((paso, i) => (
         <button
           key={i}
@@ -531,7 +535,7 @@ function App() {
   const [tab, setTab] = useState("anamnesis"); // "anamnesis" | "evaluation"
   const [backWarningModal, setBackWarningModal] = useState(false);
   const [indicacionesSeleccionadas, setIndicacionesSeleccionadas] = useState(null);
-
+  const [usoDictadoVoz, setUsoDictadoVoz] = useState(false);
  
   // Modal pequeño para RX Checkpoint
   const [rxModal, setRxModal] = useState({
@@ -811,6 +815,21 @@ const handleEvaluate = async () => {
 
   // ── Construir indicaciones solo para tobillo ──────────────────────────
   let indicacionesTexto = null;
+  if (selectedCategory === "tobillo_pie") {
+    const currentProtocol = evaluation.protocolId === 'protocolo_esguince_1'
+      ? questionnaireModule.getProtocoloEsguince1?.(answers) ?? questionnaireModule.protocols[evaluation.protocolId]
+      : evaluation.protocolId === 'protocolo_esguince_2'
+      ? questionnaireModule.getProtocoloEsguince2?.(answers) ?? questionnaireModule.protocols[evaluation.protocolId]
+      : evaluation.protocolId === 'protocolo_esguince_3'
+      ? questionnaireModule.getProtocoloEsguince3?.(answers) ?? questionnaireModule.protocols[evaluation.protocolId]
+      : questionnaireModule.protocols[evaluation.protocolId];
+    const reposoDinamico = questionnaireModule?.restTextPorCarga?.(answers, evaluation.protocolId) ?? null;
+    const displayedSteps = [
+      ...(reposoDinamico ? [reposoDinamico] : []),
+      ...((currentProtocol?.pasos ?? []))
+    ];
+    indicacionesTexto = displayedSteps.join('\n');
+  }
 // ── Calcular mensajes de agendamiento (solo tobillo) ─────────────────
 let mensajeTFGuardar = null;
 let mensajeControlGuardar = null;
@@ -820,12 +839,13 @@ if (selectedCategory === "tobillo_pie") {
   const esGrado2 = evaluation.protocolId === 'protocolo_esguince_2';
   const esGrado3 = evaluation.protocolId === 'protocolo_esguince_3';
   const vol = answers.aumento_volumen;
+  const eva = answers.eva;
   const carg = Number(answers.carga_laboral);
 
   if (esGrado3) mensajeTFGuardar = 'Agendar primera TF al día 3';
   else if (esGrado2) {
-    if (vol === 'moderado' || vol === 'severo') mensajeTFGuardar = 'Agendar primera TF al día 3';
-    else if (vol === 'leve') mensajeTFGuardar = 'Agendar primera TF al día 5';
+    if ((vol === 'moderado' || vol === 'severo') && eva >= 6) mensajeTFGuardar = 'Agendar primera TF al día 3';
+    else if (vol === 'leve' && eva >= 6) mensajeTFGuardar = 'Agendar primera TF al día 5';
   }
 
   if (esGrado3) mensajeControlGuardar = 'Agendar primer control al día 7';
@@ -847,6 +867,7 @@ const resultData = {
   respuestas: answers,
   resultado: evaluation.text,
   timestamp: new Date().toISOString(),
+  uso_dictado_voz: usoDictadoVoz, 
   ...(indicacionesTexto !== null && { indicaciones: indicacionesTexto }),
   ...(mensajeTFGuardar !== null && { mensaje_tf: mensajeTFGuardar }),
   ...(mensajeControlGuardar !== null && { mensaje_control: mensajeControlGuardar }),
@@ -877,6 +898,7 @@ const resultData = {
     setSelectedCategory(null); setSelectedQuestionnaireKey(null);
     setIndicacionesSeleccionadas(null);
     setTab("anamnesis");
+    setUsoDictadoVoz(false);
   };
 
 // Fuera de renderContent, al nivel de App
@@ -1037,7 +1059,7 @@ if (tab === "anamnesis") {
             {anamnesis.slice(0, 4).map(q => (
               <div key={q.id} className="pb-2">
                 <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
-                <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} />
+                <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} onVoiceUsed={() => setUsoDictadoVoz(true)} />
               </div>
             ))}
           </div>
@@ -1047,7 +1069,7 @@ if (tab === "anamnesis") {
             {anamnesis.slice(4).map(q => (
               <div key={q.id} className="pb-2">
                 <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
-                <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} />
+                <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} onVoiceUsed={() => setUsoDictadoVoz(true)}  />
               </div>
             ))}
           </div>
