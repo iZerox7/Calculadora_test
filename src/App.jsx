@@ -1282,17 +1282,14 @@ const transporteTexto = (() => {
         <div className="space-y-3">
           <p className="font-bold text-blue-900 text-sm">{currentProtocol?.titulo}</p>
 
-          {/* Si aún no confirmó selección: modo selección */}
-          {indicacionesSeleccionadas === null ? (
-            <>
-              {/* ELIGE AQUÍ EL ESTILO DE CAJILLA — ver opciones abajo */}
-              <SelectableSteps
-                steps={displayedSteps}
-                onConfirm={(seleccionadas) => setIndicacionesSeleccionadas(seleccionadas)}
-              />
-            </>
+        {isTobillo ? (
+          /* TOBILLO: modo selección con cajillas */
+          indicacionesSeleccionadas === null ? (
+            <SelectableSteps
+              steps={displayedSteps}
+              onConfirm={(seleccionadas) => setIndicacionesSeleccionadas(seleccionadas)}
+            />
           ) : (
-            /* Modo lectura: muestra solo las seleccionadas */
             <ul className="space-y-2">
               {indicacionesSeleccionadas.map((paso, i) => (
                 <li key={i} className="flex items-start text-sm text-blue-800">
@@ -1301,7 +1298,18 @@ const transporteTexto = (() => {
                 </li>
               ))}
             </ul>
-          )}
+          )
+        ) : (
+          /* LUMBAGO u otros: lista directa sin selección */
+          <ul className="space-y-2">
+            {displayedSteps.map((paso, i) => (
+              <li key={i} className="flex items-start text-sm text-blue-800">
+                <span className="font-bold mr-2 text-blue-400">{i + 1}.</span>
+                {paso}
+              </li>
+            ))}
+          </ul>
+        )}
 
           {/* {transporteTexto && (
             <p className="font-bold text-blue-900 text-sm mt-3">
