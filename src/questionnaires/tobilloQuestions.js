@@ -19,7 +19,7 @@ export const getProtocoloEsguince1 = (answers) => {
   ];
 
   return {
-    titulo: "PROTOCOLO DE MANEJO - ESGUINCE GRADO I",
+    titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO I",
     pasos: pasosBase,
   };
 };
@@ -32,19 +32,19 @@ export const getProtocoloEsguince2 = (answers) => {
   const usaBota = aumento === "severo" || tolerancia === "no_tolera";
 
   return {
-    titulo: "PROTOCOLO DE MANEJO - ESGUINCE GRADO II",
+    titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO II",
     pasos: [
       "Reposo laboral.",
       "Reposo deportivo.",
       "Realizar ejercicios indicados en pauta ",
       "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.",
+      "Descansar con extremidad en alto.",
+      "En caso de dolor invalidante, acudir a agencia ACHS más cercana.",
       usaBota
         ? "Uso diurno de bota ortopédica, retirar para dormir y descansar."
         : "Uso de tobillera con barras laterales durante el día hasta control con médico, retirar para dormir y descansar.",
-      "Descansar con extremidad en alto.",
       "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
       "Control con médico AP en agencia en 5 a 7 días. ",
-      "En caso de dolor invalidante, acudir a agencia ACHS más cercana."
     ]
   };
 };
@@ -55,7 +55,7 @@ export const getProtocoloEsguince3 = (answers) => {
   const usaBota = aumento === "severo" || tolerancia === "no_tolera";
 
   return {
-    titulo: "PROTOCOLO DE MANEJO - ESGUINCE GRADO III",
+    titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO III",
     pasos: [
       "Reposo laboral.",
       "Reposo deportivo.",
@@ -71,28 +71,28 @@ export const getProtocoloEsguince3 = (answers) => {
 
 export const protocols = {
     "protocolo_esguince_1": {
-      titulo: "PROTOCOLO DE MANEJO - ESGUINCE GRADO I",
+      titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO I",
       pasos: [], // placeholder; se sobreescribe dinámicamente
     },
 
     "protocolo_esguince_2": {
-      titulo: "PROTOCOLO DE MANEJO - ESGUINCE GRADO II",
+      titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO II",
       pasos: [], // placeholder; se sobreescribe dinámicamente
     },
     
     "protocolo_esguince_3": {
-      titulo: "PROTOCOLO DE MANEJO - ESGUINCE GRADO III",
+      titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO III",
       pasos: [], // placeholder; se sobreescribe dinámicamente
     },
       
     // PROTOCOLOS ESCENARIOS FRACTURAS
     "protocolo_weber_a": {
-        "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 1 - WEBER A",
+        "titulo": "INDICACIONES AL PACIENTE - ESCENARIO 1 - WEBER A",
         "pasos": [
             "Reposo",
+            "Pie en alto",
             "Inmovilización: bota ortopédica con bastones. Retirar en la noche",
             "Carga a tolerancia",
-            "Pie en alto",
             "Frío local por 15 minutos 3 veces al día por 48 hrs luego calor local por 15 minutos, 3 veces al dia hasta control",
             "Analgesia VO",
             "Medicamentos: tromboprofilaxis según protocolo, sólo si no tolera carga",
@@ -104,24 +104,24 @@ export const protocols = {
 
     "protocolo_weber_b_c": { // EDITADO
         "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 1 - Unimaleolar no luxada - WEBER B Y C",
-        "pasos": [
+        "pasos": [    
             "Derivación a especialista TMT según presentación del caso", //AGREGADO
+            "Pie en alto", 
+            "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.",
+            "Sin carga", 
             "Inmovilización: bota ortopédica con bastones canadienses",
-            "Sin carga",
-            "Pie en alto",
-            "Medicamentos: Analgesia y profilaxis tromboembólica con aspirina o dabigatrán hasta definición de especialista",
-            "Aplicar frÍo local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.", 
-        ]
+            "Medicamentos: Analgesia y profilaxis tromboembólica con aspirina o dabigatrán hasta definición de especialista"            
+              ]
     },    
 
     "protocolo_escenario_2": {
         "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 2 - Bimaleolar no luxada",
         "pasos": [
-            "Derivación a especialista TMT según presentación del caso", //AGREGADO
-            "Inmovilización: bota ortopédica con bastones canadienses",
+            "Derivación a especialista TMT según presentación del caso", //AGREGADO            
             "Pie en alto",
-            "Medicamentos: Analgesia y profilaxis tromboembólica con aspirina o dabigatrán para cirugía",
             "Aplicar frío local" ,
+            "Inmovilización: bota ortopédica con bastones canadienses",
+            "Medicamentos: Analgesia y profilaxis tromboembólica con aspirina o dabigatrán para cirugía",
             "Corroborar protocolo con TMT de urgencia"
         ]
     }, 
@@ -546,7 +546,7 @@ export const restTextPorCarga = (answers, protocolId) => {
 
   const map = reposoPorProtocolo[protocolId];
   const indicacion = map?.[carga];
-  return indicacion ? `Reposo sugerido según carga laboral: ${indicacion}` : null;
+  return indicacion ? `Reposo según carga laboral: ${indicacion}` : null;
 };
 
 // EVALUACIÓN PARA SUGERIR DIAGNÓSTICO
