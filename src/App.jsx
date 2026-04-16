@@ -866,7 +866,9 @@ const resultData = {
   cuestionario: selectedQuestionnaireKey,
   respuestas: answers,
   resultado: evaluation.text,
-  timestamp: new Date().toISOString(),
+  timestamp: new Date().toLocaleString("sv-SE", {
+        timeZone: "America/Santiago",
+      }),
   uso_dictado_voz: usoDictadoVoz, 
   ...(indicacionesTexto !== null && { indicaciones: indicacionesTexto }),
   ...(mensajeTFGuardar !== null && { mensaje_tf: mensajeTFGuardar }),
