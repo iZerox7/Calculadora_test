@@ -1,7 +1,7 @@
-// questionnaires/tobilloQuestions.js
+// questionnaires/ortejosQuestions.js
 
 // Reemplaza la entrada estática por una función generadora
-export const getProtocoloEsguince1 = (answers) => {
+export const getProtocoloEsguince1Ortejos = (answers) => {
   const carga = Number(answers?.carga_laboral);
   const esSTP = carga === 1;
 
@@ -12,154 +12,125 @@ export const getProtocoloEsguince1 = (answers) => {
     ...(!esSTP ? [
       "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. En caso de persistir dolor posterior, aplicar calor local de forma intermitente o según necesidad ",
     ] : []),
-    "Al descansar, poner extremidad en alto ",
     "En caso de dolor invalidante, aumento de volumen o cambio de coloración del sitio lesionado acudir a agencia ACHS más cercana",
-    "Tubigrip opcional (máx 1 semana, retiro nocturno)",
+    "Inmovilización: vendaje solidario con suela rígida por 3 días",
     "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 3 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 3 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
   ];
 
   return {
-    titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO I",
+    titulo: "INDICACIONES AL PACIENTE - ESGUINCE DE LOS ORTEJOS Y ANTEPIE GRADO I",
     pasos: pasosBase,
   };
 };
 
-// Después de getProtocoloEsguince1, agrega:
+export const getProtocoloFxDerivacionSUOrtejos = (answers) => {
+  const esExpuestaPrimerOrtejo =
+    answers?.clasificacion_abierta_ortejos === "abierta_primer_ortj";
 
-export const getProtocoloEsguince2 = (answers) => {
-  const aumento = answers?.aumento_volumen;
-  const tolerancia = answers?.tolera_carga_difuso;
-  const usaBota = aumento === "severo" || tolerancia === "no_tolera";
+  const esExpuestaNoPrimerOrtejo =
+    answers?.clasificacion_abierta_ortejos === "abierta_ex_primer_ortj";
+
+  const esCerradaPrimerOrtejo =
+    answers?.clasificacion_cerrada_ortejos === "cerrada_primer_ortj";
+
+  const esCerradaNoPrimerOrtejo =
+    answers?.clasificacion_cerrada_ortejos === "cerrada_ex_primer_ortj";
+
+  const hayCompromisoArticular =
+    answers?.compromiso_articular === "si";
+
+  const esFracturaCerrada =
+    esCerradaPrimerOrtejo || esCerradaNoPrimerOrtejo;
+
+  // ---------------------------
+  // Nombre de la fractura
+  // ---------------------------
+  let nombreFractura = "";
+
+  if (esExpuestaPrimerOrtejo) {
+    nombreFractura = "FRACTURA PRIMER ORTEJO ABIERTA";
+  } else if (esExpuestaNoPrimerOrtejo) {
+    nombreFractura = "FRACTURA ORTEJOS ABIERTA (EXCEPTO PRIMER ORTEJO)";
+  } else if (esCerradaPrimerOrtejo) {
+    nombreFractura = "FRACTURA PRIMER ORTEJO CERRADA";
+  } else if (esCerradaNoPrimerOrtejo) {
+    nombreFractura = "FRACTURA ORTEJOS CERRADA (EXCEPTO PRIMER ORTEJO)";
+  }
+
+  // ---------------------------
+  // Texto de derivación
+  // ---------------------------
+  let textoDerivacion = "🚨 Derivación inmediata a HT SU";
+
+  if (esFracturaCerrada && hayCompromisoArticular) {
+    textoDerivacion = "🚨 Derivación inmediata a HT TyP";
+  }
 
   return {
-    titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO II",
+    titulo: `PROTOCOLO DE MANEJO - ${nombreFractura}`,
     pasos: [
-      "Reposo laboral.",
-      "Reposo deportivo.",
-      "Realizar ejercicios indicados en pauta ",
-      "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.",
-      "Descansar con extremidad en alto.",
-      "En caso de dolor invalidante, acudir a agencia ACHS más cercana.",
-      usaBota
-        ? "Uso diurno de bota ortopédica, retirar para dormir y descansar."
-        : "Uso de tobillera con barras laterales durante el día hasta control con médico, retirar para dormir y descansar.",
-      "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
-      // "Control con médico AP en agencia en 5 a 7 días. ",
-    ]
+      `${textoDerivacion} o centro hospitalario con capacidad resolutiva 🚨`,
+      "Inmovilización con valva de la ambulancia",
+      "Aplicar frío local",
+      "Medicamentos: Analgesia EV y profilaxis tromboembólica con aspirina o dabigatrán una vez inmovilizada",
+      "Vacunación antitetánica (en caso de fractura expuesta)",
+    ],
   };
 };
-
-export const getProtocoloEsguince3 = (answers) => {
-  const aumento = answers?.aumento_volumen;
-  const tolerancia = answers?.tolera_carga_difuso;
-  const usaBota = aumento === "severo" || tolerancia === "no_tolera";
-
-  return {
-    titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO III",
-    pasos: [
-      "Reposo laboral.",
-      "Reposo deportivo.",
-      "Realizar ejercicios indicados en pauta ",
-      "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.",
-      usaBota
-        ? "Uso de bota ortopédica y descarga con muletas."
-        : "Uso de tobillera con barras laterales durante el día hasta control con médico, retirar para dormir y descansar.",
-      "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 5 días. Ajustar según respuesta. En caso de no respuesta a los 7-10 días, considerar escalar a tramadol/paracetamol 37,5 mg/ 325 mg vo c/8-12 h."
-    ]
-  };
-};
+``
 
 export const protocols = {
-    "protocolo_esguince_1": {
+    "protocolo_esguince_1_ortj": {
       titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO I",
       pasos: [], // placeholder; se sobreescribe dinámicamente
     },
 
-    "protocolo_esguince_2": {
+    "protocolo_esguince_2_ortj": {
       titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO II",
-      pasos: [], // placeholder; se sobreescribe dinámicamente
+      pasos: [ "Reposo laboral",
+      "Reposo deportivo",
+      "Realizar ejercicios indicados en pauta",
+      "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad",
+      "Descansar con extremidad en alto",
+      "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
+      "Inmovilización: vendaje solidario con suela rígida por 5 días",
+      "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días",
+      "Control con médico AP en agencia en 5 a 7 días"] //INCLUIR MENSAJE DE ESTO Y AHI AGENDAR], // placeholder; se sobreescribe dinámicamente
     },
     
-    "protocolo_esguince_3": {
+    "protocolo_esguince_3_ortj": {
       titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO III",
-      pasos: [], // placeholder; se sobreescribe dinámicamente
+      pasos: ["Reposo laboral.",
+      "Reposo deportivo.",
+      "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.",
+      "Descansar con extremidad en alto",
+      "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
+      "Inmovilización: suela rígida o bota entre 7-10 días",
+      "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 5 días. Ajustar según respuesta. En caso de no respuesta a los 7-10 días, considerar escalar a tramadol/paracetamol 37,5 mg/ 325 mg vo c/8-12 h. No extender uso de AINES por más de 7 días",
+      "Control con médico AP en agencia en 5 a 7 días"] //INCLUIR MENSAJE DE ESTO Y AHI AGENDAR  ], // placeholder; se sobreescribe dinámicamente
     },
       
-    // PROTOCOLOS ESCENARIOS FRACTURAS
-    "protocolo_weber_a": {
-        "titulo": "INDICACIONES AL PACIENTE - ESCENARIO 1 - WEBER A",
+///////////// PROTOCOLOS ESCENARIOS FRACTURAS ///////////////
+    "protocolo_fx_cerrada_primer_ortejo": { // Cuando no se requiere derivación
+        "titulo": "PROTOCOLO DE MANEJO - FRACTURA ORTEJOS CERRADA",
         "pasos": [
             "Reposo",
             "Pie en alto",
-            "Inmovilización: bota ortopédica con bastones. Retirar en la noche",
-            "Carga a tolerancia",
+            "Evitar carga hasta evidencia de consolidación",
             "Frío local por 15 minutos 3 veces al día por 48 hrs luego calor local por 15 minutos, 3 veces al dia hasta control",
-            "Analgesia VO",
-            "Medicamentos: tromboprofilaxis según protocolo, sólo si no tolera carga",
-            "Control con medico AP a los 8 días ",
+            "Analgesia según EVA",
+            "Medicamentos: Analgesia y profilaxis tromboembólica con aspirina. Iniciar con Paracetamol 1gr cada 8hrs VO y ketoprofeno 50mg o ibuprofeno 400mg cada 8hrs por 5-7 días VO. Ajustar según respuesta",
+            "Inmovilización: vendaje solidario con zapato POP y bastones",
+            "Control con medico AP al día 7",
             "Control SOS"
-            // "Transporte hasta retiro de ayudas técnicas"
         ]
     },
-
-    "protocolo_weber_b_c": { // EDITADO
-        "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 1 - Unimaleolar no luxada - WEBER B Y C",
-        "pasos": [    
-            "Derivación a especialista TMT según presentación del caso", //AGREGADO
-            "Pie en alto", 
-            "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.",
-            "Sin carga", 
-            "Inmovilización: bota ortopédica con bastones canadienses",
-            "Medicamentos: Analgesia y profilaxis tromboembólica con aspirina o dabigatrán hasta definición de especialista"            
-              ]
-    },    
-
-    "protocolo_escenario_2": {
-        "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 2 - Bimaleolar no luxada",
-        "pasos": [
-            "Derivación a especialista TMT según presentación del caso", //AGREGADO            
-            "Pie en alto",
-            "Aplicar frío local" ,
-            "Inmovilización: bota ortopédica con bastones canadienses",
-            "Medicamentos: Analgesia y profilaxis tromboembólica con aspirina o dabigatrán para cirugía",
-            "Corroborar protocolo con TMT de urgencia"
-        ]
-    }, 
-
-    "protocolo_escenario_3": {
-        "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 3 - Luxada (uni/bi/tri)",
-        "pasos": [
-            "🚨 Derivación inmediata a HT o centro hospitalario con capacidad resolutiva (reducción cerrada e instalación de yeso)🚨",
-            "Inmovilización con valva de la ambulancia",
-            "Aplicar frío local",
-            // "Reducir fractura e inmovilizar con yeso",
-            "Medicamentos: Analgesia ev, profilaxis tromboembólica con aspirina o dabigatrán una vez inmovilizada"
-        ]
-    }, 
-
-    "protocolo_escenario_4": {
-        "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 4 - Expuesta / SC / NV",
-        "pasos": [
-            "🚨 Tratamiento quirúrgico urgente 🚨", 
-            "Derivación inmediata a HT o centro hospitalario con capacidad resolutiva o evaluar traslado a Santiago",
-            "Inmovilización con valva de la ambulancia",
-            "Aplicar frío local",
-            // "Reducir fractura e inmovilizar con yeso",
-            "Medicamentos: Analgesia ev, tratamiento antibiótivo ev (en caso de fractura expuesta)",
-            "Vacunación antitetánica (en caso de fractura expuesta)"
-       ]
-    },
-
-    "protocolo_fractura_pie": {
-  "titulo": "PROTOCOLO DE MANEJO - FRACTURA DE PIE",
-  "pasos": ["Pendiente de integración"]
-    }
 };
 
 export const questions = [
 {
-  id: "tobillo",
-  text: "Tobillo",
+  id: "pie",
+  text: "Pie",
   type: "options",
   group: "anamnesis",
   options: [
@@ -168,6 +139,7 @@ export const questions = [
       { value: "Bilateral", label: "Bilateral" }
   ]
 },
+
 {
   id: "carga_laboral",
   text: "Carga laboral habitual",
@@ -179,30 +151,22 @@ export const questions = [
     { value: 3, labelBold: "Pesada",  labelDesc: "levanta peso/maquinaria" }
   ]
 },
-  { id: "eva", text: "Dolor (EVA)", type: "slider", group: "anamnesis", min: 0, max: 10 },
-  { 
-    id: "aumento_volumen", 
-    text: "Aumento de volumen (Edema)", 
-    type: "options", 
-    group: "anamnesis",
-    options: [
-      { value: "ninguno", label: "Sin aumento de volumen" },
-      { value: "leve", label: "Leve (+)" },
-      { value: "moderado", label: "Moderado (++)" },
-      { value: "severo", label: "Severo (+++)" }
-    ]
-  },
-  { 
-    id: "equimosis", 
-    text: "Equimosis", 
-    type: "options", 
-    group: "anamnesis",
-    options: [
-      { value: "ninguno", label: "Sin equimosis" },
-      { value: "localizada", label: "Localizada" },
-      { value: "difusa", label: "Difusa"}
-    ]
-  },
+
+{ id: "eva", text: "Dolor (EVA)", type: "slider", group: "anamnesis", min: 0, max: 10 },
+
+{ 
+  id: "aumento_volumen", 
+  text: "Aumento de volumen (Edema)", 
+  type: "options", 
+  group: "anamnesis",
+  options: [
+    { value: "ninguno", label: "Sin aumento de volumen" },
+    { value: "leve", label: "Leve (+)" },
+    { value: "moderado", label: "Moderado (++)" },
+    { value: "severo", label: "Severo (+++)" }
+  ]
+},
+
 
   { 
     id: "inestabilidad", 
@@ -211,11 +175,11 @@ export const questions = [
     group: "anamnesis",
     options: [
       { value: "sin_inestabilidad", label: "Sin inestabilidad" },
-      { value: "dudosa", label: "Dudosa" },
       { value: "con_inestabilidad", label: "Con inestabilidad" }
     ]
   },
-  { 
+
+{ 
     id: "hallazgos_fisicos", 
     text: "Examen Físico: Marcha / Heridas / Maniobras", 
     type: "textarea", 
@@ -223,131 +187,43 @@ export const questions = [
     placeholder: "Describa presencia de heridas, tipo de marcha..."
   },
 
-  // --- GRUPO RIESGO (Árbol de Decisión corregido) ---
-
-
-// Criterios de Ottawa (solo si estable o local sin equimosis)
-  {
-    id: "criterios_ottawa2",
-    text: "¿Cumple alguno de los Criterios de Ottawa? Seleccione aquellos que cumple:",
-    type: "multi",
-    group: "risk",
-    showIf: (ans) => ans.deformidad_evidente === "no",
-    options: [
-        { value: "dolor_metatarsiano", label: "Dolor en la base del quinto metatarsiano o en el navicular" },
-        { value: "dolor_palpacion", label: "Dolor a la palpación en el borde posterior de los 6 centímetros distales de la tibia o la fíbula hasta el segmento más distal del maléolo medial o lateral" },
-        { value: "incapacidad_pasos", label: "Incapacidad de dar más de 4 pasos seguidos sin ayuda o de sostener su peso corporal" },
-        { value: "no_cumple", label: "No cumple ninguno (Ottawa -)" }
-    ]
-  },
-
-
-{
-  id: "deformidad_evidente",
-  text: "¿Hay deformidad evidente?",
-  type: "options",
-  group: "risk",
-  showIf: (ans) => {
-    const ottawa = ans.criterios_ottawa2;
-    if (!Array.isArray(ottawa)) return false;
-    // Mostrar si seleccionó al menos un criterio positivo (cualquiera que no sea "no_cumple")
-    return ottawa.some(v => v !== "no_cumple");
-  },
-  options: [
-    { value: "si", label: "Sí" },
-    { value: "no", label: "No" }
-  ]
-},
-
-    // MANDA A RX SI TIENE DEFORMIDAD EVIDENTE
- {
-  id: "rx_deformidad",
-  text: "Realizar Radiografía tobillo Ap-Lat-Obl sin carga.",
-  textFn: (ans) => {
-    const base = "Realizar Radiografía tobillo Ap-Lat-Obl sin carga";
-    const tieneMetatarsiano = Array.isArray(ans.criterios_ottawa2) && 
-      ans.criterios_ottawa2.includes("dolor_metatarsiano");
-    return tieneMetatarsiano 
-      ? `${base}\nAdicional: Radiografía AP-Lat-Obl del Pie.`
-      : base;
-  },
-  type: "options",
-  group: "risk",
-  showIf: (ans) => ans.deformidad_evidente === "si" || ans.tolera_carga_difuso === "no_tolera",
-  options: [
-    { value: "listo", label: "✅ Realizada" }
-  ]
-},
-
-  // NUEVA: Pregunta de dolor siempre (independiente de deformidad)
   {
     id: "tipo_dolor",
     text: "¿Cómo se presenta el dolor?",
     type: "options",
-    group: "risk",
-    showIf: (ans) => ans.deformidad_evidente === "no",
+    group: "anamnesis",
     options: [
         { value: "difuso", label: "Difuso" },
         { value: "local", label: "Local" }
     ]
   },
 
-
-  // Tolerancia a la carga (solo si dolor difuso)
-  {
-    id: "tolera_carga_difuso",
-    text: "¿Tolera la carga?",
-    type: "options",
-    group: "risk",
-    showIf: (ans) => ans.tipo_dolor === "difuso" || ans.tipo_dolor === "local" ,
-    options: [
-        { value: "no_tolera", label: "No tolera carga" },
-        { value: "con_dificultad", label: "Tolera carga con dificultad" },
-        { value: "tolera", label: "Tolera carga" }
-    ]
-  },
-
   
-   // MANDA A RX SI TIENE DEFORMIDAD EVIDENTE
+
+   // MANDA A RX SI TIENE DOLOR DIFUSO Y AVO ++ O +++
  {
-  id: "rx_no_tolera_carga",
-  text: "Realizar Radiografía tobillo Ap-Lat-Obl sin carga.",
-  textFn: (ans) => {
-    const base = "Realizar Radiografía tobillo Ap-Lat-Obl sin carga";
-    const tieneMetatarsiano = Array.isArray(ans.criterios_ottawa2) && 
-      ans.criterios_ottawa2.includes("dolor_metatarsiano");
-    return tieneMetatarsiano 
-      ? `${base}\nAdicional: Radiografía AP-Lat-Obl del Pie.`
-      : base;
-  },
+  id: "rx_dolor_difuso",
+  text: "Realizar Radiografía Pie Ap-Lat-Obl del dedo afectado (con carga si tolera)",
   type: "options",
   group: "risk",
-  showIf: (ans) => ans.tolera_carga_difuso === "no_tolera",
+  showIf: (ans) => ans.tipo_dolor === "difuso" && (ans.aumento_volumen === "moderado" || ans.aumento_volumen === "severo"),
   options: [
     { value: "listo", label: "✅ Realizada" }
   ]
 },
 
-
-  // MANDA A RX SI CUMPLE CON ALGÚN CRITERIO DE OTTAWA
-  {
-    id: "rx_tolera_carga",
-    textFn: (ans) => {
-    const base = "Realizar Radiografía tobillo Ap-Lat-Obl con carga, comparativa contralateral.";
-    const tieneMetatarsiano = Array.isArray(ans.criterios_ottawa2) && 
-      ans.criterios_ottawa2.includes("dolor_metatarsiano");
-    return tieneMetatarsiano 
-      ? `${base}\nAdicional: Radiografía AP-Lat-Obl del Pie.`
-      : base;
-  },
-    type: "options",
-    group: "risk",
-    showIf: (ans) => ans.tolera_carga_difuso === "con_dificultad" || ans.tolera_carga_difuso === "tolera",
-    options: [
-        { value: "listo", label: "✅ Realizada" }
-    ]
-  }, // esto después debe conectarse con un ¿Presenta fractura?
-
+   // MANDA A RX SI TIENE DOLOR LOCAL Y AVO ++ O +++
+ {
+  id: "rx_dolor_local",
+  text: "Realizar Radiografía Ap-Lat-Obl del dedo afectado",
+  type: "options",
+  group: "risk",
+  showIf: (ans) => ans.tipo_dolor === "local" && (ans.aumento_volumen === "moderado" || ans.aumento_volumen === "severo"),
+  options: [
+    { value: "listo", label: "✅ Realizada" }
+  ]
+},
+ 
 
   // ¿Hay fractura?
   {
@@ -355,12 +231,12 @@ export const questions = [
     text: "¿Se detectó una fractura?",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.rx_deformidad === "listo" || ans.rx_no_tolera_carga === "listo" || ans.rx_tolera_carga === "listo" ,
+    showIf: (ans) => ans.rx_dolor_difuso === "listo" || ans.rx_dolor_local === "listo",
     options: [
         { value: "no", label: "No" },
         { value: "si_cerrada", label: "Sí, cerrada" },
         { value: "si_abierta", label: "Sí, abierta" },
-        { value: "si_otra", label: "Sí, pero no en tobillo" }
+        { value: "si_otra", label: "Sí, pero no en ortejos" }
     ]
   },
 
@@ -412,108 +288,35 @@ export const questions = [
     group: "risk",
     showIf: (ans) => ans.hay_fractura === "si_cerrada",
     options: [
-        { value: "maleolo_perone_cerrada", label: "Maléolo Peroneo Cerrada" },
-        { value: "maleolo_tibial_cerrada", label: "Maléolo Tibial Cerrada" },
-        { value: "bimaleolar_cerrada", label: "Bimaleolar Cerrada" },
-        { value: "trimaleolar_cerrada", label: "Trimaleolar Cerrada" }
+        { value: "cerrada_primer_ortj", label: "Primer ortejo" },
+        { value: "cerrada_ex_primer_ortj", label: "Ortejos excepto primer ortejo" }
     ]
   },
 
     // Clasificación específica (solo si hay fractura)
   {
-    id: "clasificacion_especifica_abierta",
+    id: "clasificacion_abierta_ortejos",
     text: "Clasificación de la fractura:",
     type: "options",
     group: "risk",
     showIf: (ans) => ans.hay_fractura === "si_abierta",
     options: [
-        { value: "maleolo_perone_abierta", label: "Maléolo Peroneo Abierta" },
-        { value: "maleolo_tibial_abierta", label: "Maléolo Tibial Abierta" },
-        { value: "bimaleolar_abierta", label: "Bimaleolar Abierta" },
-        { value: "trimaleolar_abierta", label: "Trimaleolar Abierta" }
+        { value: "abierta_primer_ortj", label: "Primer ortejo" },
+        { value: "abierta_ex_primer_ortj", label: "Ortejos excepto primer ortejo" }
     ]
   },
-  // Separación por escenarios
-  {
-    id: "escenario_fractura",
-    text: "¿A cuál escenario pertenece la fractura?:",
-    type: "options",
-    group: "risk",
-    showIf: (ans) =>  ans.hay_fractura === "si_cerrada",
-    options: [
-        { value: "escenario_1", label: "Escenario 1: Fractura unimaleolar no luxada" },
-        { value: "escenario_2", label: "Escenario 2: Fractura bimaleolar no luxada" },
-        { value: "escenario_3", label: "Escenario 3: Fractura uni, bi o trimaleolar luxada" },
-        { value: "escenario_4", label: "Escenario 4: Fractura expuesta, síndrome compartimental, daño severo de partes blandas y/o lesión neurovascular" }
-    ]
-  },
-    // Weber
-  {
-    id: "weber",
-    text: "¿A cuál tipo de Weber corresponde?:",
-    type: "options",
-    group: "risk",
-    showIf: (ans) => ans.escenario_fractura === "escenario_1",
-    options: [
-        { value: "weber_a", label: "Weber A" },
-        { value: "weber_b_c", label: "Weber B o C" }
-    ]
-  }
+
 ];
 
 // Diccionario de los values
-const FRACTURA_CERRADA_LABEL = {
-  maleolo_perone_cerrada: 'Maléolo Peroneo Cerrada',
-  maleolo_tibial_cerrada: 'Maléolo Tibial Cerrada',
-  bimaleolar_cerrada: 'Bimaleolar Cerrada',
-  trimaleolar_cerrada: 'Trimaleolar Cerrada',
+const FRACTURA_CERRADA_LABEL_ORTJ = {
+  cerrada_primer_ortj: 'Primer ortejo Cerrada',
+  cerrada_ex_primer_ortj: 'Ortejos excepto primer ortejo Cerrada',
 };
 
-const FRACTURA_ABIERTA_LABEL = {
-  maleolo_perone_abierta: 'Maléolo Peroneo Abierta',
-  maleolo_tibial_abierta: 'Maléolo Tibial Abierta',
-  bimaleolar_abierta: 'Bimaleolar Abierta',
-  trimaleolar_abierta: 'Trimaleolar Abierta',
-};
-
-// Mapas value -> protocolo por CLASIFICACIÓN (usamos protocolos de ESCENARIO que sí existen)
-const PROTOCOL_CERRADA = {
-  maleolo_perone_cerrada: 'protocolo_escenario_3',
-  maleolo_tibial_cerrada: 'protocolo_escenario_3',
-  bimaleolar_cerrada:     'protocolo_escenario_2', // caso particular
-  trimaleolar_cerrada:    'protocolo_escenario_3',
-};
-
-const PROTOCOL_ABIERTA = {
-  maleolo_perone_abierta: 'protocolo_escenario_4',
-  maleolo_tibial_abierta: 'protocolo_escenario_4',
-  bimaleolar_abierta:     'protocolo_escenario_4',
-  trimaleolar_abierta:    'protocolo_escenario_4',
-};
-// Mapas value -> protocolo
-
-// Escenarios
-const ESCENARIO_LABEL = {
-  escenario_1: 'Fractura unimaleolar no luxada',
-  escenario_2: 'Fractura bimaleolar no luxada',
-  escenario_3: 'Fractura uni/bi/trimaleolar luxada',
-  escenario_4: 'Fractura expuesta / síndrome compartimental / daño severo de partes blandas / lesión neurovascular',
-};
-
-
-// Protocolos por escenario (debes agregarlos en tu objeto protocols)
-const PROTOCOL_ESCENARIO = {
-  escenario_1: 'protocolo_escenario_1',
-  escenario_2: 'protocolo_escenario_2',
-  escenario_3: 'protocolo_escenario_3',
-  escenario_4: 'protocolo_escenario_4',
-};
-
-// Weber (sólo aplica a escenario_1)
-const WEBER_LABEL = { weber_a: 'Weber A', weber_b_c: 'Weber B y C'};
-const PROTOCOL_WEBER = {
-  weber_a: 'protocolo_weber_a',
-  weber_b_c: 'protocolo_weber_b_c'
+const FRACTURA_ABIERTA_LABEL_ORTJ = {
+  abierta_primer_ortj: 'Primer ortejo Abierta',
+  abierta_ex_primer_ortj: 'Ortejos excepto primer ortejo Abierta',
 };
 
 
