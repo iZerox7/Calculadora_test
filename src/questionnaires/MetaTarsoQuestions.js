@@ -1,9 +1,9 @@
 // questionnaires/tobilloQuestions.js
 
 // Reemplaza la entrada estática por una función generadora
-export const getProtocoloEsguince1 = (answers) => {
+export const getProtocoloEsguincePie1 = (answers) => {
   const carga = Number(answers?.carga_laboral);
-  const esSTP = carga === 1;
+  const esSTP = (carga === 1 || compromiso_funcional === "si");
 
   const pasosBase = [
     "Realizar actividades habituales ",
@@ -12,39 +12,33 @@ export const getProtocoloEsguince1 = (answers) => {
     ...(!esSTP ? [
       "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. En caso de persistir dolor posterior, aplicar calor local de forma intermitente o según necesidad ",
     ] : []),
-    "Al descansar, poner extremidad en alto ",
-    "En caso de dolor invalidante, aumento de volumen o cambio de coloración del sitio lesionado acudir a agencia ACHS más cercana",
     "Tubigrip opcional (máx 1 semana, retiro nocturno)",
+    "En caso de dolor invalidante, aumento de volumen o cambio de coloración del sitio lesionado acudir a agencia ACHS más cercana",
     "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 3 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 3 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
   ];
 
   return {
-    titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO I",
+    titulo: "INDICACIONES AL PACIENTE - ESGUINCE DEL PIE GRADO I",
     pasos: pasosBase,
   };
 };
 
-// Después de getProtocoloEsguince1, agrega:
-
-export const getProtocoloEsguince2 = (answers) => {
+export const getProtocoloEsguincePie2 = (answers) => {
   const aumento = answers?.aumento_volumen;
   const tolerancia = answers?.tolera_carga_difuso;
   const usaBota = aumento === "severo" || tolerancia === "no_tolera";
 
   return {
-    titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO II",
+    titulo: "INDICACIONES AL PACIENTE - ESGUINCE DEL PIE GRADO II",
     pasos: [
-      "Reposo laboral.",
-      "Reposo deportivo.",
+      "Reposo laboral",
+      "Reposo deportivo",
       "Realizar ejercicios indicados en pauta ",
-      "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.",
-      "Descansar con extremidad en alto.",
-      "En caso de dolor invalidante, acudir a agencia ACHS más cercana.",
-      usaBota
-        ? "Uso diurno de bota ortopédica, retirar para dormir y descansar."
-        : "Uso de tobillera con barras laterales durante el día hasta control con médico, retirar para dormir y descansar.",
-      "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
-      // "Control con médico AP en agencia en 5 a 7 días. ",
+      "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. En caso de persistir dolor posterior, aplicar calor local de forma intermitente o según necesidad ",
+      "Descansar con extremidad en alto",
+      "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
+      "Zapato pop con bastón según limitación de marcha",
+      "Medicamentos: Analgesia escalonada según EVA (Iniciar con Paracetamol 1 gr cada 8hrs VO + AINES (Ibuprefno, ketoprofeno) cada 8hrs por 5-7 días VO) Ajustar según respuesta",
     ]
   };
 };
@@ -61,99 +55,155 @@ export const getProtocoloEsguince3 = (answers) => {
       "Reposo deportivo.",
       "Realizar ejercicios indicados en pauta ",
       "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.",
-      usaBota
-        ? "Uso de bota ortopédica y descarga con muletas."
-        : "Uso de tobillera con barras laterales durante el día hasta control con médico, retirar para dormir y descansar.",
-      "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 5 días. Ajustar según respuesta. En caso de no respuesta a los 7-10 días, considerar escalar a tramadol/paracetamol 37,5 mg/ 325 mg vo c/8-12 h."
+      "Zapato pop con bastón según limitación de marcha",
+      "Medicamentos: Analgesia escalonada según EVA Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 5 días. Ajustar según respuesta.",
+      "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
+    ]
+  };
+};
+
+export const protocolo_fx_derivacion = (answers) => {
+  const esLuxoLisfrancAbierta =
+    answers?.clasificacion_abierta_pie === "abierta_luxo_lisfranc";
+  const esMetatarsianoAbierta =
+    answers?.clasificacion_abierta_pie === "abierta_metatarsiano";
+  const esLuxoLisfrancCerrada =
+    answers?.clasificacion_cerrada_pie === "cerrada_luxo_lisfranc";
+  const esMetatarsianoCerradaZ2 =
+    answers?.clasificacion_cerrada_pie === "cerrada_metatarsiano_z2";
+
+  const esAtragaloAbierta =
+    answers?.clasificacion_abierta_pie === "abierta_astragalo";
+  const esCalcaneoAbierta =
+    answers?.clasificacion_abierta_pie === "abierta_calcaneo";
+  const esPerifericasTaloAbiertas =
+    answers?.clasificacion_cerrada_pie === "abiertas_perifericas_talo";
+  const esLuxoChopartCerrada =
+    answers?.clasificacion_abierta_pie === "cerrada_luxo_chopart";
+  const esLuxoPieCerrada =
+    answers?.clasificacion_abierta_pie === "cerrada_luxo_pie";
+  const esLuxoPieAbierta =
+    answers?.clasificacion_cerrada_pie === "abierta_luxo_pie";  
+
+
+  const hayCompromisoNeurovascular = answers?.compromiso_neurovascular === "si";
+  const esMultiple = answers?.fractura__multiple;
+
+  let nombreFractura = "";
+  if (esLuxoLisfrancAbierta) {
+    nombreFractura = "LUXOFRACTURA DE LISFRANC ABIERTA";
+  } else if (esMetatarsianoAbierta) {
+    nombreFractura = "FRACTURA METATARSIANO ABIERTA";
+  } else if (esLuxoLisfrancCerrada) {
+    nombreFractura = "LUXOFRACTURA DE LISFRANC CERRADA";
+  } else if (esMetatarsianoCerradaZ2) {
+    nombreFractura = "FRACTURA METATARSIANO CERRADA";
+  } else if (esAtragaloAbierta) {
+    nombreFractura = "FRACTURA ASATRAGALO ABIERTA";
+  } else if (esCalcaneoAbierta) {
+    nombreFractura = "FRACTURA CALCANEO ABIERTA";
+  } else if (esPerifericasTaloAbiertas) {
+    nombreFractura = "FRACTURAS PERIFERICAS TALO ABIERTAS";
+  } else if (esLuxoChopartCerrada) {
+    nombreFractura = "LUXOFRACTURA DE CHOPART CERRADA";
+  } else if (esLuxoPieCerrada) {
+    nombreFractura = "LUXOFRACTURA DEL PIE CERRADA";
+  } else if (esLuxoPieAbierta) {
+    nombreFractura = "LUXOFRACTURA DEL PIE ABIERTA";
+  }
+
+
+  return {
+    titulo: `PROTOCOLO DE MANEJO - ${nombreFractura}`,
+    pasos: [
+      "🚨 Derivación inmediata a HT TyP o centro hospitalario con capacidad resolutiva 🚨",
+      "Inmovilización con valva de la ambulancia",
+      "Aplicar frío local",
+      "Medicamentos: Analgesia EV y profilaxis tromboembólica con aspirina o dabigatrán una vez inmovilizada",
+      "Vacunación antitetánica (en caso de fractura expuesta)",
+    ],
+  };
+};
+
+export const protocolo_fx_cerrada_conservador_tarso = (answers) => {
+  const esAtragaloCerrada =
+    answers?.clasificacion_abierta_pie === "cerrada_astragalo";
+  const esCalcaneoCerrada =
+    answers?.clasificacion_abierta_pie === "cerrada_calcaneo";
+  const esCuelloTaloCerrada =
+    answers?.clasificacion_cerrada_pie === "cerrada_cuello_talo";
+  const esCuerpoTaloCerrada =
+    answers?.clasificacion_cerrada_pie === "cerrada_cuerpo_talo";
+
+  const esEscafoidesCerrada =
+    answers?.clasificacion_abierta_pie === "cerrada_escafoides";
+  const esHuesosTarsoCerrada =
+    answers?.clasificacion_abierta_pie === "cerrada_huesos_tarso";
+  const esPerifericasTaloCerrada =
+    answers?.clasificacion_cerrada_pie === "abiertas_perifericas_talo";
+
+  const hayCompromisoNeurovascular = answers?.compromiso_neurovascular === "si";
+  const esMultiple = answers?.fractura__multiple === "si";
+  const esDesplazable = answers?.desplazable === "si";
+
+  let nombreFractura = "";
+  if (esAtragaloCerrada) {
+    nombreFractura = "FRACTURA ASTRAGALO CERRADA";
+  } else if (esCalcaneoCerrada) {
+    nombreFractura = "FRACTURA CALCANEO CERRADA";
+  } else if (esCuelloTaloCerrada) {
+    nombreFractura = "FRACTURA CUELLO TALO CERRADA";
+  } else if (esCuerpoTaloCerrada) {
+    nombreFractura = "FRACTURA CUERPO TALO CERRADA";
+  } else if (esEscafoidesCerrada) {
+    nombreFractura = "FRACTURA ESCAFOIDES TARSO DEL PIE CERRADA";
+  } else if (esHuesosTarsoCerrada) {
+    nombreFractura = "FRACTURA HUESOS DEL TARSO (EXCEPTO ESCAFOIDES) CERRADA";
+  } else if (esPerifericasTaloCerrada) {
+    nombreFractura = "FRACTURAS PERIFERICAS TALO CERRADAS";
+  } 
+
+  return {
+    titulo: `PROTOCOLO DE MANEJO - ${nombreFractura}`,
+    pasos: [
+      "Manejo conservador",
+      "Aplicar frío local",
+      "Inmovilización con bota w y bastones",
+      "Descarga por 6 a 8 semanas",
+      "Medicamentos: Analgesia EV y profilaxis tromboembólica con aspirina o dabigatrán una vez inmovilizada",
+      "Control en 2 semanas"
     ]
   };
 };
 
 export const protocols = {
-    "protocolo_esguince_1": {
-      titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO I",
+    "getProtocoloEsguincePie1": {
+      titulo: "INDICACIONES AL PACIENTE - ESGUINCE DEL PIE GRADO I",
       pasos: [], // placeholder; se sobreescribe dinámicamente
     },
 
-    "protocolo_esguince_2": {
-      titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO II",
+    "getProtocoloEsguincePie2": {
+      titulo: "INDICACIONES AL PACIENTE - ESGUINCE DEL PIE GRADO II",
       pasos: [], // placeholder; se sobreescribe dinámicamente
     },
     
-    "protocolo_esguince_3": {
-      titulo: "INDICACIONES AL PACIENTE - ESGUINCE GRADO III",
+    "getProtocoloEsguincePie2": {
+      titulo: "INDICACIONES AL PACIENTE - ESGUINCE DEL PIE GRADO III",
       pasos: [], // placeholder; se sobreescribe dinámicamente
     },
       
     // PROTOCOLOS ESCENARIOS FRACTURAS
-    "protocolo_weber_a": {
-        "titulo": "INDICACIONES AL PACIENTE - ESCENARIO 1 - WEBER A",
+    "protocolo_fx_cerrada_conservador_metatarso": {
+        "titulo": "INDICACIONES AL PACIENTE - FRACTURA METATARSIANO CERRADA",
         "pasos": [
             "Reposo",
-            "Pie en alto",
-            "Inmovilización: bota ortopédica con bastones. Retirar en la noche",
-            "Carga a tolerancia",
-            "Frío local por 15 minutos 3 veces al día por 48 hrs luego calor local por 15 minutos, 3 veces al dia hasta control",
+            "Inmovilización: Zapato pop",
             "Analgesia VO",
             "Medicamentos: tromboprofilaxis según protocolo, sólo si no tolera carga",
-            "Control con medico AP a los 8 días ",
+            "Control con medico AP a la semana ",
             "Control SOS"
-            // "Transporte hasta retiro de ayudas técnicas"
         ]
-    },
-
-    "protocolo_weber_b_c": { // EDITADO
-        "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 1 - Unimaleolar no luxada - WEBER B Y C",
-        "pasos": [    
-            "Derivación a especialista TMT según presentación del caso", //AGREGADO
-            "Pie en alto", 
-            "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.",
-            "Sin carga", 
-            "Inmovilización: bota ortopédica con bastones canadienses",
-            "Medicamentos: Analgesia y profilaxis tromboembólica con aspirina o dabigatrán hasta definición de especialista"            
-              ]
-    },    
-
-    "protocolo_escenario_2": {
-        "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 2 - Bimaleolar no luxada",
-        "pasos": [
-            "Derivación a especialista TMT según presentación del caso", //AGREGADO            
-            "Pie en alto",
-            "Aplicar frío local" ,
-            "Inmovilización: bota ortopédica con bastones canadienses",
-            "Medicamentos: Analgesia y profilaxis tromboembólica con aspirina o dabigatrán para cirugía",
-            "Corroborar protocolo con TMT de urgencia"
-        ]
-    }, 
-
-    "protocolo_escenario_3": {
-        "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 3 - Luxada (uni/bi/tri)",
-        "pasos": [
-            "🚨 Derivación inmediata a HT o centro hospitalario con capacidad resolutiva (reducción cerrada e instalación de yeso)🚨",
-            "Inmovilización con valva de la ambulancia",
-            "Aplicar frío local",
-            // "Reducir fractura e inmovilizar con yeso",
-            "Medicamentos: Analgesia ev, profilaxis tromboembólica con aspirina o dabigatrán una vez inmovilizada"
-        ]
-    }, 
-
-    "protocolo_escenario_4": {
-        "titulo": "PROTOCOLO DE MANEJO - ESCENARIO 4 - Expuesta / SC / NV",
-        "pasos": [
-            "🚨 Tratamiento quirúrgico urgente 🚨", 
-            "Derivación inmediata a HT o centro hospitalario con capacidad resolutiva o evaluar traslado a Santiago",
-            "Inmovilización con valva de la ambulancia",
-            "Aplicar frío local",
-            // "Reducir fractura e inmovilizar con yeso",
-            "Medicamentos: Analgesia ev, tratamiento antibiótivo ev (en caso de fractura expuesta)",
-            "Vacunación antitetánica (en caso de fractura expuesta)"
-       ]
-    },
-
-    "protocolo_fractura_pie": {
-  "titulo": "PROTOCOLO DE MANEJO - FRACTURA DE PIE",
-  "pasos": ["Pendiente de integración"]
-    }
+    },  
 };
 
 export const questions = [
@@ -228,16 +278,16 @@ export const questions = [
 
 // Criterios de Ottawa (solo si estable o local sin equimosis)
   {
-    id: "criterios_ottawa2",
-    text: "¿Cumple alguno de los Criterios de Ottawa? Seleccione aquellos que cumple:",
+    id: "criterios_pie",
+    text: "¿Cumple alguno de las pruebas de pie? Seleccione aquellas que cumple:",
     type: "multi",
     group: "risk",
     showIf: (ans) => ans.deformidad_evidente === "no",
     options: [
-        { value: "dolor_metatarsiano", label: "Dolor en la base del quinto metatarsiano o en el navicular" },
-        { value: "dolor_palpacion", label: "Dolor a la palpación en el borde posterior de los 6 centímetros distales de la tibia o la fíbula hasta el segmento más distal del maléolo medial o lateral" },
-        { value: "incapacidad_pasos", label: "Incapacidad de dar más de 4 pasos seguidos sin ayuda o de sostener su peso corporal" },
-        { value: "no_cumple", label: "No cumple ninguno (Ottawa -)" }
+        { value: "prueba_lisfranc", label: "Prueba de Lisfranc: Palpar la zona dorsal entre la base del 1° y 2° metatarsiano. Mover antepié en abducción manteniendo retropié fijo. Positiva: dolor en mediopié" },
+        { value: "prueba_chopart", label: "Prueba de Chopart: Sujetar retropié y movilizar mediopié en aducción/abducción o inversión/eversión. Positiva: dolor en línea articular del mediopié" },
+        { value: "prueba_squeeze", label: "Prueba de Squeeze:Comprimir tibia y peroné proximalmente. Positiva: dolor distal en tobillo (sindesmosis)" },
+        { value: "no_cumple", label: "No cumple ninguno (-)" }
     ]
   },
 
