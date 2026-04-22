@@ -279,10 +279,10 @@ export const questions = [
 // Criterios de Ottawa (solo si estable o local sin equimosis)
   {
     id: "criterios_pie",
-    text: "¿Cumple alguno de las pruebas de pie? Seleccione aquellas que cumple:",
+    text: "¿Cumple algún criterio de las pruebas de pie? Seleccione aquellos que cumple:",
     type: "multi",
     group: "risk",
-    showIf: (ans) => ans.deformidad_evidente === "no",
+    showIf: (ans) => ans.deformidad_evidente_pie === "no",
     options: [
         { value: "prueba_lisfranc", label: "Prueba de Lisfranc: Palpar la zona dorsal entre la base del 1° y 2° metatarsiano. Mover antepié en abducción manteniendo retropié fijo. Positiva: dolor en mediopié" },
         { value: "prueba_chopart", label: "Prueba de Chopart: Sujetar retropié y movilizar mediopié en aducción/abducción o inversión/eversión. Positiva: dolor en línea articular del mediopié" },
@@ -293,15 +293,15 @@ export const questions = [
 
 
 {
-  id: "deformidad_evidente",
+  id: "deformidad_evidente_pie",
   text: "¿Hay deformidad evidente?",
   type: "options",
   group: "risk",
   showIf: (ans) => {
-    const ottawa = ans.criterios_ottawa2;
-    if (!Array.isArray(ottawa)) return false;
+    const pie = ans.criterios_pie;
+    if (!Array.isArray(pie)) return false;
     // Mostrar si seleccionó al menos un criterio positivo (cualquiera que no sea "no_cumple")
-    return ottawa.some(v => v !== "no_cumple");
+    return pie.some(v => v !== "no_cumple");
   },
   options: [
     { value: "si", label: "Sí" },
@@ -311,19 +311,14 @@ export const questions = [
 
     // MANDA A RX SI TIENE DEFORMIDAD EVIDENTE
  {
-  id: "rx_deformidad",
-  text: "Realizar Radiografía tobillo Ap-Lat-Obl sin carga.",
+  id: "rx_deformidad_pie",
+  text: "Realizar Radiografía Pie Ap-Lat-Obl sin carga.",
   textFn: (ans) => {
-    const base = "Realizar Radiografía tobillo Ap-Lat-Obl sin carga";
-    const tieneMetatarsiano = Array.isArray(ans.criterios_ottawa2) && 
-      ans.criterios_ottawa2.includes("dolor_metatarsiano");
-    return tieneMetatarsiano 
-      ? `${base}\nAdicional: Radiografía AP-Lat-Obl del Pie.`
-      : base;
+    const base = "Realizar Radiografía Pie Ap-Lat-Obl sin carga";
   },
   type: "options",
   group: "risk",
-  showIf: (ans) => ans.deformidad_evidente === "si" || ans.tolera_carga_difuso === "no_tolera",
+  showIf: (ans) => ans.deformidad_evidente_pie === "si",
   options: [
     { value: "listo", label: "✅ Realizada" }
   ]
@@ -331,7 +326,7 @@ export const questions = [
 
   // NUEVA: Pregunta de dolor siempre (independiente de deformidad)
   {
-    id: "tipo_dolor",
+    id: "tipo_dolor_pie",
     text: "¿Cómo se presenta el dolor?",
     type: "options",
     group: "risk",
@@ -345,11 +340,11 @@ export const questions = [
 
   // Tolerancia a la carga (solo si dolor difuso)
   {
-    id: "tolera_carga_difuso",
+    id: "tolera_carga_pie",
     text: "¿Tolera la carga?",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.tipo_dolor === "difuso" || ans.tipo_dolor === "local" ,
+    showIf: (ans) => ans.tipo_dolor_pie === "difuso" || ans.tipo_dolor_pie === "local" ,
     options: [
         { value: "no_tolera", label: "No tolera carga" },
         { value: "con_dificultad", label: "Tolera carga con dificultad" },
@@ -360,39 +355,29 @@ export const questions = [
   
    // MANDA A RX SI TIENE DEFORMIDAD EVIDENTE
  {
-  id: "rx_no_tolera_carga",
-  text: "Realizar Radiografía tobillo Ap-Lat-Obl sin carga.",
+  id: "rx_no_tolera_carga_pie",
+  text: "Realizar Radiografía Ap-Lateral- obl de Pie con carga + mortaja. ",
   textFn: (ans) => {
-    const base = "Realizar Radiografía tobillo Ap-Lat-Obl sin carga";
-    const tieneMetatarsiano = Array.isArray(ans.criterios_ottawa2) && 
-      ans.criterios_ottawa2.includes("dolor_metatarsiano");
-    return tieneMetatarsiano 
-      ? `${base}\nAdicional: Radiografía AP-Lat-Obl del Pie.`
-      : base;
+    const base = "Realizar Radiografía Ap-Lateral- obl de Pie con carga + mortaja."
   },
   type: "options",
   group: "risk",
-  showIf: (ans) => ans.tolera_carga_difuso === "no_tolera",
+  showIf: (ans) => ans.tolera_carga_pie === "no_tolera",
   options: [
     { value: "listo", label: "✅ Realizada" }
   ]
 },
 
 
-  // MANDA A RX SI CUMPLE CON ALGÚN CRITERIO DE OTTAWA
+  // MANDA A RX SI CUMPLE CON ALGUNA PRUEBA DEL PIE
   {
-    id: "rx_tolera_carga",
+    id: "rx_tolera_carga_pie",
     textFn: (ans) => {
-    const base = "Realizar Radiografía tobillo Ap-Lat-Obl con carga, comparativa contralateral.";
-    const tieneMetatarsiano = Array.isArray(ans.criterios_ottawa2) && 
-      ans.criterios_ottawa2.includes("dolor_metatarsiano");
-    return tieneMetatarsiano 
-      ? `${base}\nAdicional: Radiografía AP-Lat-Obl del Pie.`
-      : base;
+    const base = "Realizar Radiografía Pie Ap-Lat-Obl con carga";
   },
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.tolera_carga_difuso === "con_dificultad" || ans.tolera_carga_difuso === "tolera",
+    showIf: (ans) => ans.tolera_carga_pie === "con_dificultad" || ans.tolera_carga_pie === "tolera",
     options: [
         { value: "listo", label: "✅ Realizada" }
     ]
@@ -401,16 +386,16 @@ export const questions = [
 
   // ¿Hay fractura?
   {
-    id: "hay_fractura",
+    id: "hay_fractura_´pie",
     text: "¿Se detectó una fractura?",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.rx_deformidad === "listo" || ans.rx_no_tolera_carga === "listo" || ans.rx_tolera_carga === "listo" ,
+    showIf: (ans) => ans.rx_deformidad_pie === "listo" || ans.rx_no_tolera_carga_pie === "listo" || ans.rx_tolera_carga_pie === "listo" ,
     options: [
         { value: "no", label: "No" },
         { value: "si_cerrada", label: "Sí, cerrada" },
         { value: "si_abierta", label: "Sí, abierta" },
-        { value: "si_otra", label: "Sí, pero no en tobillo" }
+        { value: "si_otra", label: "Sí, pero no en pie" }
     ]
   },
 
@@ -438,20 +423,10 @@ export const questions = [
     { value: "luxofractura_chopart_cerrada",           label: "Luxofractura de Chopart Cerrada" },
     { value: "luxofractura_lisfranc_cerrada",          label: "Luxofractura de Lisfranc Cerrada" },
     { value: "luxofractura_pie_abierta",               label: "Luxofractura del Pie Abierta" },
-    { value: "luxofractura_pie_cerrada",               label: "Luxofractura del Pie Cerrada" },
-    { value: "otra",                                   label: "Otra" },
+    { value: "luxofractura_pie_cerrada",               label: "Luxofractura del Pie Cerrada" }
   ]
 },
 
-// Fractura de pie: texto libre si seleccionó "Otra"
-{
-  id: "fractura_pie_otra",
-  text: "Especifique la fractura:",
-  type: "textarea",
-  group: "risk",
-  showIf: (ans) => ans.hay_fractura === "si_otra" && ans.fractura_pie_tipo === "otra",
-  placeholder: "Describa la fractura detectada..."
-},
 
 
   // Clasificación específica (solo si hay fractura)
@@ -462,10 +437,17 @@ export const questions = [
     group: "risk",
     showIf: (ans) => ans.hay_fractura === "si_cerrada",
     options: [
-        { value: "maleolo_perone_cerrada", label: "Maléolo Peroneo Cerrada" },
-        { value: "maleolo_tibial_cerrada", label: "Maléolo Tibial Cerrada" },
-        { value: "bimaleolar_cerrada", label: "Bimaleolar Cerrada" },
-        { value: "trimaleolar_cerrada", label: "Trimaleolar Cerrada" }
+        { value: "metatarsiano_cerrada", label: "Metatarsiano Cerrada" },
+        { value: "astragalo_cerrada", label: "Astragalo Cerrada" },
+        { value: "calcaneo_cerrada", label: "Calcaneo Cerrada" },
+        { value: "cuello_talo_cerrada", label: "Cuello Talo Cerrada" }
+        { value: "cuerpo_talo_cerrada", label: "Cuerpo Talo Cerrada" },
+        { value: "escafoides_cerrada", label: "Escafoides Tarso del Pie Cerrada" },
+        { value: "huesos_tarso_cerrada", label: "Huesos del Tarso (Excepto Escafoides) Cerrada" },
+        { value: "perifericas_talo_cerrada", label: "Perifericas Talo Cerradas" }
+        { value: "luxo_lisfranc_cerrada", label: "Luxofractura de Lisfranc Cerrada" },
+        { value: "luxo_chopart_cerrada", label: "Luxofractura de Chopart Cerrada" },
+        { value: "luxo_pie_cerrada", label: "Luxofractura del Pie Cerrada" }
     ]
   },
 
