@@ -192,7 +192,7 @@ export const protocols = {
     },
       
     // PROTOCOLOS ESCENARIOS FRACTURAS
-    "protocolo_fx_cerrada_conservador_metatarso": {
+    "protocolo_fx_cerrada_conservador_tarso": {
         "titulo": "INDICACIONES AL PACIENTE - FRACTURA METATARSIANO CERRADA",
         "pasos": [
             "Reposo",
@@ -285,8 +285,8 @@ export const questions = [
     options: [
         { value: "prueba_lisfranc", label: "Prueba de Lisfranc: Palpar la zona dorsal entre la base del 1° y 2° metatarsiano. Mover antepié en abducción manteniendo retropié fijo. Positiva: dolor en mediopié" },
         { value: "prueba_chopart", label: "Prueba de Chopart: Sujetar retropié y movilizar mediopié en aducción/abducción o inversión/eversión. Positiva: dolor en línea articular del mediopié" },
-        { value: "prueba_squeeze", label: "Prueba de Squeeze:Comprimir tibia y peroné proximalmente. Positiva: dolor distal en tobillo (sindesmosis)" },
-        { value: "no_cumple", label: "No cumple ninguno (-)" }
+        { value: "prueba_squeeze", label: "Prueba de Squeeze: Comprimir tibia y peroné proximalmente. Positiva: dolor distal en tobillo (sindesmosis)" },
+        { value: "no_cumple", label: "No cumple ninguno (-)" , exclusive: true}
     ]
   },
 
@@ -510,7 +510,7 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
   color: 'red',
   protocolId: isAbierta
     ? 'protocolo_fx_derivacion'
-    : 'protocolo_fx_cerrada_conservador_metatarso',
+    : 'protocolo_fx_cerrada_conservador_tarso',
 };
 
   };
@@ -738,8 +738,10 @@ const questionnaireModule = {
   generateClinicalReport,
   restTextPorCarga,
   getProtocoloEsguincePie1,
-  getProtocoloEsguincePie2,  // ← agregar
-  getProtocoloEsguincePie3,  // ← agregar
+  getProtocoloEsguincePie2,  
+  getProtocoloEsguincePie3, 
+  protocolo_fx_derivacion,
+  protocolo_fx_cerrada_conservador_tarso,
   requiresAnamnesis: true,
 };
 export default questionnaireModule;

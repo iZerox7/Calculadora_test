@@ -5,19 +5,33 @@ const MultiSelect = ({ question, value, onChange }) => {
   const [selected, setSelected] = useState(value || []);
 
   const handleSelect = (optionValue) => {
-    let newSelected;
-    if (optionValue === "ninguno") {
-      newSelected = selected.includes("ninguno") ? [] : ["ninguno"];
+  const selectedArr = Array.isArray(selected) ? selected : [];
+  const option = question.options.find(o => o.value === optionValue);
+
+  let newSelected;
+
+  // 1️⃣ Si la opción es excluyente (ej: no_cumple)
+  if (option?.exclusive) {
+    newSelected = selectedArr.includes(optionValue) ? [] : [optionValue];
+  } 
+  // 2️⃣ Opción normal
+  else {
+    // Quitar cualquier opción excluyente previa
+    const withoutExclusive = selectedArr.filter(v => {
+      const opt = question.options.find(o => o.value === v);
+      return !opt?.exclusive;
+    });
+
+    if (withoutExclusive.includes(optionValue)) {
+      newSelected = withoutExclusive.filter(v => v !== optionValue);
     } else {
-      if (selected.includes(optionValue)) {
-        newSelected = selected.filter((v) => v !== optionValue && v !== "ninguno");
-      } else {
-        newSelected = [...selected.filter((v) => v !== "ninguno"), optionValue];
-      }
+      newSelected = [...withoutExclusive, optionValue];
     }
-    setSelected(newSelected);
-    onChange(question.id, newSelected);
-  };
+  }
+
+  setSelected(newSelected);
+  onChange(question.id, newSelected);
+};
 
   return (
     <div className="flex flex-col space-y-2">

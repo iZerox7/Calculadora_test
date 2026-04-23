@@ -237,7 +237,7 @@ export const questions = [
         { value: "dolor_metatarsiano", label: "Dolor en la base del quinto metatarsiano o en el navicular" },
         { value: "dolor_palpacion", label: "Dolor a la palpación en el borde posterior de los 6 centímetros distales de la tibia o la fíbula hasta el segmento más distal del maléolo medial o lateral" },
         { value: "incapacidad_pasos", label: "Incapacidad de dar más de 4 pasos seguidos sin ayuda o de sostener su peso corporal" },
-        { value: "no_cumple", label: "No cumple ninguno (Ottawa -)" }
+        { value: "no_cumple", label: "No cumple ninguno (Ottawa -)", exclusive: true }
     ]
   },
 
