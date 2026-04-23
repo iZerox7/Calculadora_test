@@ -5,7 +5,19 @@ import { supabase } from './supabaseClient';
 import MultiSelect from './components/MultiSelect';
 
 // Añade un set de IDs que disparan el autosave
-const RX_CHECKPOINT_IDS = new Set(['rx_deformidad', 'rx_tolera_carga', 'rx_no_tolera_carga', 'rx_dolor_difuso', 'rx_dolor_local']);
+const RX_CHECKPOINT_IDS = new Set([
+  // Tobillo
+  'rx_deformidad',
+  'rx_tolera_carga',
+  'rx_no_tolera_carga',
+  'rx_dolor_difuso',
+  'rx_dolor_local',
+
+  // MetaTarso / Pie
+  'rx_deformidad_pie',
+  'rx_no_tolera_carga_pie',
+  'rx_tolera_carga_pie', ]);
+
 
 // ─── Helper: true si el cuestionario activo pertenece a tobillo_pie ───────────
 // Cubre tanto torsion_tobillo como ortejos (y futuros mecanismos del mismo grupo)
@@ -14,6 +26,10 @@ const esTobilloPie = (category) => category === 'tobillo_pie';
 // ─── Helper: true solo para el mecanismo de tobillo (no ortejos) ─────────────
 // Usado para lógica exclusiva de tobillo (TF, control, transporte, Ottawa, etc.)
 const esTobilloMecanismo = (questionnaireKey) => questionnaireKey === 'torsion_tobillo';
+
+// Helper: true si el cuestionario es de metatarso
+const esMetaTarso = (questionnaireKey) =>
+  questionnaireKey === 'meta_tarso' || questionnaireKey === 'metatarso';
 
 // --- Componente ImageModal ---
 const ImageModal = ({ isOpen, onClose, imageSrc }) => {
@@ -479,6 +495,23 @@ const resolveProtocol = (protocolId, questionnaireModule, answers) => {
   if (protocolId === 'protocolo_fx_derivacion_su_ortejos')
     return questionnaireModule.getProtocoloFxDerivacionSUOrtejos?.(answers) ?? questionnaireModule.protocols[protocolId];
 
+  // MetaTarso
+  if (protocolId === 'getProtocoloEsguincePie1')
+    return questionnaireModule.getProtocoloEsguincePie1?.(answers)
+      ?? questionnaireModule.protocols[protocolId];
+  if (protocolId === 'getProtocoloEsguincePie2')
+    return questionnaireModule.getProtocoloEsguincePie2?.(answers)
+      ?? questionnaireModule.protocols[protocolId];
+  if (protocolId === 'getProtocoloEsguincePie3')
+    return questionnaireModule.getProtocoloEsguincePie3?.(answers)
+      ?? questionnaireModule.protocols[protocolId];
+  if (protocolId === 'protocolo_fx_derivacion')
+    return questionnaireModule.protocolo_fx_derivacion?.(answers)
+      ?? questionnaireModule.protocols[protocolId];
+  if (protocolId === 'protocolo_fx_cerrada_conservador_metatarso')
+    return questionnaireModule.protocols[protocolId];
+
+
   // Cualquier otro (estático)
   return questionnaireModule.protocols[protocolId];
 };
@@ -741,7 +774,10 @@ function App() {
 
     // ── Indicaciones para tobillo_pie (tobillo y ortejos) ────────────────────
     let indicacionesTexto = null;
-    if (esTobilloPie(selectedCategory)) {
+
+  if (esTobilloPie(selectedCategory)) {
+    // Solo tobillo y ortejos
+    if (!esMetaTarso(selectedQuestionnaireKey)) {
       const currentProtocol = resolveProtocol(evaluation.protocolId, questionnaireModule, answers);
       const reposoDinamico = questionnaireModule?.restTextPorCarga?.(answers, evaluation.protocolId) ?? null;
       const displayedSteps = [
@@ -750,6 +786,23 @@ function App() {
       ];
       indicacionesTexto = displayedSteps.join('\n');
     }
+
+    
+    // MetaTarso: también mostrar indicaciones, pero sin lógica extra
+      if (esMetaTarso(selectedQuestionnaireKey)) {
+        const currentProtocol = resolveProtocol(evaluation.protocolId, questionnaireModule, answers);
+        const reposoDinamico =
+          questionnaireModule?.restTextPorCarga?.(answers, evaluation.protocolId) ?? null;
+
+        const displayedSteps = [
+          ...(reposoDinamico ? [reposoDinamico] : []),
+          ...(currentProtocol?.pasos ?? []),
+        ];
+
+        indicacionesTexto = displayedSteps.join('\n');
+      }
+    }
+
 
     // ── Mensajes de agendamiento: solo aplican a torsion_tobillo ─────────────
     let mensajeTFGuardar = null;

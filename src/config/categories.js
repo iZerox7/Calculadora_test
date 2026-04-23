@@ -33,6 +33,10 @@ export const categoriesConfig = {
         name: "(Piloto) Consulta por contusión, torsión o aplastamiento de dedos del pie",
         getQuestionsModule: () => import('../questionnaires/ortejosQuestions.js'),
       },
+      metaTarso: {
+        name: "(Piloto) Consulta por torsión de pie",
+        getQuestionsModule: () => import('../questionnaires/MetaTarsoQuestions.js'),
+      },
     },
   },
 };
