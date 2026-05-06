@@ -30,7 +30,7 @@ export const categoriesConfig = {
         getQuestionsModule: () => import('../questionnaires/tobilloQuestions.js'),
       },
       ortejos: {
-        name: "(Piloto) Consulta por contusión, torsión o aplastamiento de dedos del pie",
+        name: "(Piloto) Consulta por torsión de ortejos",
         getQuestionsModule: () => import('../questionnaires/ortejosQuestions.js'),
       },
       metaTarso: {

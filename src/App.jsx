@@ -27,9 +27,7 @@ const esTobilloPie = (category) => category === 'tobillo_pie';
 // Usado para lógica exclusiva de tobillo (TF, control, transporte, Ottawa, etc.)
 const esTobilloMecanismo = (questionnaireKey) => questionnaireKey === 'torsion_tobillo';
 
-// Helper: true si el cuestionario es de metatarso
-const esMetaTarso = (questionnaireKey) =>
-  questionnaireKey === 'meta_tarso' || questionnaireKey === 'metatarso';
+const esMetaTarso = (questionnaireKey) =>  questionnaireKey === 'metaTarso';
 
 // --- Componente ImageModal ---
 const ImageModal = ({ isOpen, onClose, imageSrc }) => {
@@ -917,7 +915,7 @@ function App() {
             </div>
             {selectedCategory && (
               <div>
-                <label className="block text-sm font-medium text-gray-700">Mecanismo</label>
+                <label className="block text-sm font-medium text-gray-700">Mecanismo </label>
                 <select value={selectedQuestionnaireKey || ""} onChange={(e) => setSelectedQuestionnaireKey(e.target.value)} className="mt-1 block w-full py-2 border-gray-300 rounded-md">
                   <option value="" disabled>Seleccione...</option>
                   {Object.keys(categoriesConfig[selectedCategory].questionnaires).map(k => <option key={k} value={k}>{categoriesConfig[selectedCategory].questionnaires[k].name}</option>)}

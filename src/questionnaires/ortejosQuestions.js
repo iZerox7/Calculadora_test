@@ -18,7 +18,9 @@ export const getProtocoloEsguince1Ortejos = (answers) => {
         ]
       : []),
     "En caso de dolor invalidante, aumento de volumen o cambio de coloración del sitio lesionado acudir a agencia ACHS más cercana",
-    "Inmovilización: vendaje solidario con suela rígida por 3 días",
+    ...(!esSTP
+      ? ["Inmovilización: vendaje solidario con suela rígida por 3 días"]
+      : ["Inmovilización: vendaje solidario por 3 días"]),
     "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 3 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 3 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
   ];
 
@@ -70,7 +72,8 @@ export const getProtocoloFxDerivacionSUOrtejos = (answers) => {
     answers?.clasificacion_cerrada_ortejos === "cerrada_primer_ortj";
   const esCerradaNoPrimerOrtejo =
     answers?.clasificacion_cerrada_ortejos === "cerrada_ex_primer_ortj";
-  const hayCompromisoArticular = answers?.compromiso_articular === "si";
+  const hayCompromisoArticular = answers?.compromiso_derivación === "compromiso_articular"; 
+  const hayCompromisoBlandas = answers?.compromiso_derivación === "compromiso_blandas";
   const esFracturaCerrada = esCerradaPrimerOrtejo || esCerradaNoPrimerOrtejo;
 
   let nombreFractura = "";
@@ -88,11 +91,14 @@ export const getProtocoloFxDerivacionSUOrtejos = (answers) => {
   if (esFracturaCerrada && hayCompromisoArticular) {
     textoDerivacion = "🚨 Derivación inmediata a HT TyP";
   }
+  else if (esFracturaCerrada && hayCompromisoBlandas) {
+    textoDerivacion = "🚨 Derivación inmediata a HT SU";
+  }
 
   return {
     titulo: `PROTOCOLO DE MANEJO - ${nombreFractura}`,
     pasos: [
-      `${textoDerivacion} o centro hospitalario con capacidad resolutiva 🚨`,
+      `${textoDerivacion} o centro hospitalario con capacidad resolutiva según indicación del especialista 🚨`,
       "Inmovilización con valva de la ambulancia",
       "Aplicar frío local",
       "Medicamentos: Analgesia EV y profilaxis tromboembólica con aspirina o dabigatrán una vez inmovilizada",
@@ -106,28 +112,52 @@ export const getProtocoloFxDerivacionSUOrtejos = (answers) => {
 // ─────────────────────────────────────────────
 
 const FRACTURA_PIE_LABELS = {
-  fractura_astragalo_abierta:          "Fractura Astragalo Abierta",
-  fractura_astragalo_cerrada:          "Fractura Astragalo Cerrada",
-  fractura_calcaneo_abierta:           "Fractura Calcáneo Abierta",
-  fractura_calcaneo_cerrada:           "Fractura Calcáneo Cerrada",
-  fractura_cuello_talo_cerrada:        "Fractura Cuello Talo Cerrada",
-  fractura_cuerpo_talo_cerrada:        "Fractura Cuerpo Talo Cerrada",
-  fractura_escafoides_tarso_cerrada:   "Fractura Escafoides Tarso del Pie Cerrada",
-  fractura_huesos_tarso_cerrada:       "Fractura Huesos del Tarso (excepto Escafoides) Cerrada",
   fractura_metatarsiano_abierta:       "Fractura Metatarsiano Abierta",
   fractura_metatarsiano_cerrada:       "Fractura Metatarsiano Cerrada",
-  fracturas_perifericas_talo_abiertas: "Fracturas Periféricas Talo Abiertas",
-  fracturas_perifericas_talo_cerradas: "Fracturas Periféricas Talo Cerradas",
-  luxafractura_lisfranc_abierta:       "Luxafractura de Lisfranc Abierta",
-  luxofractura_chopart_cerrada:        "Luxofractura de Chopart Cerrada",
-  luxofractura_lisfranc_cerrada:       "Luxofractura de Lisfranc Cerrada",
-  luxofractura_pie_abierta:            "Luxofractura del Pie Abierta",
-  luxofractura_pie_cerrada:            "Luxofractura del Pie Cerrada",
+  luxofractura_lisfranc_abierta:       "Luxofractura de Lisfranc Abierta",
+  luxofractura_lisfranc_cerrada:       "Luxofractura de Lisfranc Cerrada"
 };
 
 // ─────────────────────────────────────────────
 // PROTOCOLOS ESTÁTICOS
 // ─────────────────────────────────────────────
+
+
+export const protocolo_fx_derivacion_pie = (answers) => {
+  const criterios = answers?.hay_derivacion_metatarso_cerrada || [];
+  const esMetatarsianoCerradaConDerivacion = 
+    Array.isArray(criterios) && !criterios.includes("no_cumple");
+    
+  const esMetatarsianoAbierta =
+    answers?.fractura_pie_tipo === "fractura_metatarsiano_abierta";
+  const esLuxoLisfrancAbierta =
+    answers?.fractura_pie_tipo === "luxofractura_lisfranc_abierta";
+  const esLuxoLisfrancCerrada  =
+    answers?.fractura_pie_tipo === "luxofractura_lisfranc_cerrada";
+
+  let nombreFractura = "";
+  if (esLuxoLisfrancAbierta) {
+    nombreFractura = "LUXOFRACTURA DE LISFRANC ABIERTA";
+  } else if (esMetatarsianoAbierta) {
+    nombreFractura = "FRACTURA METATARSIANO ABIERTA";
+  } else if (esLuxoLisfrancCerrada) {
+    nombreFractura = "LUXOFRACTURA DE LISFRANC CERRADA";
+  } else if (esMetatarsianoCerradaConDerivacion) {
+    nombreFractura = "FRACTURA METATARSIANO CERRADA";
+  } 
+
+  return {
+    titulo: `PROTOCOLO DE MANEJO - ${nombreFractura}`,
+    pasos: [
+      "🚨 Derivación inmediata a HT TyP o centro hospitalario con capacidad resolutiva según indicación del especialista 🚨",
+      "Inmovilización con valva de la ambulancia",
+      "Aplicar frío local",
+      "Medicamentos: Analgesia EV y profilaxis tromboembólica con aspirina o dabigatrán una vez inmovilizada",
+      "Vacunación antitetánica (en caso de fractura expuesta)",
+    ],
+  };
+};
+
 
 export const protocols = {
   protocolo_esguince_1_ortj: {
@@ -160,10 +190,29 @@ export const protocols = {
     titulo: "PROTOCOLO DE MANEJO - FRACTURA ORTEJOS CON DERIVACIÓN",
     pasos: [], // se sobreescribe dinámicamente con getProtocoloFxDerivacionSUOrtejos
   },
-  protocolo_fractura_pie: {
+
+  protocolo_fx_derivacion_pie: {
     titulo: "PROTOCOLO DE MANEJO - FRACTURA DE PIE",
     pasos: ["Pendiente de integración"],
   },
+
+  protocolo_fx_metatarsiano_cerrada_conservador: {
+        "titulo": "INDICACIONES AL PACIENTE - FRACTURA METATARSIANO CERRADA",
+        "pasos": [
+      "Reposo",
+      "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. En caso de persistir dolor posterior, aplicar calor local de forma intermitente o según necesidad ",
+      "Inmovilización: Zapato pop",
+      "Analgesia VO",
+      "Medicamentos: tromboprofilaxis según protocolo, sólo si no tolera carga",
+      "Control con médico AP a la semana",
+      "Control SOS"
+        ]
+    },  
+
+  "protocolo_fractura_pie": {
+  "titulo": "PROTOCOLO DE MANEJO - FRACTURA DE PIE",
+  "pasos": ["Pendiente de integración"]
+    }
 };
 
 // ─────────────────────────────────────────────
@@ -213,6 +262,19 @@ export const questions = [
       { value: "severo",   label: "Severo (+++)" },
     ],
   },
+
+  { 
+    id: "equimosis_ortj", 
+    text: "Equimosis", 
+    type: "options", 
+    group: "anamnesis",
+    options: [
+      { value: "ninguno", label: "Sin equimosis" },
+      { value: "localizada", label: "Localizada" },
+      { value: "difusa", label: "Difusa"}
+    ]
+  },
+
   {
     id: "inestabilidad",
     text: "Inestabilidad",
@@ -231,7 +293,7 @@ export const questions = [
     placeholder: "Describa presencia de heridas, tipo de marcha...",
   },
   {
-    id: "tipo_dolor",
+    id: "tipo_dolor_ortj",
     text: "¿Cómo se presenta el dolor?",
     type: "options",
     group: "risk",
@@ -246,12 +308,16 @@ export const questions = [
   // RX 1: dolor difuso + AVO moderado o severo
   {
     id: "rx_dolor_difuso",
-    text: "Realizar Radiografía Pie Ap-Lat-Obl del dedo afectado (con carga si tolera)",
+    text: "Realizar Radiografía Pie Ap-Lat-Obl y del ortejo ortejo afectado (con carga si tolera)",
     type: "options",
     group: "risk",
     showIf: (ans) =>
-      ans.tipo_dolor === "difuso" &&
-      (ans.aumento_volumen === "moderado" || ans.aumento_volumen === "severo"),
+      ans.tipo_dolor_ortj === "difuso" &&
+      (
+        ans.aumento_volumen === "moderado" ||
+        ans.aumento_volumen === "severo" ||
+        (ans.aumento_volumen === "leve" && ans.equimosis_ortj !== "ninguno")
+      ),
     options: [{ value: "listo", label: "✅ Realizada" }],
   },
 
@@ -262,8 +328,12 @@ export const questions = [
     type: "options",
     group: "risk",
     showIf: (ans) =>
-      ans.tipo_dolor === "local" &&
-      (ans.aumento_volumen === "moderado" || ans.aumento_volumen === "severo"),
+      ans.tipo_dolor_ortj === "local" &&
+      (
+        ans.aumento_volumen === "moderado" ||
+        ans.aumento_volumen === "severo" ||
+        (ans.aumento_volumen === "leve" && ans.equimosis_ortj !== "ninguno")
+      ),
     options: [{ value: "listo", label: "✅ Realizada" }],
   },
 
@@ -283,17 +353,34 @@ export const questions = [
     ],
   },
 
-  // Fractura de pie: lista desplegable
   {
     id: "fractura_pie_tipo",
     text: "Seleccione la fractura detectada:",
-    type: "select",
+    type: "options",
     group: "risk",
     showIf: (ans) => ans.hay_fractura === "si_otra",
-    options: Object.entries(FRACTURA_PIE_LABELS).map(([value, label]) => ({
-      value,
-      label,
-    })).concat([{ value: "otra", label: "Otra" }]),
+    options: [
+        { value: "fractura_metatarsiano_abierta", label: "Fractura Metatarsiano Abierta" },
+        { value: "fractura_metatarsiano_cerrada", label: "Fractura Metatarsiano Cerrada" },
+        { value: "luxofractura_lisfranc_abierta", label: "Luxofractura de Lisfranc Abierta" },
+        { value: "luxofractura_lisfranc_cerrada", label: "Luxofractura de Lisfranc Cerrada" },
+        { value: "otra", label: "Otra" }
+    ]
+  },
+
+  {
+    id: "hay_derivacion_metatarso_cerrada",
+    text: "¿Presenta alguno de estos criterios de derivación?:",
+    type: "multi",
+    group: "risk",
+    showIf: (ans) => ans.hay_fractura === "si_otra" && ans.fractura_pie_tipo === "fractura_metatarsiano_cerrada",
+    options: [
+        { value: "compromiso_neurovascular", label: "Herida / compromiso neurovascular / sospecha sd compartimental / sospecha de lesión Lisfranc" },
+        { value: "desplazada", label: "Desplazada > 3mm / escalón de > 1-2mm en superducue articular con el cuboide / Fx asociadas / No unión sintomática" },
+        { value: "multiple", label: "Es múltiple / intraarticular / de cabeza" },
+        { value: "zona2", label: "Pertenece al 5° metatarsiano en zona 2 (con diafisis, intermetatarsiana y proximal)"},
+        { value: "no_cumple", label: "No presenta ninguno", exclusive: true }
+    ]
   },
 
   // Fractura de pie: texto libre si seleccionó "Otra"
@@ -320,19 +407,21 @@ export const questions = [
     ],
   },
 
+
   // Compromiso articular — solo fractura cerrada de primer ortejo
   {
-    id: "compromiso_articular",
-    text: "¿Hay compromiso articular?",
+    id: "compromiso_derivación",
+    text: "¿Presenta alguno de estor criterios?:",
     type: "options",
     group: "risk",
     showIf: (ans) =>
-      ans.clasificacion_cerrada_ortejos === "cerrada_primer_ortj",
+      ans.clasificacion_cerrada_ortejos === "cerrada_primer_ortj" || ans.clasificacion_cerrada_ortejos === "cerrada_ex_primer_ortj",
     options: [
-      { value: "no", label: "No" },
-      { value: "si", label: "Sí" },
+      { value: "compromiso_blandas", label: "Compromiso de partes blandas o neurovascular importante" },
+      { value: "compromiso_articular", label: "Compromiso articular, está desplazada/angulada o presenta inestabilidad"},
+      { value: "ninguno", label: "Ninguno de estos criterios" },
     ],
-  },
+  }, 
 
   // Clasificación fractura abierta de ortejos
   {
@@ -392,22 +481,38 @@ export const evaluateRisk = (answers) => {
 
   // ── 1. FRACTURA DE PIE (no de ortejo) ────────
 
+   // Lógica de derivación de fractura de pie 
   if (hayFractura === "si_otra") {
-    const opcion = answers.fractura_pie_tipo;
-    if (!opcion) return null; // aún no respondió
+  const clasVal = answers.fractura_pie_tipo;
 
-    const diagText =
-      opcion === "otra"
-        ? answers.fractura_pie_otra?.trim() || "Fractura de Pie - Sin especificar"
-        : FRACTURA_PIE_LABELS[opcion] || opcion;
+  const diagText =
+    clasVal === "otra"
+      ? answers.fractura_pie_otra?.trim() || "Fractura de Pie - Sin especificar"
+      : FRACTURA_PIE_LABELS[clasVal] || clasVal;
 
-    return {
-      id: "fractura_pie",
-      text: diagText,
-      color: "red",
-      protocolId: "protocolo_fractura_pie",
-    };
+  let protocolId;
+  
+  if (clasVal === "fractura_metatarsiano_abierta" || 
+      clasVal === "luxofractura_lisfranc_abierta" || 
+      clasVal === "luxofractura_lisfranc_cerrada") {
+    protocolId = "protocolo_fx_derivacion_pie";
+  } else if (clasVal === "fractura_metatarsiano_cerrada") {
+    // Si NO cumple criterios de derivación → conservador
+    const noCumpleCriterios = answers.hay_derivacion_metatarso_cerrada?.includes("no_cumple");
+    protocolId = noCumpleCriterios 
+      ? "protocolo_fx_metatarsiano_cerrada_conservador"
+      : "protocolo_fx_derivacion_pie";
+  } else {
+    protocolId = "protocolo_fractura_pie";
   }
+
+  return {
+    id: "fractura_pie",
+    text: diagText,
+    color: "red",
+    protocolId,
+  };
+}
 
   // ── 2. FRACTURA ABIERTA DE ORTEJO ────────────
 
@@ -429,7 +534,8 @@ export const evaluateRisk = (answers) => {
 
   if (hayFractura === "si_cerrada") {
     const clasVal = answers.clasificacion_cerrada_ortejos;
-    const compromisoArticular = answers.compromiso_articular;
+    const compromisoArticular = answers.compromiso_derivación === "compromiso_articular";
+    const hayCompromisoBlandas = answers.compromiso_derivación === "compromiso_blandas";
 
     if (clasVal === "cerrada_primer_ortj") {
       return {
@@ -473,16 +579,18 @@ export const evaluateRisk = (answers) => {
     };
   }
 
-  // Grado II o III: RX realizada y sin fractura
+  // Grado III: inestabilidad sola o RX realizada sin fractura con inestabilidad
+  if (inestabilidad === "con_inestabilidad") {
+    return {
+      id: "e3_ortj",
+      text: "Esguince de Ortejos Grado III",
+      color: "red",
+      protocolId: "protocolo_esguince_3_ortj",
+    };
+  }
+
+  // Grado II: RX realizada y sin fractura
   if (huboRx && hayFractura === "no") {
-    if (inestabilidad === "con_inestabilidad") {
-      return {
-        id: "e3_ortj",
-        text: "Esguince de Ortejos Grado III",
-        color: "red",
-        protocolId: "protocolo_esguince_3_ortj",
-      };
-    }
     return {
       id: "e2_ortj",
       text: "Esguince de Ortejos Grado II",
@@ -593,16 +701,15 @@ export const generateClinicalReport = ({
     abierta_ex_primer_ortj: "Ortejos excepto primer ortejo Abierta",
   };
 
-  const clasificacionLinea = (() => {
-    const val =
-      answers.clasificacion_cerrada_ortejos ||
-      answers.clasificacion_abierta_ortejos;
-    const label = LABELS_CERRADA_ORTJ[val] || LABELS_ABIERTA_ORTJ[val] || null;
-    return val ? `- Clasificación: ${label || val}` : null;
-  })();
 
-  const compromisoLinea = answers.compromiso_articular
-    ? `- Compromiso articular: ${answers.compromiso_articular === "si" ? "Sí" : "No"}`
+  const compromisoLabels = {
+    "compromiso_blandas": "Compromiso de partes blandas o neurovascular importante",
+    "compromiso_articular": "Compromiso articular, está desplazada/angulada o presenta inestabilidad",
+    "ninguno": "No presenta"
+  };
+
+  const compromisoLinea = answers.compromiso_derivación
+    ? `- Criterios de derivación: ${compromisoLabels[answers.compromiso_derivación] || answers.compromiso_derivación}`
     : null;
 
   const fracturaPieLinea = (() => {
@@ -613,13 +720,40 @@ export const generateClinicalReport = ({
     return `- Fractura de pie: ${FRACTURA_PIE_LABELS[answers.fractura_pie_tipo] || answers.fractura_pie_tipo}`;
   })();
 
-  const seccionII_lineas = [
-    rxTexto ? `- Radiografía solicitada: ${rxTexto}` : null,
-    fracturaTexto ? `- Resultado: ${fracturaTexto}` : null,
-    clasificacionLinea,
-    compromisoLinea,
-    fracturaPieLinea,
-  ].filter(Boolean);
+  // Agregamos info de la derivación para metatarso
+
+  const derivacionMetatarsoLinea = (() => {
+  if (!answers.hay_derivacion_metatarso_cerrada) return null;
+  const criterios = answers.hay_derivacion_metatarso_cerrada;
+  if (criterios.includes("no_cumple")) {
+    return "- Criterios de derivación metatarso: No presenta";
+  }
+  const labels = {
+    compromiso_neurovascular: "Herida/compromiso neurovascular/sd compartimental/lesión Lisfranc",
+    desplazada: "Desplazada >3mm / escalón >1-2mm / Fx asociadas / No unión sintomática",
+    multiple: "Múltiple / intraarticular / de cabeza",
+    zona2: "5° metatarsiano zona 2"
+  };
+  const textos = criterios.map(c => labels[c] || c);
+  return `- Criterios de derivación metatarso: ${textos.join(", ")}`;
+})();
+
+const seccionII_lineas = [
+  rxTexto ? `- Radiografía solicitada: ${rxTexto}` : null,
+  fracturaTexto ? `- Resultado: ${fracturaTexto}` : null,
+  // clasificacionLinea,
+  compromisoLinea,
+  fracturaPieLinea,
+  derivacionMetatarsoLinea, // ✅ Agregar aquí
+].filter(Boolean);
+
+  // const seccionII_lineas = [
+  //   rxTexto ? `- Radiografía solicitada: ${rxTexto}` : null,
+  //   fracturaTexto ? `- Resultado: ${fracturaTexto}` : null,
+  //   clasificacionLinea,
+  //   compromisoLinea,
+  //   fracturaPieLinea,
+  // ].filter(Boolean);
 
   const seccionII =
     seccionII_lineas.length > 0
@@ -674,6 +808,7 @@ const questionnaireModule = {
   getProtocoloEsguince2Ortejos,
   getProtocoloEsguince3Ortejos,
   getProtocoloFxDerivacionSUOrtejos,
+  protocolo_fx_derivacion_pie,
   requiresAnamnesis: true,
 };
 
