@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { categoriesConfig } from './config/categories';
 import { supabase } from './supabaseClient';
 // import { OccupationSelect } from './OccupationSelect';
@@ -28,6 +28,19 @@ const esTobilloPie = (category) => category === 'tobillo_pie';
 const esTobilloMecanismo = (questionnaireKey) => questionnaireKey === 'torsion_tobillo';
 
 const esMetaTarso = (questionnaireKey) =>  questionnaireKey === 'metaTarso';
+
+const extractSection = (text, header, stopHeaders) => {
+  const start = text.indexOf(header);
+  if (start === -1) return null;
+  let end = text.length;
+  for (const h of stopHeaders) {
+    const pos = text.indexOf(h, start + header.length);
+    if (pos !== -1 && pos < end) end = pos;
+  }
+  const footerPos = text.indexOf('===', start + header.length);
+  if (footerPos !== -1 && footerPos < end) end = footerPos;
+  return text.slice(start, end).trim();
+};
 
 // --- Componente ImageModal ---
 const ImageModal = ({ isOpen, onClose, imageSrc }) => {
@@ -531,6 +544,8 @@ function App() {
   const [backWarningModal, setBackWarningModal] = useState(false);
   const [indicacionesSeleccionadas, setIndicacionesSeleccionadas] = useState(null);
   const [usoDictadoVoz, setUsoDictadoVoz] = useState(false);
+  const [copiedLabel, setCopiedLabel] = useState(null);
+  const copiedTimerRef = useRef(null);
 
   const [rxModal, setRxModal] = useState({
     open: false,
@@ -808,6 +823,7 @@ function App() {
     let transporteGuardar = null;
 
     if (esTobilloMecanismo(selectedQuestionnaireKey)) {
+      const esGrado1 = evaluation.protocolId === 'protocolo_esguince_1';
       const esGrado2 = evaluation.protocolId === 'protocolo_esguince_2';
       const esGrado3 = evaluation.protocolId === 'protocolo_esguince_3';
       const vol = answers.aumento_volumen;
@@ -818,17 +834,40 @@ function App() {
       else if (esGrado2) {
         if ((vol === 'moderado' || vol === 'severo') && eva >= 6) mensajeTFGuardar = 'Agendar primera TF al día 3';
         else if (vol === 'leve' && eva >= 6) mensajeTFGuardar = 'Agendar primera TF al día 5';
+        else mensajeTFGuardar = 'A partir de las condiciones del paciente, no requiere terapia física';
       }
 
       if (esGrado3) mensajeControlGuardar = 'Agendar primer control al día 7';
       else if (esGrado2 && (carg === 2 || carg === 3)) mensajeControlGuardar = 'Agendar primer control al día 5';
+      else if (esGrado1) mensajeControlGuardar = 'Este diagnóstico no requiere de control a excepción SOS';
 
-      if (evaluation.protocolId === 'protocolo_esguince_1') transporteGuardar = 'No requiere transporte';
-      else if (evaluation.protocolId === 'protocolo_esguince_2') transporteGuardar = 'Furgón hasta retiro de ayudas técnicas u órtesis';
-      else if (evaluation.protocolId === 'protocolo_esguince_3') transporteGuardar = 'Furgón hasta retiro de ayudas técnicas u órtesis';
-      else if (['protocolo_weber_a', 'protocolo_weber_b_c', 'protocolo_escenario_2',
-        'protocolo_escenario_3', 'protocolo_escenario_4', 'protocolo_fractura_pie'].includes(evaluation.protocolId)) {
-        transporteGuardar = 'Requiere transporte';
+
+      // if (evaluation.protocolId === 'protocolo_esguince_1') transporteGuardar = 'No requiere transporte';
+      // else if (evaluation.protocolId === 'protocolo_esguince_2') transporteGuardar = 'Furgón hasta retiro de ayudas técnicas u órtesis';
+      // else if (evaluation.protocolId === 'protocolo_esguince_3') transporteGuardar = 'Furgón hasta retiro de ayudas técnicas u órtesis';
+      // else if (['protocolo_weber_a', 'protocolo_weber_b_c', 'protocolo_escenario_2',
+      //   'protocolo_escenario_3', 'protocolo_escenario_4', 'protocolo_fractura_pie'].includes(evaluation.protocolId)) {
+      //   transporteGuardar = 'Requiere transporte';
+      // }
+    }
+
+    if (esTobilloPie(selectedCategory) && !esTobilloMecanismo(selectedQuestionnaireKey)) {
+      const pid = evaluation.protocolId;
+      if (['protocolo_esguince_2_ortj', 'protocolo_esguince_3_ortj',
+           'protocolo_fx_cerrada_ortejos', 'getProtocoloEsguincePie2',
+           'getProtocoloEsguincePie3'].includes(pid)) {
+        mensajeTFGuardar = 'Agendar primera TF al día 3';
+      }
+      if (['protocolo_esguince_2_ortj', 'protocolo_esguince_3_ortj',
+           'getProtocoloEsguincePie2', 'getProtocoloEsguincePie3'].includes(pid)) {
+        mensajeControlGuardar = 'Agendar primer control al día 7';
+      } else if (pid === 'protocolo_fx_metatarsiano_cerrada_conservador') {
+        mensajeControlGuardar = 'Agendar primer control al día 7 con Rx Ap-Lat';
+      } else if (pid === 'protocolo_fx_cerrada_conservador_tarso') {
+        mensajeControlGuardar = 'Agendar primer control en dos semanas con Rx Ap-Lat';
+      }
+      else if (pid === 'protocolo_esguince_1_ortj' || pid === 'getProtocoloEsguincePie1') {
+        mensajeControlGuardar = 'Este diagnóstico no requiere de control a excepción SOS';
       }
     }
 
@@ -1154,17 +1193,20 @@ function App() {
       });
 
       // Mensajes de agendamiento: solo tobillo
+      const esGrado1 = soloTobillo && finalResult.protocolId === 'protocolo_esguince_1';
       const esGrado2 = soloTobillo && finalResult.protocolId === 'protocolo_esguince_2';
       const esGrado3 = soloTobillo && finalResult.protocolId === 'protocolo_esguince_3';
       const volumen = answers.aumento_volumen;
+      const eva = answers.eva;
       const carga = Number(answers.carga_laboral);
 
       const mensajeTF = (() => {
         if (!soloTobillo) return null;
         if (esGrado3) return 'Agendar primera TF al día 3';
         if (esGrado2) {
-          if (volumen === 'moderado' || volumen === 'severo') return 'Agendar primera TF al día 3';
-          if (volumen === 'leve') return 'Agendar primera TF al día 5';
+          if ((volumen === 'moderado' || volumen === 'severo') && eva >= 6) return 'Agendar primera TF al día 3';
+          if (volumen === 'leve' && eva >= 6) return 'Agendar primera TF al día 5';
+          return 'A partir de las condiciones del paciente, no requiere terapia física';
         }
         return null;
       })();
@@ -1173,17 +1215,44 @@ function App() {
         if (!soloTobillo) return null;
         if (esGrado3) return 'Agendar primer control al día 7';
         if (esGrado2 && (carga === 2 || carga === 3)) return 'Agendar primer control al día 5';
+        if (esGrado1) return 'Este diagnóstico no requiere de control a excepción SOS';
         return null;
       })();
 
-      const transporteTexto = (() => {
-        if (!soloTobillo) return null;
-        if (finalResult.protocolId === 'protocolo_esguince_1') return 'No requiere transporte';
-        if (finalResult.protocolId === 'protocolo_esguince_2') return 'Furgón hasta retiro de ayudas técnicas u órtesis';
-        if (finalResult.protocolId === 'protocolo_esguince_3') return 'Furgón hasta retiro de ayudas técnicas u órtesis';
-        const esFractura = ['protocolo_weber_a', 'protocolo_weber_b_c', 'protocolo_escenario_2',
-          'protocolo_escenario_3', 'protocolo_escenario_4', 'protocolo_fractura_pie'].includes(finalResult.protocolId);
-        if (esFractura) return 'Requiere transporte';
+      // const transporteTexto = (() => {
+      //   if (!soloTobillo) return null;
+      //   if (finalResult.protocolId === 'protocolo_esguince_1') return 'No requiere transporte';
+      //   if (finalResult.protocolId === 'protocolo_esguince_2') return 'Furgón hasta retiro de ayudas técnicas u órtesis';
+      //   if (finalResult.protocolId === 'protocolo_esguince_3') return 'Furgón hasta retiro de ayudas técnicas u órtesis';
+      //   const esFractura = ['protocolo_weber_a', 'protocolo_weber_b_c', 'protocolo_escenario_2',
+      //     'protocolo_escenario_3', 'protocolo_escenario_4', 'protocolo_fractura_pie'].includes(finalResult.protocolId);
+      //   if (esFractura) return 'Requiere transporte';
+      //   return null;
+      // })();
+
+      const esOrtjOMetaTarso = esTobilloPie(selectedCategory) && !soloTobillo;
+
+      const mensajeTFOrtj = (() => {
+        if (!esOrtjOMetaTarso) return null;
+        const pid = finalResult.protocolId;
+        if (['protocolo_esguince_2_ortj', 'protocolo_esguince_3_ortj',
+             'protocolo_fx_cerrada_ortejos', 'getProtocoloEsguincePie2',
+             'getProtocoloEsguincePie3'].includes(pid)) {
+          return 'Agendar primera TF al día 3';
+        }
+        return null;
+      })();
+
+      const mensajeControlOrtj = (() => {
+        if (!esOrtjOMetaTarso) return null;
+        const pid = finalResult.protocolId;
+        if (['protocolo_esguince_2_ortj', 'protocolo_esguince_3_ortj',
+             'getProtocoloEsguincePie2', 'getProtocoloEsguincePie3'].includes(pid)) {
+          return 'Agendar primer control al día 7';
+        }
+        if (pid === 'protocolo_fx_metatarsiano_cerrada_conservador') return 'Agendar primer control al día 7 con Rx Ap-Lat';
+        if (pid === 'protocolo_fx_cerrada_conservador_tarso') return 'Agendar primer control en dos semanas con Rx Ap-Lat';
+        if (pid === 'protocolo_esguince_1_ortj' || pid === 'getProtocoloEsguincePie1') return 'Este diagnóstico no requiere de control a excepción SOS';
         return null;
       })();
 
@@ -1212,6 +1281,18 @@ function App() {
           {mensajeControl && (
             <div className="p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
               <p className="text-yellow-800 text-sm font-semibold">📅 {mensajeControl}</p>
+            </div>
+          )}
+
+          {mensajeTFOrtj && (
+            <div className="p-4 bg-purple-50 border-l-4 border-purple-400 rounded-lg">
+              <p className="text-purple-800 text-sm font-semibold">🗓️ {mensajeTFOrtj}</p>
+            </div>
+          )}
+
+          {mensajeControlOrtj && (
+            <div className="p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
+              <p className="text-yellow-800 text-sm font-semibold">📅 {mensajeControlOrtj}</p>
             </div>
           )}
 
@@ -1251,15 +1332,65 @@ function App() {
             </div>
           </div>
 
+          {esTobilloPie(selectedCategory) && (() => {
+            const sections = [
+              { label: 'Examen Físico',         text: extractSection(reportText, 'EXAMEN FÍSICO',         ['IMAGENOLOGÍA', 'DIAGNÓSTICO SUGERIDO', 'INDICACIONES SUGERIDAS']) },
+              { label: 'Imagenología',           text: extractSection(reportText, 'IMAGENOLOGÍA',           ['DIAGNÓSTICO SUGERIDO', 'INDICACIONES SUGERIDAS']) },
+              { label: 'Indicaciones Sugeridas', text: extractSection(reportText, 'INDICACIONES SUGERIDAS', []) },
+            ].filter(s => s.text !== null);
+            const copy = (text, label) => {
+              navigator.clipboard.writeText(text);
+              if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+              setCopiedLabel(label);
+              copiedTimerRef.current = setTimeout(() => setCopiedLabel(null), 2000);
+            };
+            return sections.length > 0 ? (
+              <div className="space-y-3">
+                <div className="flex justify-between items-end">
+                  <h3 className="font-bold text-gray-700">Copiar por Campo de ISH</h3>
+                  <span className="text-[10px] text-gray-400 font-mono">TOBILLO Y PIE</span>
+                </div>
+                <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${sections.length}, minmax(0, 1fr))` }}>
+                  {sections.map(({ label, text }) => (
+                    <div key={label} className="space-y-2">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
+                      <textarea readOnly value={text} className="w-full h-56 p-2 bg-slate-900 text-green-400 font-mono text-xs rounded-lg border-2 border-slate-800 shadow-inner" />
+                      <button
+                        onClick={() => copy(text, label)}
+                        className="w-full bg-slate-700 text-white py-2 rounded-xl font-bold hover:bg-slate-900 transition-all shadow flex items-center justify-center text-sm"
+                      >
+                        <span className="mr-2">📋</span> COPIAR
+                      </button>
+                      <p className={`text-xs text-center text-green-600 font-medium transition-opacity duration-500 ${copiedLabel === label ? 'opacity-100' : 'opacity-0'}`}>
+                        Copiado al portapapeles
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null;
+          })()}
+
           <div className="space-y-4">
             <div className="flex justify-between items-end">
-              <h3 className="font-bold text-gray-700">Informe Clínico para Ficha</h3>
+              <h3 className="font-bold text-gray-700">Informe Clínico Completo para Ficha</h3>
               <span className="text-[10px] text-gray-400 font-mono">FORMATO ESTÁNDAR ACHS</span>
             </div>
             <textarea readOnly value={reportText} className="w-full h-64 p-4 bg-slate-900 text-green-400 font-mono text-xs rounded-lg border-2 border-slate-800 shadow-inner" />
-            <button onClick={() => { navigator.clipboard.writeText(reportText); alert("Informe copiado al portapapeles"); }} className="w-full bg-slate-800 text-white py-4 rounded-xl font-bold hover:bg-black transition-all shadow-lg flex items-center justify-center">
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(reportText);
+                if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
+                setCopiedLabel('__full__');
+                copiedTimerRef.current = setTimeout(() => setCopiedLabel(null), 2000);
+              }}
+              className="w-full bg-slate-800 text-white py-4 rounded-xl font-bold hover:bg-black transition-all shadow-lg flex items-center justify-center"
+            >
               <span className="mr-2">📄</span> COPIAR INFORME COMPLETO
             </button>
+            <p className={`text-xs text-center text-green-600 font-medium transition-opacity duration-500 ${copiedLabel === '__full__' ? 'opacity-100' : 'opacity-0'}`}>
+              Copiado al portapapeles
+            </p>
           </div>
         </div>
       );

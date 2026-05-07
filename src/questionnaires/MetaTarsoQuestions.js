@@ -270,7 +270,7 @@ export const getProtocoloFxDerivacionSUOrtejos = (answers) => {
     pasos: [
       `${textoDerivacion} o centro hospitalario con capacidad resolutiva según indicación del especialista 🚨`,
       "Inmovilización con valva de la ambulancia",
-      "Aplicar frío local",
+       "Aplicar frío local",
       "Medicamentos: Analgesia EV y profilaxis tromboembólica con aspirina o dabigatrán una vez inmovilizada",
       "Vacunación antitetánica (en caso de fractura expuesta)",
     ],

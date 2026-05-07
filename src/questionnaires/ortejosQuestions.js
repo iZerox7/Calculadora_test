@@ -312,11 +312,14 @@ export const questions = [
     type: "options",
     group: "risk",
     showIf: (ans) =>
-      ans.tipo_dolor_ortj === "difuso" &&
+      ans.inestabilidad === "con_inestabilidad" ||
       (
-        ans.aumento_volumen === "moderado" ||
-        ans.aumento_volumen === "severo" ||
-        (ans.aumento_volumen === "leve" && ans.equimosis_ortj !== "ninguno")
+        ans.tipo_dolor_ortj === "difuso" &&
+        (
+          ans.aumento_volumen === "moderado" ||
+          ans.aumento_volumen === "severo" ||
+          (ans.aumento_volumen === "leve" && ans.equimosis_ortj !== "ninguno")
+        )
       ),
     options: [{ value: "listo", label: "✅ Realizada" }],
   },
@@ -328,11 +331,14 @@ export const questions = [
     type: "options",
     group: "risk",
     showIf: (ans) =>
-      ans.tipo_dolor_ortj === "local" &&
+      ans.inestabilidad === "con_inestabilidad" ||
       (
-        ans.aumento_volumen === "moderado" ||
-        ans.aumento_volumen === "severo" ||
-        (ans.aumento_volumen === "leve" && ans.equimosis_ortj !== "ninguno")
+        ans.tipo_dolor_ortj === "local" &&
+        (
+          ans.aumento_volumen === "moderado" ||
+          ans.aumento_volumen === "severo" ||
+          (ans.aumento_volumen === "leve" && ans.equimosis_ortj !== "ninguno")
+        )
       ),
     options: [{ value: "listo", label: "✅ Realizada" }],
   },
@@ -537,24 +543,16 @@ export const evaluateRisk = (answers) => {
     const compromisoArticular = answers.compromiso_derivación === "compromiso_articular";
     const hayCompromisoBlandas = answers.compromiso_derivación === "compromiso_blandas";
 
-    if (clasVal === "cerrada_primer_ortj") {
+    if (clasVal === "cerrada_primer_ortj" || clasVal === "cerrada_ex_primer_ortj") {
       return {
-        id: "fx_cerrada_primer_ortj",
-        text:
-          compromisoArticular === "si"
-            ? "Fractura Primer Ortejo Cerrada con Compromiso Articular"
-            : "Fractura Primer Ortejo Cerrada",
+        id: compromisoArticular ? "fx_cerrada_primer_ortj_con_compromiso" : "fx_cerrada_primer_ortj",
+        text: compromisoArticular
+          ? "Fractura Primer Ortejo Cerrada con Compromiso Articular"
+          : "Fractura Primer Ortejo Cerrada",
         color: "red",
-        protocolId: "protocolo_fx_derivacion_su_ortejos",
-      };
-    }
-
-    if (clasVal === "cerrada_ex_primer_ortj") {
-      return {
-        id: "fx_cerrada_ex_primer_ortj",
-        text: "Fractura Ortejos Cerrada (excepto primer ortejo)",
-        color: "red",
-        protocolId: "protocolo_fx_cerrada_ortejos",
+        protocolId: compromisoArticular
+          ? "protocolo_fx_derivacion_su_ortejos"
+          : "protocolo_fx_cerrada_ortejos",
       };
     }
 
