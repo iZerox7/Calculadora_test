@@ -521,7 +521,9 @@ const resolveProtocol = (protocolId, questionnaireModule, answers) => {
       ?? questionnaireModule.protocols[protocolId];
   if (protocolId === 'protocolo_fx_cerrada_conservador_metatarso')
     return questionnaireModule.protocols[protocolId];
-
+  if (protocolId === 'protocolo_fx_cerrada_conservador_tarso')
+    return questionnaireModule.protocolo_fx_cerrada_conservador_tarso?.(answers)
+      ?? questionnaireModule.protocols[protocolId];
 
   // Cualquier otro (estático)
   return questionnaireModule.protocols[protocolId];

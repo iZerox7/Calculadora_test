@@ -693,6 +693,16 @@ export const questions = [
 // DICCIONARIOS DE LABELS
 // ═══════════════════════════════════════════════════════════════
 
+const TARSO_CERRADA_CONSERVADOR_LABEL = {
+  astragalo_cerrada:       "FRACTURA ASTRAGALO CERRADA",
+  calcaneo_cerrada:        "FRACTURA CALCANEO CERRADA",
+  cuello_talo_cerrada:     "FRACTURA CUELLO TALO CERRADA",
+  cuerpo_talo_cerrada:     "FRACTURA CUERPO TALO CERRADA",
+  escafoides_cerrada:      "FRACTURA ESCAFOIDES TARSO DEL PIE CERRADA",
+  huesos_tarso_cerrada:    "FRACTURA HUESOS DEL TARSO (EXCEPTO ESCAFOIDES) CERRADA",
+  perifericas_talo_cerrada:"FRACTURAS PERIFERICAS TALO CERRADAS",
+};
+
 const FRACTURA_CERRADA_LABEL_PIE = {
   metatarsiano_cerrada: 'Metatarsiano Cerrada',
   astragalo_cerrada: 'Astragalo Cerrada',
@@ -882,17 +892,22 @@ export const evaluateRisk = (answers) => {
         ? 'protocolo_fx_metatarsiano_cerrada_conservador'
         : 'protocolo_fx_derivacion';
         
-    } else if (['astragalo_cerrada', 'calcaneo_cerrada', 'cuello_talo_cerrada', 
-                'cuerpo_talo_cerrada', 'escafoides_cerrada', 'huesos_tarso_cerrada', 
+    } else if (['astragalo_cerrada', 'calcaneo_cerrada', 'cuello_talo_cerrada',
+                'cuerpo_talo_cerrada', 'escafoides_cerrada', 'huesos_tarso_cerrada',
                 'perifericas_talo_cerrada'].includes(clasVal)) {
       const noCumpleCriterios = Array.isArray(ans.hay_derivacion_tarso_cerrada) &&
-        ans.hay_derivacion_tarso_cerrada.includes('no_cumple') &&
-        ans.hay_derivacion_tarso_cerrada.length === 1;
-      
-      protocolId = noCumpleCriterios
-        ? 'protocolo_fx_cerrada_conservador_tarso'
-        : 'protocolo_fx_derivacion';
-        
+        ans.hay_derivacion_tarso_cerrada.includes('no_cumple');
+
+      if (noCumpleCriterios) {
+        return {
+          id: `f_pie_${clasVal}_conservador`,
+          text: TARSO_CERRADA_CONSERVADOR_LABEL[clasVal] || `Fractura del Pie Cerrada: ${clasLabel}`,
+          color: 'red',
+          protocolId: 'protocolo_fx_cerrada_conservador_tarso',
+        };
+      }
+      protocolId = 'protocolo_fx_derivacion';
+
     } else {
       protocolId = 'protocolo_fx_derivacion';
     }
