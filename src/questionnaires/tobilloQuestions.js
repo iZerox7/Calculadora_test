@@ -825,11 +825,20 @@ export const generateClinicalReport = ({ caseId, answers, resultQuestion, protoc
     "con_inestabilidad": "Con inestabilidad"
   };
 
+  const tobilloTexto = {
+    "Izquierdo": "Izquierdo",
+    "Derecho": "Derecho",
+    "Bilateral": "Bilateral",
+    "izquierdo": "Izquierdo",
+    "derecho": "Derecho",
+    "bilateral": "Bilateral",
+  };
   // Helper: solo incluye una línea si el valor existe y no es "No evaluado"
   const line = (label, value) => (value ? `- ${label}: ${value}` : null);
 
   // Construir sección I — solo campos con valor
   const seccionI = [
+    line('Tobillo',  tobilloTexto[answers.tobillo]),
     line('Carga Laboral', cargaTexto[Number(answers.carga_laboral)]),
     answers.eva !== undefined ? `- Dolor (EVA): ${answers.eva}/10` : null,
     line('Aumento de volumen (AVO)', edemaTexto[answers.aumento_volumen]),
@@ -931,7 +940,7 @@ export const generateClinicalReport = ({ caseId, answers, resultQuestion, protoc
     `=========================================`,
     `ID CASO: ${caseId}`,
     `FECHA: ${new Date().toLocaleDateString()}`,
-    `TOBILLO: ${answers.tobillo}`,
+    // `TOBILLO: ${answers.tobillo}`,
     `DIAGNÓSTICO SUGERIDO: ${resultQuestion.text}`,
     ``,
     `EXAMEN FÍSICO`,

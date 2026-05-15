@@ -308,18 +308,16 @@ export const questions = [
   // RX 1: dolor difuso + AVO moderado o severo
   {
     id: "rx_dolor_difuso",
-    text: "Realizar Radiografía Pie Ap-Lat-Obl y del ortejo ortejo afectado (con carga si tolera)",
+    text: "Realizar Radiografía Pie Ap-Lat-Obl y del ortejo afectado (con carga si tolera)",
     type: "options",
     group: "risk",
     showIf: (ans) =>
-      ans.inestabilidad === "con_inestabilidad" ||
+      ans.tipo_dolor_ortj === "difuso" &&
       (
-        ans.tipo_dolor_ortj === "difuso" &&
-        (
-          ans.aumento_volumen === "moderado" ||
-          ans.aumento_volumen === "severo" ||
-          (ans.aumento_volumen === "leve" && ans.equimosis_ortj !== "ninguno")
-        )
+        ans.inestabilidad === "con_inestabilidad" ||
+        ans.aumento_volumen === "moderado" ||
+        ans.aumento_volumen === "severo" ||
+        (ans.aumento_volumen === "leve" && ans.equimosis_ortj !== "ninguno")
       ),
     options: [{ value: "listo", label: "✅ Realizada" }],
   },
@@ -331,14 +329,12 @@ export const questions = [
     type: "options",
     group: "risk",
     showIf: (ans) =>
-      ans.inestabilidad === "con_inestabilidad" ||
+      ans.tipo_dolor_ortj === "local" &&
       (
-        ans.tipo_dolor_ortj === "local" &&
-        (
-          ans.aumento_volumen === "moderado" ||
-          ans.aumento_volumen === "severo" ||
-          (ans.aumento_volumen === "leve" && ans.equimosis_ortj !== "ninguno")
-        )
+        ans.inestabilidad === "con_inestabilidad" ||
+        ans.aumento_volumen === "moderado" ||
+        ans.aumento_volumen === "severo" ||
+        (ans.aumento_volumen === "leve" && ans.equimosis_ortj !== "ninguno")
       ),
     options: [{ value: "listo", label: "✅ Realizada" }],
   },
@@ -567,18 +563,9 @@ export const evaluateRisk = (answers) => {
 
   // ── 4. ESGUINCE ──────────────────────────────
 
-  // Grado I: AVO ninguno o leve → nunca llega a RX
-  if (volumen === "ninguno" || volumen === "leve") {
-    return {
-      id: "e1_ortj",
-      text: "Esguince de Ortejos Grado I",
-      color: "green",
-      protocolId: "protocolo_esguince_1_ortj",
-    };
-  }
 
-  // Grado III: inestabilidad sola o RX realizada sin fractura con inestabilidad
-  if (inestabilidad === "con_inestabilidad") {
+  // Grado III: inestabilidad presente, con o sin RX (si hubo RX debe ser sin fractura)
+  if (inestabilidad === "con_inestabilidad" && (!huboRx || hayFractura === "no")) {
     return {
       id: "e3_ortj",
       text: "Esguince de Ortejos Grado III",
@@ -594,6 +581,16 @@ export const evaluateRisk = (answers) => {
       text: "Esguince de Ortejos Grado II",
       color: "green",
       protocolId: "protocolo_esguince_2_ortj",
+    };
+  }
+
+  // Grado I: AVO ninguno o leve → nunca llega a RX
+  if (volumen === "ninguno" || volumen === "leve") {
+    return {
+      id: "e1_ortj",
+      text: "Esguince de Ortejos Grado I",
+      color: "green",
+      protocolId: "protocolo_esguince_1_ortj",
     };
   }
 
@@ -662,6 +659,7 @@ export const generateClinicalReport = ({
 
   // Sección I — Examen físico
   const seccionI = [
+    answers.pie ? `- Pie: ${answers.pie}` : null,
     line("Carga Laboral", cargaTexto[Number(answers.carga_laboral)]),
     answers.eva !== undefined ? `- Dolor (EVA): ${answers.eva}/10` : null,
     line("Aumento de volumen (AVO)", edemaTexto[answers.aumento_volumen]),
@@ -768,7 +766,6 @@ const seccionII_lineas = [
     `=========================================`,
     `ID CASO: ${caseId}`,
     `FECHA: ${new Date().toLocaleDateString()}`,
-    `PIE: ${answers.pie}`,
     `DIAGNÓSTICO SUGERIDO: ${resultQuestion.text}`,
     ``,
     `EXAMEN FÍSICO`,

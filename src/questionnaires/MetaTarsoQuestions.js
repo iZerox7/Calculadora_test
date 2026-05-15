@@ -1060,6 +1060,7 @@ export const generateClinicalReport = ({
 
   // Sección I — Examen físico
   const seccionI = [
+    answers.pie ? `- Pie: ${answers.pie}` : null,
     line('Carga Laboral', cargaTexto[Number(answers.carga_laboral)]),
     answers.eva_pie !== undefined ? `- Dolor (EVA): ${answers.eva_pie}/10` : null,
     line('Aumento de volumen (AVO)', edemaTexto[answers.aumento_volumen]),
@@ -1218,7 +1219,6 @@ export const generateClinicalReport = ({
     `=========================================`,
     `ID CASO: ${caseId}`,
     `FECHA: ${new Date().toLocaleDateString()}`,
-    `PIE: ${answers.pie}`,
     `DIAGNÓSTICO SUGERIDO: ${resultQuestion.text}`,
     ``,
     `EXAMEN FÍSICO`,

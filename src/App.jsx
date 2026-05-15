@@ -1373,6 +1373,7 @@ function App() {
             ) : null;
           })()}
 
+          {/* INFORME COMPLETO — oculto temporalmente, restaurar si se necesita
           <div className="space-y-4">
             <div className="flex justify-between items-end">
               <h3 className="font-bold text-gray-700">Informe Clínico Completo para Ficha</h3>
@@ -1394,6 +1395,7 @@ function App() {
               Copiado al portapapeles
             </p>
           </div>
+          */}
         </div>
       );
     }
