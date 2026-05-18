@@ -427,23 +427,42 @@ export const questions = [
       { value: "no_cumple", label: "No cumple ninguno (-)", exclusive: true}
     ]
   },
+
   {
-    id: "compromiso_funcional",
+    id: "compromiso_funcional_1",
     text: "¿Presenta compromiso funcional para actividades habituales o laborales?",
     type: "options",
     group: "risk",
     showIf: (ans) => {
       const criterios = ans.criterios_pie;
-      const cumpleNoCumple = Array.isArray(criterios) && 
-        criterios.length === 1 && 
+      const cumpleNoCumple = Array.isArray(criterios) &&
+        criterios.length === 1 &&
         criterios.includes("no_cumple");
-      return cumpleNoCumple && ans.carga_laboral === 2;
+      return (cumpleNoCumple && ans.carga_laboral === 2) ;
     },
     options: [
       { value: "si", label: "Sí" },
       { value: "no", label: "No" }
     ]
   },
+
+{
+    id: "dolor_ortejo",
+    text: "¿El dolor se presenta en algún ortejo específico?",
+    type: "options",
+    group: "risk",
+    showIf: (ans) => {
+      const criterios = ans.criterios_pie;
+      const cumple = Array.isArray(criterios) &&
+        criterios.includes("prueba_lisfranc");
+      return cumple  ;
+    },
+    options: [
+      { value: "si", label: "Sí" },
+      { value: "no", label: "No" }
+    ]
+  },
+
   {
     id: "deformidad_evidente_pie",
     text: "¿Hay deformidad evidente?",
@@ -462,10 +481,7 @@ export const questions = [
   {
     id: "rx_deformidad_pie",
     textFn: (ans) => {
-      const criterios = ans.criterios_pie;
-      const cumpleLisfranc = Array.isArray(criterios) && criterios.includes("prueba_lisfranc");
-      
-      if (cumpleLisfranc) {
+      if (ans.dolor_ortejo === "si") {
         return "Realizar Radiografía Pie Ap-Lat-Obl sin carga con mortaja + Rx Pie ap-lat/oblicua del dedo afectado (con carga si tolera)";
       }
       return "Realizar Radiografía Pie Ap-Lat-Obl sin carga con mortaja";
@@ -488,6 +504,27 @@ export const questions = [
       { value: "local", label: "Local" }
     ]
   },
+
+  {
+    id: "compromiso_funcional_2",
+    text: "¿Presenta compromiso funcional para actividades habituales o laborales?",
+    type: "options",
+    group: "risk",
+    showIf: (ans) => {
+      const esguinceLeve =
+        ans.deformidad_evidente_pie === "no" &&
+        ans.tipo_dolor_pie === "local" &&
+        ans.equimosis_pie === "ninguno" &&
+        ans.inestabilidad_pie === "sin_inestabilidad" &&
+        ans.carga_laboral === 2;
+      return esguinceLeve ;
+    },
+    options: [
+      { value: "si", label: "Sí" },
+      { value: "no", label: "No" }
+    ]
+  },
+
   {
     id: "tolera_carga_pie",
     text: "¿Tolera la carga?",
@@ -504,10 +541,7 @@ export const questions = [
   {
     id: "rx_no_tolera_carga_pie",
     textFn: (ans) => {
-      const criterios = ans.criterios_pie;
-      const cumpleLisfranc = Array.isArray(criterios) && criterios.includes("prueba_lisfranc");
-      
-      if (cumpleLisfranc) {
+      if (ans.dolor_ortejo === "si") {
         return "Realizar Radiografía Ap-Lateral-obl de Pie con carga + mortaja + Rx Pie ap-lat/oblicua del dedo afectado (con carga si tolera)";
       }
       return "Realizar Radiografía Ap-Lateral-obl de Pie con carga + mortaja";
@@ -522,10 +556,7 @@ export const questions = [
   {
     id: "rx_tolera_carga_pie",
     textFn: (ans) => {
-      const criterios = ans.criterios_pie;
-      const cumpleLisfranc = Array.isArray(criterios) && criterios.includes("prueba_lisfranc");
-      
-      if (cumpleLisfranc) {
+      if (ans.dolor_ortejo === "si") {
         return "Realizar Radiografía Pie Ap-Lat-Obl con carga + Rx Pie ap-lat/oblicua del dedo afectado (con carga si tolera)";
       }
       return "Realizar Radiografía Pie Ap-Lat-Obl con carga";
@@ -781,7 +812,7 @@ export const restTextPorCarga = (answers, protocolId) => {
   let indicacion = map?.[carga];
 
   if (protocolId === 'getProtocoloEsguincePie1' && 
-      answers.compromiso_funcional === "no" && 
+      (answers.compromiso_funcional_1 === "no" || answers.compromiso_funcional_2 === "no") && 
       carga === 2) {
     indicacion = 'Sin reposo';
   }
@@ -934,12 +965,18 @@ export const evaluateRisk = (answers) => {
   if (puedeEsguince) {
     const inestabilidad = answers.inestabilidad_pie;
     const deformidad = answers.deformidad_evidente_pie;
+    const volumen = answers.aumento_volumen;
     const carga = answers.tolera_carga_pie;
     const equimosis = answers.equimosis_pie;
     const pruebasNegativas = ottawaArray.length === 0 ||
       (ottawaArray.length === 1 && ottawaArray.includes('no_cumple'));
 
-    if (deformidad === "si" || carga === "no_tolera") {
+    if (//deformidad === "si" || carga === "no_tolera"
+      inestabilidad === "con_inestabilidad" &&
+      volumen !== "ninguno" && volumen != null &&
+      equimosis === "difusa" && equimosis != null
+
+    ) {
       return { 
         id: "e3", 
         text: "Esguince del Pie Grado III", 
@@ -948,9 +985,18 @@ export const evaluateRisk = (answers) => {
       };
     }
 
-    if (carga === "tolera" || carga === "con_dificultad" || 
-        (equimosis === "ninguno" && answers.tipo_dolor_pie === "local" && 
-         inestabilidad === "sin_inestabilidad")) {
+    if (
+
+      // Me traigo los criterios de tobillo para derivar el esguince
+      (inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
+      (volumen === "moderado" || volumen === "severo") 
+      
+      // así lo tenía antes
+      // carga === "tolera" || carga === "con_dificultad" || 
+      //   (equimosis === "ninguno" && answers.tipo_dolor_pie === "local" && 
+      //    inestabilidad === "sin_inestabilidad") 
+        
+        ) {
       return { 
         id: "e2", 
         text: "Esguince del Pie Grado II", 
@@ -960,7 +1006,11 @@ export const evaluateRisk = (answers) => {
     }
 
     if (pruebasNegativas || 
-        (inestabilidad === "sin_inestabilidad" && answers.tipo_dolor_pie === "local")) {
+        (inestabilidad === "sin_inestabilidad" && 
+          (volumen === "ninguno" || volumen === "leve")
+          // answers.tipo_dolor_pie === "local"
+
+        )) {
       return { 
         id: "e1", 
         text: "Esguince del Pie Grado I", 
