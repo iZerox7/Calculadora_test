@@ -29,7 +29,14 @@ export const categoriesConfig = {
         name: "(Piloto) Consulta de torsión de tobillo",
         getQuestionsModule: () => import('../questionnaires/tobilloQuestions.js'),
       },
+      ortejos: {
+        name: "(Piloto) Consulta por torsión de ortejos",
+        getQuestionsModule: () => import('../questionnaires/ortejosQuestions.js'),
+      },
+      metaTarso: {
+        name: "(Piloto) Consulta por torsión de pie",
+        getQuestionsModule: () => import('../questionnaires/MetaTarsoQuestions.js'),
+      },
     },
   },
 };
-
