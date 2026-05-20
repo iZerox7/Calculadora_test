@@ -13,9 +13,11 @@ export const getProtocoloEsguince1 = (answers) => {
       "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. En caso de persistir dolor posterior, aplicar calor local de forma intermitente o según necesidad ",
     ] : []),
     "Al descansar, poner extremidad en alto ",
-    "En caso de dolor invalidante, aumento de volumen o cambio de coloración del sitio lesionado acudir a agencia ACHS más cercana",
     "Tubigrip opcional (máx 1 semana, retiro nocturno)",
-    "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 3 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 3 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
+    "Medicamentos sugeridos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 3 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 3 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
+    "Medicamentos según receta",
+    "En caso de dolor invalidante, aumento de volumen o cambio de coloración del sitio lesionado acudir a agencia ACHS más cercana",
+    
   ];
 
   return {
@@ -43,7 +45,9 @@ export const getProtocoloEsguince2 = (answers) => {
       usaBota
         ? "Uso diurno de bota ortopédica, retirar para dormir y descansar."
         : "Uso de tobillera con barras laterales durante el día hasta control con médico, retirar para dormir y descansar.",
-      "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
+      "Medicamentos sugeridos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
+      "Medicamentos según receta",
+      "En caso de dolor invalidante, acudir a agencia ACHS más cercana.",
       // "Control con médico AP en agencia en 5 a 7 días. ",
     ]
   };
@@ -64,7 +68,9 @@ export const getProtocoloEsguince3 = (answers) => {
       usaBota
         ? "Uso de bota ortopédica y descarga con muletas."
         : "Uso de tobillera con barras laterales durante el día hasta control con médico, retirar para dormir y descansar.",
-      "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 5 días. Ajustar según respuesta. En caso de no respuesta a los 7-10 días, considerar escalar a tramadol/paracetamol 37,5 mg/ 325 mg vo c/8-12 h."
+      "Medicamentos sugeridos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 5 días. Ajustar según respuesta. En caso de no respuesta a los 7-10 días, considerar escalar a tramadol/paracetamol 37,5 mg/ 325 mg vo c/8-12 h.",
+      "Medicamentos según receta",
+      "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
     ]
   };
 };
@@ -326,7 +332,7 @@ export const questions = [
 
   { 
     id: "inestabilidad", 
-    text: "Inestabilidad", 
+    text: "Inestabilidad (Aplicar squeeze, cajón y bostezo)", 
     type: "options", 
     group: "anamnesis",
     options: [
@@ -416,7 +422,7 @@ export const questions = [
   // Tolerancia a la carga (solo si dolor difuso)
   {
     id: "tolera_carga_difuso",
-    text: "¿Tolera la carga?",
+    text: "¿Tolera la carga monopodal?",
     type: "options",
     group: "risk",
     showIf: (ans) => ans.tipo_dolor === "difuso" || ans.tipo_dolor === "local" ,
@@ -880,8 +886,10 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
 
     // Grado II: sin inestabilidad o dudosa + edema presente + algo de equimosis
     if (
-      (inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
-      (volumen === "moderado" || volumen === "severo") 
+      ((inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
+      (volumen === "moderado" || volumen === "severo") ) || (inestabilidad === "con_inestabilidad" &&
+      volumen !== "ninguno" && volumen != null &&
+      equimosis === "localizada" && equimosis != null)
       //  &&
       // (equimosis === "localizada" || equimosis === "difusa" ) // Comentamos el criterio de equimosis para darle más importancia al AVO
     ) {
@@ -906,9 +914,9 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
     }
   }
 
-  // Detectar si cumple criterio metatarsiano
-  const tieneMetatarsiano = Array.isArray(answers.criterios_ottawa2) &&
-    answers.criterios_ottawa2.includes("dolor_metatarsiano");
+  // // Detectar si cumple criterio metatarsiano
+  // const tieneMetatarsiano = Array.isArray(answers.criterios_ottawa2) &&
+  //   answers.criterios_ottawa2.includes("dolor_metatarsiano");
   // Fallback
   return { id: "e1", text: "Esguince de Tobillo Grado I", color: "green", protocolId: "protocolo_esguince_1" };
 };
@@ -1086,10 +1094,16 @@ export const generateClinicalReport = ({ caseId, answers, resultQuestion, protoc
   const ottawaLinea = (() => {
     const ottawa = answers.criterios_ottawa2;
     if (!Array.isArray(ottawa) || ottawa.length === 0) return null;
-    const texto = (ottawa.length === 1 && ottawa.includes('no_cumple'))
-      ? 'Negativo (-)'
-      : 'Positivo (+)';
-    return `- Criterios Ottawa: ${texto}`;
+    const ottawaLabels = {
+      dolor_metatarsiano: 'Dolor en la base del quinto metatarsiano o en el navicular',
+      dolor_palpacion: 'Dolor a la palpación en el borde posterior de los 6 cm distales de la tibia o la fíbula hasta el maléolo medial o lateral',
+      incapacidad_pasos: 'Incapacidad de dar más de 4 pasos seguidos sin ayuda o de sostener su peso corporal',
+      no_cumple: 'No cumple ninguno (Ottawa -)',
+    };
+    const esNegativo = ottawa.length === 1 && ottawa.includes('no_cumple');
+    const criteriosSeleccionados = ottawa.map(v => ottawaLabels[v] || v).join('; ');
+    const encabezado = esNegativo ? 'Criterios Ottawa' : 'Criterios Ottawa (+)';
+    return `- ${encabezado}: ${criteriosSeleccionados}`;
   })();
 
   // Deformidad y tolerancia — solo si se respondieron
