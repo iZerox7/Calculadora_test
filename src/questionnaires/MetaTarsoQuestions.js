@@ -401,7 +401,7 @@ export const questions = [
   
   { 
     id: "inestabilidad_pie", 
-    text: "Inestabilidad (Aplicar lisfranc, piano key test, compresión transversal del antepié y mulder test)", 
+    text: "Inestabilidad (Aplicar Lisfranc, Piano Key Test, Compresión Transversal del Antepié y Mulder Test)", 
     type: "options", 
     group: "anamnesis",
     options: [
@@ -445,7 +445,7 @@ export const questions = [
       const cumpleNoCumple = Array.isArray(criterios) &&
         criterios.length === 1 &&
         criterios.includes("no_cumple");
-      return (cumpleNoCumple && ans.carga_laboral === 2) ;
+      return (cumpleNoCumple && ans.carga_laboral === 2 && (ans.aumento_volumen === "ninguno" || ans.aumento_volumen === "leve") && ans.inestabilidad === "sin_inestabilidad") ;
     },
     options: [
       { value: "si", label: "Sí" },
@@ -979,9 +979,9 @@ export const evaluateRisk = (answers) => {
       (ottawaArray.length === 1 && ottawaArray.includes('no_cumple'));
 
     if (//deformidad === "si" || carga === "no_tolera"
-      inestabilidad === "con_inestabilidad" &&
+      inestabilidad === "con_inestabilidad" && ((
       volumen !== "ninguno" && volumen != null &&
-      equimosis === "difusa" && equimosis != null
+      equimosis === "difusa" && equimosis != null) || (volumen === "severo"))
 
     ) {
       return { 
