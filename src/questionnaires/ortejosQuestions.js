@@ -17,11 +17,12 @@ export const getProtocoloEsguince1Ortejos = (answers) => {
           "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. En caso de persistir dolor posterior, aplicar calor local de forma intermitente o según necesidad",
         ]
       : []),
-    "En caso de dolor invalidante, aumento de volumen o cambio de coloración del sitio lesionado acudir a agencia ACHS más cercana",
     ...(!esSTP
       ? ["Inmovilización: vendaje solidario con suela rígida por 3 días"]
       : ["Inmovilización: vendaje solidario por 3 días"]),
-    "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 3 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 3 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
+    "Medicamentos sugeridos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 3 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 3 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
+    "Medicamentos según receta",
+    "En caso de dolor invalidante, aumento de volumen o cambio de coloración del sitio lesionado acudir a agencia ACHS más cercana",
   ];
 
   return {
@@ -39,10 +40,11 @@ export const getProtocoloEsguince2Ortejos = (answers) => {
       "Realizar ejercicios indicados en pauta",
       "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad",
       "Descansar con extremidad en alto",
-      "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
       "Inmovilización: vendaje solidario con suela rígida por 5 días",
-      "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días",
+      "Medicamentos sugeridos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días",
+      "Medicamentos según receta",
       "Control con médico AP en agencia en 5 a 7 días",
+      "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
     ],
   };
 };
@@ -55,10 +57,11 @@ export const getProtocoloEsguince3Ortejos = (answers) => {
       "Reposo deportivo",
       "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad",
       "Descansar con extremidad en alto",
-      "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
       "Inmovilización: suela rígida o bota entre 7-10 días",
-      "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 5 días. Ajustar según respuesta. En caso de no respuesta a los 7-10 días, considerar escalar a tramadol/paracetamol 37,5 mg/ 325 mg vo c/8-12 h. No extender uso de AINES por más de 7 días",
+      "Medicamentos sugeridos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 5 días. Ajustar según respuesta. En caso de no respuesta a los 7-10 días, considerar escalar a tramadol/paracetamol 37,5 mg/ 325 mg vo c/8-12 h. No extender uso de AINES por más de 7 días",
+      "Medicamentos según receta",
       "Control con médico AP en agencia en 5 a 7 días",
+      "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
     ],
   };
 };
@@ -277,7 +280,7 @@ export const questions = [
 
   {
     id: "inestabilidad",
-    text: "Inestabilidad",
+    text: "Inestabilidad (1° ortejo :Test de movilidad MTF (hallux rigidus), Test de Lachman del dedo. Todos los ortejos: cajón MTF específico)",
     type: "options",
     group: "anamnesis",
     options: [
@@ -308,7 +311,7 @@ export const questions = [
   // RX 1: dolor difuso + AVO moderado o severo
   {
     id: "rx_dolor_difuso",
-    text: "Realizar Radiografía Pie Ap-Lat-Obl y del ortejo afectado (con carga si tolera)",
+    text: "Realizar Radiografía Pie Ap-Lat-Obl y del ortejo afectado (con carga si tolera monopodal)",
     type: "options",
     group: "risk",
     showIf: (ans) =>

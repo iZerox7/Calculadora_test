@@ -16,8 +16,9 @@ export const getProtocoloEsguincePie1 = (answers) => {
       "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. En caso de persistir dolor posterior, aplicar calor local de forma intermitente o según necesidad ",
     ] : []),
     "Tubigrip opcional (máx 1 semana, retiro nocturno)",
+    "Medicamentos sugeridos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 3 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 3 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
+    "Medicamentos según receta",
     "En caso de dolor invalidante, aumento de volumen o cambio de coloración del sitio lesionado acudir a agencia ACHS más cercana",
-    "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 3 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 3 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
   ];
 
   return {
@@ -35,9 +36,10 @@ export const getProtocoloEsguincePie2 = (answers) => {
       "Realizar ejercicios indicados en pauta ",
       "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. En caso de persistir dolor posterior, aplicar calor local de forma intermitente o según necesidad ",
       "Descansar con extremidad en alto",
-      "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
       "Zapato pop",
-      "Medicamentos: Analgesia escalonada según EVA (Iniciar con Paracetamol 1 gr cada 8hrs VO + AINES (Ibuprofeno, ketoprofeno) cada 8hrs por 5-7 días VO) Ajustar según respuesta",
+      "Medicamentos sugeridos: Analgesia escalonada según EVA (Iniciar con Paracetamol 1 gr cada 8hrs VO + AINES (Ibuprofeno, ketoprofeno) cada 8hrs por 5-7 días VO) Ajustar según respuesta",
+      "Medicamentos según receta",
+      "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
     ]
   };
 };
@@ -51,7 +53,8 @@ export const getProtocoloEsguincePie3 = (answers) => {
       "Realizar ejercicios indicados en pauta ",
       "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad.",
       "Zapato pop con bastón según limitación de marcha",
-      "Medicamentos: Analgesia escalonada según EVA Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 5 días. Ajustar según respuesta.",
+      "Medicamentos sugeridos: Analgesia escalonada según EVA Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 5 días. Ajustar según respuesta.",
+      "Medicamentos según receta",
       "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
     ]
   };
@@ -74,11 +77,12 @@ export const getProtocoloEsguince1Ortejos = (answers) => {
           "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. En caso de persistir dolor posterior, aplicar calor local de forma intermitente o según necesidad",
         ]
       : []),
-    "En caso de dolor invalidante, aumento de volumen o cambio de coloración del sitio lesionado acudir a agencia ACHS más cercana",
     ...(!esSTP
       ? ["Inmovilización: vendaje solidario con suela rígida por 3 días"]
       : ["Inmovilización: vendaje solidario por 3 días"]),
-    "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 3 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 3 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
+    "Medicamentos sugeridos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 3 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 3 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días.",
+    "Medicamentos según receta",
+    "En caso de dolor invalidante, aumento de volumen o cambio de coloración del sitio lesionado acudir a agencia ACHS más cercana",
   ];
 
   return {
@@ -96,10 +100,11 @@ export const getProtocoloEsguince2Ortejos = (answers) => {
       "Realizar ejercicios indicados en pauta",
       "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad",
       "Descansar con extremidad en alto",
-      "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
       "Inmovilización: vendaje solidario con suela rígida por 5 días",
-      "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días",
+      "Medicamentos sugeridos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 3 días",
+      "Medicamentos según receta",
       "Control con médico AP en agencia en 5 a 7 días",
+      "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
     ],
   };
 };
@@ -112,10 +117,11 @@ export const getProtocoloEsguince3Ortejos = (answers) => {
       "Reposo deportivo",
       "Aplicar frío local en región dolorosa por 10-15 minutos al menos 3 veces al día por las primeras 48 horas. Luego aplicar calor local de forma intermitente o según necesidad",
       "Descansar con extremidad en alto",
-      "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
       "Inmovilización: suela rígida o bota entre 7-10 días",
-      "Medicamentos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 5 días. Ajustar según respuesta. En caso de no respuesta a los 7-10 días, considerar escalar a tramadol/paracetamol 37,5 mg/ 325 mg vo c/8-12 h. No extender uso de AINES por más de 7 días",
+      "Medicamentos sugeridos: Paracetamol 500 mg vo 2 comprimidos cada 8 horas por 5-7 días y/o ibuprofeno 400 mg vo 1 comprimido cada 8 horas por 5-7 días o Ketoprofeno 50 mg vo 1 comprimido cada 8 horas por 5 días. Ajustar según respuesta. En caso de no respuesta a los 7-10 días, considerar escalar a tramadol/paracetamol 37,5 mg/ 325 mg vo c/8-12 h. No extender uso de AINES por más de 7 días",
+      "Medicamentos según receta",
       "Control con médico AP en agencia en 5 a 7 días",
+      "En caso de dolor invalidante, acudir a agencia ACHS más cercana",
     ],
   };
 };
@@ -392,9 +398,10 @@ export const questions = [
       { value: "difusa", label: "Difusa"}
     ]
   },
+  
   { 
     id: "inestabilidad_pie", 
-    text: "Inestabilidad", 
+    text: "Inestabilidad (Aplicar Lisfranc, Piano Key Test, Compresión Transversal del Antepié y Mulder Test)", 
     type: "options", 
     group: "anamnesis",
     options: [
@@ -438,7 +445,7 @@ export const questions = [
       const cumpleNoCumple = Array.isArray(criterios) &&
         criterios.length === 1 &&
         criterios.includes("no_cumple");
-      return (cumpleNoCumple && ans.carga_laboral === 2) ;
+      return (cumpleNoCumple && ans.carga_laboral === 2 && (ans.aumento_volumen === "ninguno" || ans.aumento_volumen === "leve") && ans.inestabilidad === "sin_inestabilidad") ;
     },
     options: [
       { value: "si", label: "Sí" },
@@ -527,7 +534,7 @@ export const questions = [
 
   {
     id: "tolera_carga_pie",
-    text: "¿Tolera la carga?",
+    text: "¿Tolera la carga monopodal?",
     type: "options",
     group: "risk",
     showIf: (ans) => ans.tipo_dolor_pie === "difuso" || 
@@ -972,9 +979,9 @@ export const evaluateRisk = (answers) => {
       (ottawaArray.length === 1 && ottawaArray.includes('no_cumple'));
 
     if (//deformidad === "si" || carga === "no_tolera"
-      inestabilidad === "con_inestabilidad" &&
+      inestabilidad === "con_inestabilidad" && ((
       volumen !== "ninguno" && volumen != null &&
-      equimosis === "difusa" && equimosis != null
+      equimosis === "difusa" && equimosis != null) || (volumen === "severo"))
 
     ) {
       return { 
@@ -1238,10 +1245,14 @@ export const generateClinicalReport = ({
   const ottawaLinea = (() => {
     const ottawa = answers.criterios_pie;
     if (!Array.isArray(ottawa) || ottawa.length === 0) return null;
-    const texto = (ottawa.length === 1 && ottawa.includes('no_cumple'))
-      ? 'Negativo (-)'
-      : 'Positivo (+)';
-    return `- Pruebas del pie: ${texto}`;
+    const criteriosPieLabels = {
+      prueba_lisfranc: 'Prueba de Lisfranc (+)',
+      prueba_chopart: 'Prueba de Chopart (+)',
+      prueba_squeeze: 'Prueba de Squeeze (+)',
+      no_cumple: 'No cumple ninguno (-)',
+    };
+    const criteriosSeleccionados = ottawa.map(v => criteriosPieLabels[v] || v).join('; ');
+    return `- Pruebas del pie: ${criteriosSeleccionados}`;
   })();
 
   const deformidadLinea = answers.deformidad_evidente_pie
