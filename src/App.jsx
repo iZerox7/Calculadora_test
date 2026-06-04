@@ -857,6 +857,7 @@ function App() {
 
   const handleEvaluate = async () => {
     const evaluation = questionnaireModule.evaluateRisk(answers, true);
+    if (!evaluation) return; // incomplete answers — wizard shouldn't allow this, but guard anyway
     setFinalResult(evaluation);
 
     // ── Indicaciones para tobillo_pie (tobillo y ortejos) ────────────────────
@@ -1275,14 +1276,19 @@ function App() {
 
       const stepsParaInforme = indicacionesSeleccionadas !== null ? indicacionesSeleccionadas : displayedSteps;
 
-      const reportText = questionnaireModule.generateClinicalReport({
-        caseId,
-        answers,
-        resultQuestion: finalResult,
-        protocols: questionnaireModule.protocols,
-        allQuestions: questionnaireModule.questions,
-        stepsOverride: stepsParaInforme,
-      });
+      let reportText = '';
+      try {
+        reportText = questionnaireModule.generateClinicalReport({
+          caseId,
+          answers,
+          resultQuestion: finalResult,
+          protocols: questionnaireModule.protocols,
+          allQuestions: questionnaireModule.questions,
+          stepsOverride: stepsParaInforme,
+        });
+      } catch (e) {
+        console.error('generateClinicalReport error:', e);
+      }
 
       // Mensajes de agendamiento: solo tobillo
       const esGrado1 = soloTobillo && finalResult.protocolId === 'protocolo_esguince_1';
@@ -1359,7 +1365,7 @@ function App() {
           {tieneMetatarsiano && (
             <div className="p-4 bg-orange-50 border-l-4 border-orange-400 rounded-lg">
               <p className="text-orange-800 text-sm font-semibold">
-                ⚠️ Dado que presenta dolor en metatarso, ver protocolo de esguince de pie previo a determinar diagnóstico final.
+                ⚠️ Dado que presenta dolor en metatarso, ver protocolo de esguince de pie previo a determinar diagnóstico final
               </p>
             </div>
           )}
@@ -1367,7 +1373,7 @@ function App() {
           {tieneOttawaMetaTarso && (
             <div className="p-4 bg-orange-50 border-l-4 border-orange-400 rounded-lg">
               <p className="text-orange-800 text-sm font-semibold">
-                ⚠️ Dado que cumple con uno o más criterios de Ottawa, ver protocolo de esguince de tobillo previo a determinar diagnóstico final.
+                ⚠️ Dado que cumple con uno o más criterios de Ottawa, ver protocolo de esguince de tobillo previo a determinar diagnóstico final
               </p>
             </div>
           )}
@@ -1432,7 +1438,7 @@ function App() {
             </div>
           </div>
 
-          {esTobilloPie(selectedCategory) && (() => {
+          {esTobilloPie(selectedCategory) && reportText && (() => {
             const sections = [
               { label: 'Examen Físico',         text: extractSection(reportText, 'EXAMEN FÍSICO',         ['IMAGENOLOGÍA', 'DIAGNÓSTICO SUGERIDO', 'INDICACIONES SUGERIDAS']) },
               { label: 'Imagenología',           text: extractSection(reportText, 'IMAGENOLOGÍA',           ['DIAGNÓSTICO SUGERIDO', 'INDICACIONES SUGERIDAS']) },

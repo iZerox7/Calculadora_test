@@ -1,5 +1,7 @@
 // questionnaires/MetaTarsoQuestions.js
 
+import { getProtocoloEsguince1 } from "./tobilloQuestions";
+
 // ═══════════════════════════════════════════════════════════════
 // PROTOCOLOS DINÁMICOS - ESGUINCES DEL PIE
 // ═══════════════════════════════════════════════════════════════
@@ -572,8 +574,8 @@ export const questions = [
       const tieneOttawa = Array.isArray(ans.criterios_pie) &&
         ans.criterios_pie.some(v => OTTAWA_VALS.includes(v));
       const base = ans.dolor_ortejo === "si"
-        ? "Realizar Radiografía Pie Ap-Lat-Obl sin carga con mortaja + Rx Pie ap-lat/oblicua del dedo afectado (con carga si tolera)"
-        : "Realizar Radiografía Pie Ap-Lat-Obl sin carga con mortaja";
+        ? "Realizar Radiografía Pie Ap-Lat-Obl sin carga con mortaja. Adicional: Rx Pie Ap-Lat-Obl del dedo afectado (con carga si tolera)."
+        : "Realizar Radiografía Pie Ap-Lat-Obl sin carga con mortaja.";
       return tieneOttawa ? `${base}\nAdicional: Radiografía Tobillo AP-Lat-Obl` : base;
     },
     type: "options",
@@ -635,8 +637,8 @@ export const questions = [
       const tieneOttawa = Array.isArray(ans.criterios_pie) &&
         ans.criterios_pie.some(v => OTTAWA_VALS.includes(v));
       const base = ans.dolor_ortejo === "si"
-        ? "Realizar Radiografía Ap-Lateral-obl de Pie con carga + mortaja + Rx Pie ap-lat/oblicua del dedo afectado (con carga si tolera)"
-        : "Realizar Radiografía Ap-Lateral-obl de Pie con carga + mortaja";
+        ? "Realizar Radiografía Ap-Lateral-obl de Pie sin carga con mortaja. Adicional: Rx Pie Ap-Lat-Obl del dedo afectado (con carga si tolera)."
+        : "Realizar Radiografía Ap-Lateral-obl de Pie sin carga con mortaja.";
       return tieneOttawa ? `${base}\nAdicional: Radiografía Tobillo AP-Lat-Obl` : base;
     },
     type: "options",
@@ -653,8 +655,8 @@ export const questions = [
       const tieneOttawa = Array.isArray(ans.criterios_pie) &&
         ans.criterios_pie.some(v => OTTAWA_VALS.includes(v));
       const base = ans.dolor_ortejo === "si"
-        ? "Realizar Radiografía Pie Ap-Lat-Obl con carga + Rx Pie ap-lat/oblicua del dedo afectado (con carga si tolera)"
-        : "Realizar Radiografía Pie Ap-Lat-Obl con carga";
+        ? "Realizar Radiografía Pie Ap-Lat-Obl con carga. Adicional: Rx Pie Ap-Lat-Obl del dedo afectado (con carga si tolera)."
+        : "Realizar Radiografía Pie Ap-Lat-Obl con carga.";
       return tieneOttawa ? `${base}\nAdicional: Radiografía Tobillo AP-Lat-Obl` : base;
     },
     type: "options",
@@ -1279,6 +1281,13 @@ export const generateClinicalReport = ({
         return protocolo_fx_metatarsiano_cerrada_conservador(answers);
       case 'protocolo_fx_cerrada_conservador_tarso':
         return protocolo_fx_cerrada_conservador_tarso(answers);
+      // Tobillo fracture protocols (static — stored in protocols map)
+      case 'protocolo_weber_a':
+      case 'protocolo_weber_b_c':
+      case 'protocolo_escenario_2':
+      case 'protocolo_escenario_3':
+      case 'protocolo_escenario_4':
+        return protocols[resultQuestion.protocolId];
       default:
         return protocols[resultQuestion.protocolId];
     }
@@ -1343,7 +1352,7 @@ export const generateClinicalReport = ({
     const cumpleLisfranc = Array.isArray(criterios) && criterios.includes("prueba_lisfranc");
     rxSolicitadas.push(
       cumpleLisfranc 
-        ? 'Rx pie Ap-Lat-Obl sin carga + Rx Pie ap-lat/oblicua del dedo afectado (con carga si tolera)'
+        ? 'Rx pie Ap-Lat-Obl sin carga. Adicional: Rx Pie Ap-Lat-Obl del dedo afectado (con carga si tolera)'
         : 'Rx pie Ap-Lat-Obl sin carga'
     );
   }
@@ -1352,8 +1361,8 @@ export const generateClinicalReport = ({
     const cumpleLisfranc = Array.isArray(criterios) && criterios.includes("prueba_lisfranc");
     rxSolicitadas.push(
       cumpleLisfranc
-        ? 'Rx pie Ap-Lat-Obl con carga + mortaja + Rx Pie ap-lat/oblicua del dedo afectado'
-        : 'Rx pie Ap-Lat-Obl con carga + mortaja'
+        ? 'Rx pie Ap-Lat-Obl sin carga con mortaja. Adicional: Rx Pie Ap-Lat-Obl del dedo afectado'
+        : 'Rx pie Ap-Lat-Obl sin carga con mortaja'
     );
   }
   if (answers.rx_tolera_carga_pie === 'listo') {
@@ -1361,7 +1370,7 @@ export const generateClinicalReport = ({
     const cumpleLisfranc = Array.isArray(criterios) && criterios.includes("prueba_lisfranc");
     rxSolicitadas.push(
       cumpleLisfranc
-        ? 'Rx pie Ap-Lat-Obl con carga + Rx Pie ap-lat/oblicua del dedo afectado'
+        ? 'Rx pie Ap-Lat-Obl con carga. Adicional: Rx Pie Ap-Lat-Obl del dedo afectado'
         : 'Rx pie Ap-Lat-Obl con carga'
     );
   }
