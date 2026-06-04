@@ -46,7 +46,9 @@ const MultiSelect = ({ question, value, onChange }) => {
               : "bg-white hover:bg-gray-100 border-gray-300"
           }`}
         >
-          {option.label}
+          {option.labelBold
+            ? <><span className="font-bold">{option.labelBold}</span>{option.label ? ` ${option.label}` : ''}</>
+            : option.label}
         </button>
       ))}
     </div>
