@@ -1,5 +1,7 @@
 // questionnaires/MetaTarsoQuestions.js
 
+import { getProtocoloEsguince1 } from "./tobilloQuestions";
+
 // ═══════════════════════════════════════════════════════════════
 // PROTOCOLOS DINÁMICOS - ESGUINCES DEL PIE
 // ═══════════════════════════════════════════════════════════════
@@ -337,7 +339,65 @@ export const protocols = {
   "protocolo_fx_derivacion_su_ortejos": {
     titulo: "PROTOCOLO DE MANEJO - FRACTURA ORTEJOS CON DERIVACIÓN",
     pasos: [],
-  }
+  },
+
+  // Tobillo fracture protocols (same as tobilloQuestions.js)
+  "protocolo_weber_a": {
+    titulo: "INDICACIONES AL PACIENTE - ESCENARIO 1 - WEBER A",
+    pasos: [
+      "Reposo",
+      "Pie en alto",
+      "Inmovilización: bota ortopédica con bastones. Retirar en la noche",
+      "Carga a tolerancia",
+      "Frío local por 15 minutos 3 veces al día por 48 hrs. Luego calor local por 15 minutos 3 veces al día hasta control",
+      "Analgesia VO",
+      "Medicamentos: tromboprofilaxis según protocolo, sólo si no tolera carga",
+      "Control con médico AP a los 8 días",
+      "Control SOS",
+    ]
+  },
+  "protocolo_weber_b_c": {
+    titulo: "PROTOCOLO DE MANEJO - ESCENARIO 1 - Unimaleolar no luxada - WEBER B Y C",
+    pasos: [
+      "Derivación a especialista TMT según presentación del caso",
+      "Pie en alto",
+      "Aplicar frío local por 15 minutos 3 veces al día por 48 hrs. Luego calor local por 15 minutos 3 veces al día hasta control",
+      "Sin carga",
+      "Inmovilización: bota ortopédica con bastones canadienses",
+      "Medicamentos: Analgesia y profilaxis tromboembólica según protocolo",
+    ]
+  },
+  "protocolo_escenario_2": {
+    titulo: "PROTOCOLO DE MANEJO - ESCENARIO 2 - Bimaleolar no luxada",
+    pasos: [
+      "Derivación a especialista TMT según presentación del caso",
+      "Pie en alto",
+      "Aplicar frío local",
+      "Inmovilización: bota ortopédica con bastones canadienses",
+      "Medicamentos: Analgesia y profilaxis tromboembólica según protocolo",
+      "Corroborar protocolo con TMT de urgencia",
+    ]
+  },
+  "protocolo_escenario_3": {
+    titulo: "PROTOCOLO DE MANEJO - ESCENARIO 3 - Luxada (uni/bi/tri)",
+    pasos: [
+      "Derivación inmediata a HT o centro hospitalario con capacidad resolutiva",
+      "Inmovilización con valva de la ambulancia",
+      "Aplicar frío local",
+      "Medicamentos: Analgesia EV y profilaxis tromboembólica según protocolo",
+    ]
+  },
+  "protocolo_escenario_4": {
+    titulo: "PROTOCOLO DE MANEJO - ESCENARIO 4 - Expuesta / SC / NV",
+    pasos: [
+      "Tratamiento quirúrgico urgente",
+      "Derivación inmediata a HT o centro hospitalario con capacidad resolutiva",
+      "Inmovilización con valva de la ambulancia",
+      "Aplicar frío local",
+      "Medicamentos: Analgesia EV, tratamiento antibiótico EV",
+      "Vacunación antitetánica (en caso de fractura expuesta)",
+    ]
+  },
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -368,7 +428,7 @@ export const questions = [
     ]
   },
   { 
-    id: "eva_pie", 
+    id: "eva", 
     text: "Dolor (EVA)", 
     type: "slider", 
     group: "anamnesis", 
@@ -388,7 +448,7 @@ export const questions = [
     ]
   },
   { 
-    id: "equimosis_pie", 
+    id: "equimosis", 
     text: "Equimosis", 
     type: "options", 
     group: "anamnesis",
@@ -400,7 +460,7 @@ export const questions = [
   },
   
   { 
-    id: "inestabilidad_pie", 
+    id: "inestabilidad", 
     text: "Inestabilidad (Aplicar Lisfranc, Piano Key Test, Compresión Transversal del Antepié y Mulder Test)", 
     type: "options", 
     group: "anamnesis",
@@ -411,7 +471,7 @@ export const questions = [
     ]
   },
   { 
-    id: "hallazgos_fisicos_pie", 
+    id: "hallazgos_fisicos", 
     text: "Examen Físico: Marcha / Heridas / Maniobras", 
     type: "textarea", 
     group: "anamnesis",
@@ -422,15 +482,34 @@ export const questions = [
   // GRUPO RIESGO
   // ─────────────────────────────────────────────
 
+// Criterios de Ottawa (solo si estable o local sin equimosis)
+  // {
+  //   id: "criterios_ottawa2",
+  //   text: "¿Cumple alguno de los Criterios de Ottawa? Seleccione aquellos que cumple:",
+  //   type: "multi",
+  //   group: "risk",
+  //   showIf: (ans) => ans.deformidad_evidente === "no",
+  //   options: [
+  //       { value: "dolor_metatarsiano", label: "Dolor en la base del quinto metatarsiano o en el navicular" },
+  //       { value: "dolor_palpacion", label: "Dolor a la palpación en el borde posterior de los 6 centímetros distales de la tibia o la fíbula hasta el segmento más distal del maléolo medial o lateral" },
+  //       { value: "incapacidad_pasos", label: "Incapacidad de dar más de 4 pasos seguidos sin ayuda o de sostener su peso corporal" },
+  //       { value: "no_cumple", label: "No cumple ninguno (Ottawa -)", exclusive: true }
+  //   ]
+  // },
+
+
   {
     id: "criterios_pie",
-    text: "¿Cumple algún criterio de las pruebas de pie? Seleccione aquellos que cumple:",
+    text: "¿Cumple algún criterio de las pruebas de pie o de Ottawa? Seleccione aquellos que cumple:",
     type: "multi",
     group: "risk",
     options: [
-      { value: "prueba_lisfranc", label: "Prueba de Lisfranc: Palpar la zona dorsal entre la base del 1° y 2° metatarsiano. Mover antepié en abducción manteniendo retropié fijo. Positiva: dolor en mediopié" },
-      { value: "prueba_chopart", label: "Prueba de Chopart: Sujetar retropié y movilizar mediopié en aducción/abducción o inversión/eversión. Positiva: dolor en línea articular del mediopié" },
-      { value: "prueba_squeeze", label: "Prueba de Squeeze: Comprimir tibia y peroné proximalmente. Positiva: dolor distal en tobillo (sindesmosis)" },
+      { value: "prueba_lisfranc", label: "Prueba de Lisfranc" },
+      { value: "prueba_chopart",  label: "Prueba de Chopart" },
+      { value: "prueba_squeeze",  label: "Prueba de Squeeze" },
+      { value: "dolor_metatarsiano", labelBold: "[Ottawa]", label: "Dolor en la base del quinto metatarsiano o en el navicular" },
+      { value: "dolor_palpacion",    labelBold: "[Ottawa]", label: "Dolor a la palpación en el borde posterior de los 6 cm distales de la tibia o la fíbula hasta el segmento más distal del maléolo medial o lateral" },
+      { value: "incapacidad_pasos",  labelBold: "[Ottawa]", label: "Incapacidad de dar más de 4 pasos seguidos sin ayuda o de sostener su peso corporal" },
       { value: "no_cumple", label: "No cumple ninguno (-)", exclusive: true}
     ]
   },
@@ -470,6 +549,7 @@ export const questions = [
     ]
   },
 
+
   {
     id: "deformidad_evidente_pie",
     text: "¿Hay deformidad evidente?",
@@ -485,13 +565,18 @@ export const questions = [
       { value: "no", label: "No" }
     ]
   },
+
+  
   {
     id: "rx_deformidad_pie",
     textFn: (ans) => {
-      if (ans.dolor_ortejo === "si") {
-        return "Realizar Radiografía Pie Ap-Lat-Obl sin carga con mortaja + Rx Pie ap-lat/oblicua del dedo afectado (con carga si tolera)";
-      }
-      return "Realizar Radiografía Pie Ap-Lat-Obl sin carga con mortaja";
+      const OTTAWA_VALS = ['dolor_metatarsiano', 'dolor_palpacion', 'incapacidad_pasos'];
+      const tieneOttawa = Array.isArray(ans.criterios_pie) &&
+        ans.criterios_pie.some(v => OTTAWA_VALS.includes(v));
+      const base = ans.dolor_ortejo === "si"
+        ? "Realizar Radiografía Pie Ap-Lat-Obl sin carga con mortaja. Adicional: Rx Pie Ap-Lat-Obl del dedo afectado (con carga si tolera)."
+        : "Realizar Radiografía Pie Ap-Lat-Obl sin carga con mortaja.";
+      return tieneOttawa ? `${base}\nAdicional: Radiografía Tobillo AP-Lat-Obl` : base;
     },
     type: "options",
     group: "risk",
@@ -501,7 +586,7 @@ export const questions = [
     ]
   },
   {
-    id: "tipo_dolor_pie",
+    id: "tipo_dolor",
     text: "¿Cómo se presenta el dolor?",
     type: "options",
     group: "risk",
@@ -520,9 +605,9 @@ export const questions = [
     showIf: (ans) => {
       const esguinceLeve =
         ans.deformidad_evidente_pie === "no" &&
-        ans.tipo_dolor_pie === "local" &&
-        ans.equimosis_pie === "ninguno" &&
-        ans.inestabilidad_pie === "sin_inestabilidad" &&
+        ans.tipo_dolor === "local" &&
+        ans.equimosis === "ninguno" &&
+        ans.inestabilidad === "sin_inestabilidad" &&
         ans.carga_laboral === 2;
       return esguinceLeve ;
     },
@@ -537,8 +622,8 @@ export const questions = [
     text: "¿Tolera la carga monopodal?",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.tipo_dolor_pie === "difuso" || 
-      (ans.tipo_dolor_pie === "local" && ans.inestabilidad_pie !== "sin_inestabilidad"),
+    showIf: (ans) => ans.tipo_dolor === "difuso" || 
+      (ans.tipo_dolor === "local" && ans.inestabilidad !== "sin_inestabilidad"),
     options: [
       { value: "no_tolera", label: "No tolera carga" },
       { value: "con_dificultad", label: "Tolera carga con dificultad" },
@@ -548,10 +633,13 @@ export const questions = [
   {
     id: "rx_no_tolera_carga_pie",
     textFn: (ans) => {
-      if (ans.dolor_ortejo === "si") {
-        return "Realizar Radiografía Ap-Lateral-obl de Pie con carga + mortaja + Rx Pie ap-lat/oblicua del dedo afectado (con carga si tolera)";
-      }
-      return "Realizar Radiografía Ap-Lateral-obl de Pie con carga + mortaja";
+      const OTTAWA_VALS = ['dolor_metatarsiano', 'dolor_palpacion', 'incapacidad_pasos'];
+      const tieneOttawa = Array.isArray(ans.criterios_pie) &&
+        ans.criterios_pie.some(v => OTTAWA_VALS.includes(v));
+      const base = ans.dolor_ortejo === "si"
+        ? "Realizar Radiografía Ap-Lateral-obl de Pie sin carga con mortaja. Adicional: Rx Pie Ap-Lat-Obl del dedo afectado (con carga si tolera)."
+        : "Realizar Radiografía Ap-Lateral-obl de Pie sin carga con mortaja.";
+      return tieneOttawa ? `${base}\nAdicional: Radiografía Tobillo AP-Lat-Obl` : base;
     },
     type: "options",
     group: "risk",
@@ -563,10 +651,13 @@ export const questions = [
   {
     id: "rx_tolera_carga_pie",
     textFn: (ans) => {
-      if (ans.dolor_ortejo === "si") {
-        return "Realizar Radiografía Pie Ap-Lat-Obl con carga + Rx Pie ap-lat/oblicua del dedo afectado (con carga si tolera)";
-      }
-      return "Realizar Radiografía Pie Ap-Lat-Obl con carga";
+      const OTTAWA_VALS = ['dolor_metatarsiano', 'dolor_palpacion', 'incapacidad_pasos'];
+      const tieneOttawa = Array.isArray(ans.criterios_pie) &&
+        ans.criterios_pie.some(v => OTTAWA_VALS.includes(v));
+      const base = ans.dolor_ortejo === "si"
+        ? "Realizar Radiografía Pie Ap-Lat-Obl con carga. Adicional: Rx Pie Ap-Lat-Obl del dedo afectado (con carga si tolera)."
+        : "Realizar Radiografía Pie Ap-Lat-Obl con carga.";
+      return tieneOttawa ? `${base}\nAdicional: Radiografía Tobillo AP-Lat-Obl` : base;
     },
     type: "options",
     group: "risk",
@@ -586,10 +677,77 @@ export const questions = [
       ans.rx_no_tolera_carga_pie === "listo" || 
       ans.rx_tolera_carga_pie === "listo",
     options: [
-      { value: "no", label: "No" },
+      { value: "no",         label: "No" },
       { value: "si_cerrada", label: "Sí, cerrada" },
       { value: "si_abierta", label: "Sí, abierta" },
+      { value: "si_tobillo", label: "Sí, pero en tobillo" },
       { value: "si_ortejos", label: "Sí, pero en ortejos" }
+    ]
+  },
+
+  // ─────────────────────────────────────────────
+  // FRACTURAS DE TOBILLO (desde MetaTarso)
+  // ─────────────────────────────────────────────
+
+  {
+    id: "fractura_tobillo_tipo",
+    text: "¿La fractura de tobillo es cerrada o abierta?",
+    type: "options",
+    group: "risk",
+    showIf: (ans) => ans.hay_fractura_pie === "si_tobillo",
+    options: [
+      { value: "cerrada", label: "Cerrada" },
+      { value: "abierta", label: "Abierta" },
+    ]
+  },
+  {
+    id: "clasificacion_especifica_cerrada_tobillo",
+    text: "Clasificación de la fractura:",
+    type: "options",
+    group: "risk",
+    showIf: (ans) => ans.hay_fractura_pie === "si_tobillo" && ans.fractura_tobillo_tipo === "cerrada",
+    options: [
+      { value: "maleolo_perone_cerrada", label: "Maléolo Peroneo Cerrada" },
+      { value: "maleolo_tibial_cerrada", label: "Maléolo Tibial Cerrada" },
+      { value: "bimaleolar_cerrada",     label: "Bimaleolar Cerrada" },
+      { value: "trimaleolar_cerrada",    label: "Trimaleolar Cerrada" },
+    ]
+  },
+  {
+    id: "clasificacion_especifica_abierta_tobillo",
+    text: "Clasificación de la fractura:",
+    type: "options",
+    group: "risk",
+    showIf: (ans) => ans.hay_fractura_pie === "si_tobillo" && ans.fractura_tobillo_tipo === "abierta",
+    options: [
+      { value: "maleolo_perone_abierta", label: "Maléolo Peroneo Abierta" },
+      { value: "maleolo_tibial_abierta", label: "Maléolo Tibial Abierta" },
+      { value: "bimaleolar_abierta",     label: "Bimaleolar Abierta" },
+      { value: "trimaleolar_abierta",    label: "Trimaleolar Abierta" },
+    ]
+  },
+  {
+    id: "escenario_fractura_tobillo",
+    text: "¿A cuál escenario pertenece la fractura?:",
+    type: "options",
+    group: "risk",
+    showIf: (ans) => ans.hay_fractura_pie === "si_tobillo" && ans.fractura_tobillo_tipo === "cerrada",
+    options: [
+      { value: "escenario_1", label: "Escenario 1: Fractura unimaleolar no luxada" },
+      { value: "escenario_2", label: "Escenario 2: Fractura bimaleolar no luxada" },
+      { value: "escenario_3", label: "Escenario 3: Fractura uni, bi o trimaleolar luxada" },
+      { value: "escenario_4", label: "Escenario 4: Fractura expuesta, síndrome compartimental..." },
+    ]
+  },
+  {
+    id: "weber_tobillo",
+    text: "¿A cuál tipo de Weber corresponde?:",
+    type: "options",
+    group: "risk",
+    showIf: (ans) => ans.escenario_fractura_tobillo === "escenario_1",
+    options: [
+      { value: "weber_a",   label: "Weber A" },
+      { value: "weber_b_c", label: "Weber B o C" },
     ]
   },
 
@@ -901,7 +1059,61 @@ export const evaluateRisk = (answers) => {
     }
   }
 
-  // ── 2. FRACTURAS DEL PIE (METATARSO Y TARSO) ─────────────────
+  // ── 2. FRACTURAS DE TOBILLO ──────────────────────────────────
+
+  if (answers.hay_fractura_pie === "si_tobillo") {
+    const TOBILLO_CERRADA_LABELS = {
+      maleolo_perone_cerrada: "Maléolo Peroneo Cerrada",
+      maleolo_tibial_cerrada: "Maléolo Tibial Cerrada",
+      bimaleolar_cerrada:     "Bimaleolar Cerrada",
+      trimaleolar_cerrada:    "Trimaleolar Cerrada",
+    };
+    const TOBILLO_ABIERTA_LABELS = {
+      maleolo_perone_abierta: "Maléolo Peroneo Abierta",
+      maleolo_tibial_abierta: "Maléolo Tibial Abierta",
+      bimaleolar_abierta:     "Bimaleolar Abierta",
+      trimaleolar_abierta:    "Trimaleolar Abierta",
+    };
+
+    const isAbierta = answers.fractura_tobillo_tipo === "abierta";
+
+    if (isAbierta) {
+      const clasVal = answers.clasificacion_especifica_abierta_tobillo;
+      return {
+        id: `fx_tobillo_abierta_${clasVal || "sin_clasificar"}`,
+        text: `Fractura Tobillo Abierta${clasVal ? `: ${TOBILLO_ABIERTA_LABELS[clasVal] || clasVal}` : ""}`,
+        color: "red",
+        protocolId: "protocolo_escenario_4",
+      };
+    }
+
+    const clasVal = answers.clasificacion_especifica_cerrada_tobillo;
+    const escenario = answers.escenario_fractura_tobillo;
+    const weberVal  = answers.weber_tobillo;
+
+    let protocolId;
+    if (escenario === "escenario_1") {
+      if (!weberVal) return null;
+      protocolId = weberVal === "weber_a" ? "protocolo_weber_a" : "protocolo_weber_b_c";
+    } else if (escenario === "escenario_2") {
+      protocolId = "protocolo_escenario_2";
+    } else if (escenario === "escenario_3") {
+      protocolId = "protocolo_escenario_3";
+    } else if (escenario === "escenario_4") {
+      protocolId = "protocolo_escenario_4";
+    } else {
+      return null;
+    }
+
+    return {
+      id: `fx_tobillo_cerrada_${clasVal || "sin_clas"}_${escenario}`,
+      text: `Fractura Tobillo Cerrada: ${TOBILLO_CERRADA_LABELS[clasVal] || clasVal || "Sin clasificar"}`,
+      color: "red",
+      protocolId,
+    };
+  }
+
+  // ── 3. FRACTURAS DEL PIE (METATARSO Y TARSO) ─────────────────
 
   const buildFracturaResult = (ans) => {
     const tipo = ans.hay_fractura_pie;
@@ -970,11 +1182,11 @@ export const evaluateRisk = (answers) => {
   const puedeEsguince = answers.hay_fractura_pie === "no" || ottawaNegativo;
 
   if (puedeEsguince) {
-    const inestabilidad = answers.inestabilidad_pie;
+    const inestabilidad = answers.inestabilidad;
     const deformidad = answers.deformidad_evidente_pie;
     const volumen = answers.aumento_volumen;
     const carga = answers.tolera_carga_pie;
-    const equimosis = answers.equimosis_pie;
+    const equimosis = answers.equimosis;
     const pruebasNegativas = ottawaArray.length === 0 ||
       (ottawaArray.length === 1 && ottawaArray.includes('no_cumple'));
 
@@ -1069,6 +1281,13 @@ export const generateClinicalReport = ({
         return protocolo_fx_metatarsiano_cerrada_conservador(answers);
       case 'protocolo_fx_cerrada_conservador_tarso':
         return protocolo_fx_cerrada_conservador_tarso(answers);
+      // Tobillo fracture protocols (static — stored in protocols map)
+      case 'protocolo_weber_a':
+      case 'protocolo_weber_b_c':
+      case 'protocolo_escenario_2':
+      case 'protocolo_escenario_3':
+      case 'protocolo_escenario_4':
+        return protocols[resultQuestion.protocolId];
       default:
         return protocols[resultQuestion.protocolId];
     }
@@ -1119,11 +1338,11 @@ export const generateClinicalReport = ({
   const seccionI = [
     answers.pie ? `- Pie: ${answers.pie}` : null,
     line('Carga Laboral', cargaTexto[Number(answers.carga_laboral)]),
-    answers.eva_pie !== undefined ? `- Dolor (EVA): ${answers.eva_pie}/10` : null,
+    answers.eva !== undefined ? `- Dolor (EVA): ${answers.eva}/10` : null,
     line('Aumento de volumen (AVO)', edemaTexto[answers.aumento_volumen]),
-    line('Equimosis', equimosisTexto[answers.equimosis_pie]),
-    line('Inestabilidad', inestabilidadTexto[answers.inestabilidad_pie]),
-    answers.hallazgos_fisicos_pie ? `- Hallazgos Físicos: ${answers.hallazgos_fisicos_pie}` : null,
+    line('Equimosis', equimosisTexto[answers.equimosis]),
+    line('Inestabilidad', inestabilidadTexto[answers.inestabilidad]),
+    answers.hallazgos_fisicos ? `- Hallazgos Físicos: ${answers.hallazgos_fisicos}` : null,
   ].filter(Boolean).join('\n');
 
   // Radiografías solicitadas
@@ -1133,7 +1352,7 @@ export const generateClinicalReport = ({
     const cumpleLisfranc = Array.isArray(criterios) && criterios.includes("prueba_lisfranc");
     rxSolicitadas.push(
       cumpleLisfranc 
-        ? 'Rx pie Ap-Lat-Obl sin carga + Rx Pie ap-lat/oblicua del dedo afectado (con carga si tolera)'
+        ? 'Rx pie Ap-Lat-Obl sin carga. Adicional: Rx Pie Ap-Lat-Obl del dedo afectado (con carga si tolera)'
         : 'Rx pie Ap-Lat-Obl sin carga'
     );
   }
@@ -1142,8 +1361,8 @@ export const generateClinicalReport = ({
     const cumpleLisfranc = Array.isArray(criterios) && criterios.includes("prueba_lisfranc");
     rxSolicitadas.push(
       cumpleLisfranc
-        ? 'Rx pie Ap-Lat-Obl con carga + mortaja + Rx Pie ap-lat/oblicua del dedo afectado'
-        : 'Rx pie Ap-Lat-Obl con carga + mortaja'
+        ? 'Rx pie Ap-Lat-Obl sin carga con mortaja. Adicional: Rx Pie Ap-Lat-Obl del dedo afectado'
+        : 'Rx pie Ap-Lat-Obl sin carga con mortaja'
     );
   }
   if (answers.rx_tolera_carga_pie === 'listo') {
@@ -1151,7 +1370,7 @@ export const generateClinicalReport = ({
     const cumpleLisfranc = Array.isArray(criterios) && criterios.includes("prueba_lisfranc");
     rxSolicitadas.push(
       cumpleLisfranc
-        ? 'Rx pie Ap-Lat-Obl con carga + Rx Pie ap-lat/oblicua del dedo afectado'
+        ? 'Rx pie Ap-Lat-Obl con carga. Adicional: Rx Pie Ap-Lat-Obl del dedo afectado'
         : 'Rx pie Ap-Lat-Obl con carga'
     );
   }
@@ -1159,11 +1378,37 @@ export const generateClinicalReport = ({
   const rxTexto = rxSolicitadas.length > 0 ? rxSolicitadas.join(' | ') : 'No solicitada';
 
   const fracturaTexto = 
-    answers.hay_fractura_pie === 'si_cerrada' ? 'FRACTURA CERRADA DETECTADA (PIE)'
-    : answers.hay_fractura_pie === 'si_abierta' ? 'FRACTURA ABIERTA DETECTADA (PIE)'
-    : answers.hay_fractura_pie === 'si_ortejos' ? 'FRACTURA DETECTADA (ORTEJOS)'
-    : answers.hay_fractura_pie === 'no' ? 'Sin fractura en radiografía'
+    answers.hay_fractura_pie === 'si_cerrada'  ? 'FRACTURA CERRADA DETECTADA (PIE)'
+    : answers.hay_fractura_pie === 'si_abierta'  ? 'FRACTURA ABIERTA DETECTADA (PIE)'
+    : answers.hay_fractura_pie === 'si_tobillo'  ? 'FRACTURA DETECTADA (TOBILLO)'
+    : answers.hay_fractura_pie === 'si_ortejos'  ? 'FRACTURA DETECTADA (ORTEJOS)'
+    : answers.hay_fractura_pie === 'no'          ? 'Sin fractura en radiografía'
     : null;
+
+  // Clasificación de fractura de tobillo
+  const clasificacionLineaTobillo = (() => {
+    if (answers.hay_fractura_pie !== 'si_tobillo') return null;
+    const CERRADA_LABELS = {
+      maleolo_perone_cerrada: 'Maléolo Peroneo Cerrada',
+      maleolo_tibial_cerrada: 'Maléolo Tibial Cerrada',
+      bimaleolar_cerrada:     'Bimaleolar Cerrada',
+      trimaleolar_cerrada:    'Trimaleolar Cerrada',
+    };
+    const ABIERTA_LABELS = {
+      maleolo_perone_abierta: 'Maléolo Peroneo Abierta',
+      maleolo_tibial_abierta: 'Maléolo Tibial Abierta',
+      bimaleolar_abierta:     'Bimaleolar Abierta',
+      trimaleolar_abierta:    'Trimaleolar Abierta',
+    };
+    const val = answers.clasificacion_especifica_cerrada_tobillo || answers.clasificacion_especifica_abierta_tobillo;
+    const label = CERRADA_LABELS[val] || ABIERTA_LABELS[val] || val;
+    const parts = val ? [`- Clasificación tobillo: ${label}`] : [];
+    const escenario = answers.escenario_fractura_tobillo;
+    if (escenario) parts.push(`- Escenario: ${escenario.replace('escenario_', 'Escenario ')}`);
+    const weber = answers.weber_tobillo;
+    if (weber) parts.push(`- Weber: ${weber === 'weber_a' ? 'A' : 'B/C'}`);
+    return parts.length > 0 ? parts.join('\n') : null;
+  })();
 
   // Clasificación de fractura del pie
   const clasificacionLineaPie = (() => {
@@ -1231,6 +1476,7 @@ export const generateClinicalReport = ({
     huboRx ? `- Radiografía solicitada: ${rxTexto}` : null,
     fracturaTexto ? `- Resultado: ${fracturaTexto}` : null,
     clasificacionLineaPie,
+    clasificacionLineaTobillo,
     clasificacionLineaOrtejo,
     derivacionMetatarsoLinea,
     derivacionTarsoLinea,
@@ -1241,31 +1487,45 @@ export const generateClinicalReport = ({
     ? `IMAGENOLOGÍA\n${seccionII_lineas.join('\n')}`
     : null;
 
-  // Criterios Ottawa
-  const ottawaLinea = (() => {
-    const ottawa = answers.criterios_pie;
-    if (!Array.isArray(ottawa) || ottawa.length === 0) return null;
-    const criteriosPieLabels = {
-      prueba_lisfranc: 'Prueba de Lisfranc (+)',
-      prueba_chopart: 'Prueba de Chopart (+)',
-      prueba_squeeze: 'Prueba de Squeeze (+)',
-      no_cumple: 'No cumple ninguno (-)',
+  const OTTAWA_VALUES = new Set(['dolor_metatarsiano', 'dolor_palpacion', 'incapacidad_pasos', 'no_cumple']);
+  const PIE_VALUES    = new Set(['prueba_lisfranc', 'prueba_chopart', 'prueba_squeeze']);
+  const criteriosPieArr = Array.isArray(answers.criterios_pie) ? answers.criterios_pie : [];
+
+  const ottawaSeleccionados = criteriosPieArr.filter(v => OTTAWA_VALUES.has(v));
+  const pieSeleccionados    = criteriosPieArr.filter(v => PIE_VALUES.has(v));
+
+  const ottawaLinea = ottawaSeleccionados.length > 0 ? (() => {
+    const labels = {
+      dolor_metatarsiano: 'Dolor en la base del quinto metatarsiano o en el navicular',
+      dolor_palpacion:    'Dolor a la palpación en el borde posterior de los 6 cm distales de la tibia o la fíbula hasta el maléolo medial o lateral',
+      incapacidad_pasos:  'Incapacidad de dar más de 4 pasos seguidos sin ayuda o de sostener su peso corporal',
+      no_cumple:          'No cumple ninguno (Ottawa -)',
     };
-    const criteriosSeleccionados = ottawa.map(v => criteriosPieLabels[v] || v).join('; ');
-    return `- Pruebas del pie: ${criteriosSeleccionados}`;
-  })();
+    const esNegativo = ottawaSeleccionados.length === 1 && ottawaSeleccionados[0] === 'no_cumple';
+    const encabezado = esNegativo ? 'Criterios Ottawa' : 'Criterios Ottawa (+)';
+    return `- ${encabezado}: ${ottawaSeleccionados.map(v => labels[v] || v).join('; ')}`;
+  })() : null;
+
+  const pieLinea = pieSeleccionados.length > 0 ? (() => {
+    const labels = {
+      prueba_lisfranc: 'Prueba de Lisfranc (+)',
+      prueba_chopart:  'Prueba de Chopart (+)',
+      prueba_squeeze:  'Prueba de Squeeze (+)',
+    };
+    return `- Pruebas del pie: ${pieSeleccionados.map(v => labels[v] || v).join('; ')}`;
+  })() : null;
 
   const deformidadLinea = answers.deformidad_evidente_pie
     ? `- Deformidad Evidente: ${answers.deformidad_evidente_pie === 'si' ? 'SÍ' : 'NO'}`
     : null;
-  const tipoDolorLinea = answers.tipo_dolor_pie
-    ? `- Tipo de Dolor: ${answers.tipo_dolor_pie}`
+  const tipoDolorLinea = answers.tipo_dolor
+    ? `- Tipo de Dolor: ${answers.tipo_dolor}`
     : null;
   const toleranciaLinea = answers.tolera_carga_pie
     ? `- Tolerancia Carga: ${toleranciaTexto[answers.tolera_carga_pie]}`
     : null;
 
-  const seccionI_extra = [ottawaLinea, deformidadLinea, tipoDolorLinea, toleranciaLinea]
+  const seccionI_extra = [ottawaLinea, pieLinea, deformidadLinea, tipoDolorLinea, toleranciaLinea]
     .filter(Boolean).join('\n');
 
   const seccionI_completa = [seccionI, seccionI_extra].filter(Boolean).join('\n');

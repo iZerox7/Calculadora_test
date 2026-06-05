@@ -93,6 +93,14 @@ const QuestionRenderer = ({ question, value, onChange, answers, onVoiceUsed }) =
       const allowed = allowedWeberFor(answers);
       optionsToRender = filterOptions(question.options || [], allowed);
     }
+    if (question.id === 'escenario_fractura_tobillo') {
+      const allowed = allowedScenariosForTobillo(answers);
+      optionsToRender = filterOptions(question.options || [], allowed);
+    }
+    if (question.id === 'weber_tobillo') {
+      const allowed = allowedWeberForTobillo(answers);
+      optionsToRender = filterOptions(question.options || [], allowed);
+    }
   }
 
   switch (question.type) {
@@ -389,6 +397,26 @@ function allowedWeberFor(ans) {
   return [];
 }
 
+function allowedScenariosForTobillo(ans) {
+  const always = ['escenario_4'];
+  if (ans.fractura_tobillo_tipo === 'abierta') return always;
+  const clasVal = ans.clasificacion_especifica_cerrada_tobillo;
+  if (!clasVal) return always;
+  const allowed = new Set(always);
+  if (clasVal === 'maleolo_perone_cerrada') { allowed.add('escenario_1'); allowed.add('escenario_3'); }
+  if (clasVal === 'maleolo_tibial_cerrada') allowed.add('escenario_3');
+  if (clasVal === 'bimaleolar_cerrada')     { allowed.add('escenario_2'); allowed.add('escenario_3'); }
+  if (clasVal === 'trimaleolar_cerrada')    allowed.add('escenario_3');
+  return Array.from(allowed);
+}
+
+function allowedWeberForTobillo(ans) {
+  if (ans.escenario_fractura_tobillo !== 'escenario_1') return [];
+  const clasVal = ans.clasificacion_especifica_cerrada_tobillo;
+  if (clasVal === 'maleolo_perone_cerrada') return ['weber_a', 'weber_b_c'];
+  return ['weber_b_c'];
+}
+
 function filterOptions(options, allowedValues) {
   const allow = new Set(allowedValues);
   return options.filter(o => allow.has(o.value));
@@ -555,6 +583,8 @@ function App() {
     showInfo: false,
     rxText: ''
   });
+  const [switchModal, setSwitchModal] = useState(false);
+  const [pieDescModal, setPieDescModal] = useState(false);
 
   const saveDraft = React.useCallback(
     async (checkpointId, nextAnswers) => {
@@ -753,6 +783,15 @@ function App() {
       return;
     }
 
+    // Mid-flow switch: solo dolor_palpacion → tobillo questionnaire
+    if (currentRiskQuestionId === 'criterios_pie') {
+      const criteria = answers['criterios_pie'];
+      if (Array.isArray(criteria) && criteria.length === 1 && criteria[0] === 'dolor_palpacion') {
+        setSwitchModal(true);
+        return;
+      }
+    }
+
     let nextIndex = currentIndex + 1;
     while (nextIndex < allRisk.length) {
       const nextQ = allRisk[nextIndex];
@@ -767,6 +806,39 @@ function App() {
       nextIndex++;
     }
     setWizardFinished(true);
+  };
+
+  const handleConfirmSwitch = async () => {
+    setSwitchModal(false);
+    const tobilloMod = await import('./questionnaires/tobilloQuestions.js');
+    const tobilloInfo = categoriesConfig.tobillo_pie.questionnaires.torsion_tobillo;
+    const tobilloModule = { ...tobilloInfo, ...(tobilloMod.default || tobilloMod) };
+
+    setQuestionnaireModule(tobilloModule);
+    setSelectedQuestionnaireKey('torsion_tobillo');
+
+    const {
+      criterios_pie: _removed,
+      pie: pieLocation,
+      eva_pie: evaVal,
+      equimosis_pie: equimosisVal,
+      inestabilidad_pie: inestabilidadVal,
+      hallazgos_fisicos_pie: hallazgosVal,
+      ...restAnswers
+    } = answers;
+    setAnswers({
+      ...restAnswers,
+      criterios_ottawa2: ['dolor_palpacion'],
+      ...(pieLocation !== undefined      && { tobillo: pieLocation }),
+      ...(evaVal !== undefined           && { eva: evaVal}   ),
+      ...(equimosisVal !== undefined     && { equimosis: equimosisVal }),
+      ...(inestabilidadVal !== undefined && { inestabilidad: inestabilidadVal }),
+      ...(hallazgosVal !== undefined     && { hallazgos_fisicos: hallazgosVal }),
+    });
+
+    const firstRisk = tobilloModule.questions.find(q => q.group === 'risk');
+    setCurrentRiskQuestionId(firstRisk?.id ?? null);
+    setRiskHistory([]);
   };
 
   useEffect(() => {
@@ -785,6 +857,7 @@ function App() {
 
   const handleEvaluate = async () => {
     const evaluation = questionnaireModule.evaluateRisk(answers, true);
+    if (!evaluation) return; // incomplete answers — wizard shouldn't allow this, but guard anyway
     setFinalResult(evaluation);
 
     // ── Indicaciones para tobillo_pie (tobillo y ortejos) ────────────────────
@@ -1006,6 +1079,11 @@ function App() {
                 {!wizardFinished ? (
                   <div className="flex-grow animate-in fade-in slide-in-from-right-4">
                     <label className="block text-base font-bold text-gray-800 mb-4">{currentRisk?.text}</label>
+                    {currentRiskQuestionId === 'criterios_pie' && (
+                      <button onClick={() => setPieDescModal(true)} className="mb-3 text-sm text-blue-700 underline font-semibold hover:text-blue-900">
+                        Descripción pruebas del pie
+                      </button>
+                    )}
                     <QuestionRenderer question={currentRisk} value={answers[currentRisk?.id]} onChange={handleFormChange} answers={answers} />
                     <div className="flex justify-between mt-8">
                       <button
@@ -1111,6 +1189,11 @@ function App() {
                     : currentRisk?.text
                   }
                 </label>
+                {currentRiskQuestionId === 'criterios_pie' && (
+                  <button onClick={() => setPieDescModal(true)} className="mb-3 text-sm text-blue-700 underline font-semibold hover:text-blue-900">
+                    Descripción pruebas del pie
+                  </button>
+                )}
                 <QuestionRenderer question={currentRisk} value={answers[currentRisk?.id]} onChange={handleFormChange} answers={answers} />
 
                 <div className="flex justify-between items-center mt-8">
@@ -1175,6 +1258,14 @@ function App() {
         answers.criterios_ottawa2.includes("dolor_metatarsiano") &&
         answers.hay_fractura === "no";
 
+      const OTTAWA_VALS = ['dolor_metatarsiano', 'dolor_palpacion', 'incapacidad_pasos'];
+      const criteriosPieArr = Array.isArray(answers.criterios_pie) ? answers.criterios_pie : [];
+      const ottawaEnPie = criteriosPieArr.filter(v => OTTAWA_VALS.includes(v));
+      const ES_ESGUINCE_PIE = new Set(['getProtocoloEsguincePie1', 'getProtocoloEsguincePie2', 'getProtocoloEsguincePie3']);
+      const tieneOttawaMetaTarso = esMetaTarso(selectedQuestionnaireKey) &&
+        ottawaEnPie.length > 0 &&
+        ES_ESGUINCE_PIE.has(finalResult?.protocolId);
+
       const currentProtocol = resolveProtocol(finalResult.protocolId, questionnaireModule, answers);
 
       const reposoDinamico = questionnaireModule?.restTextPorCarga?.(answers, finalResult.protocolId) ?? null;
@@ -1185,14 +1276,19 @@ function App() {
 
       const stepsParaInforme = indicacionesSeleccionadas !== null ? indicacionesSeleccionadas : displayedSteps;
 
-      const reportText = questionnaireModule.generateClinicalReport({
-        caseId,
-        answers,
-        resultQuestion: finalResult,
-        protocols: questionnaireModule.protocols,
-        allQuestions: questionnaireModule.questions,
-        stepsOverride: stepsParaInforme,
-      });
+      let reportText = '';
+      try {
+        reportText = questionnaireModule.generateClinicalReport({
+          caseId,
+          answers,
+          resultQuestion: finalResult,
+          protocols: questionnaireModule.protocols,
+          allQuestions: questionnaireModule.questions,
+          stepsOverride: stepsParaInforme,
+        });
+      } catch (e) {
+        console.error('generateClinicalReport error:', e);
+      }
 
       // Mensajes de agendamiento: solo tobillo
       const esGrado1 = soloTobillo && finalResult.protocolId === 'protocolo_esguince_1';
@@ -1269,7 +1365,15 @@ function App() {
           {tieneMetatarsiano && (
             <div className="p-4 bg-orange-50 border-l-4 border-orange-400 rounded-lg">
               <p className="text-orange-800 text-sm font-semibold">
-                ⚠️ Dado que presenta dolor en metatarso, ver protocolo de esguince de pie previo a determinar diagnóstico final.
+                ⚠️ Dado que presenta dolor en metatarso, ver protocolo de esguince de pie previo a determinar diagnóstico final
+              </p>
+            </div>
+          )}
+
+          {tieneOttawaMetaTarso && (
+            <div className="p-4 bg-orange-50 border-l-4 border-orange-400 rounded-lg">
+              <p className="text-orange-800 text-sm font-semibold">
+                ⚠️ Dado que cumple con uno o más criterios de Ottawa, ver protocolo de esguince de tobillo previo a determinar diagnóstico final
               </p>
             </div>
           )}
@@ -1334,7 +1438,7 @@ function App() {
             </div>
           </div>
 
-          {esTobilloPie(selectedCategory) && (() => {
+          {esTobilloPie(selectedCategory) && reportText && (() => {
             const sections = [
               { label: 'Examen Físico',         text: extractSection(reportText, 'EXAMEN FÍSICO',         ['IMAGENOLOGÍA', 'DIAGNÓSTICO SUGERIDO', 'INDICACIONES SUGERIDAS']) },
               { label: 'Imagenología',           text: extractSection(reportText, 'IMAGENOLOGÍA',           ['DIAGNÓSTICO SUGERIDO', 'INDICACIONES SUGERIDAS']) },
@@ -1437,6 +1541,45 @@ function App() {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {pieDescModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 relative">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Descripción pruebas del pie</h3>
+            <div className="space-y-4 text-sm text-gray-700 mb-5">
+              <div>
+                <p className="font-semibold">Prueba de Lisfranc</p>
+                <p>Palpar la zona dorsal entre la base del 1° y 2° metatarsiano. Mover antepié en abducción manteniendo retropié fijo. Positiva: dolor en mediopié.</p>
+              </div>
+              <div>
+                <p className="font-semibold">Prueba de Chopart</p>
+                <p>Sujetar retropié y movilizar mediopié en aducción/abducción o inversión/eversión. Positiva: dolor en línea articular del mediopié.</p>
+              </div>
+              <div>
+                <p className="font-semibold">Prueba de Squeeze</p>
+                <p>Comprimir tibia y peroné proximalmente. Positiva: dolor distal en tobillo (sindesmosis).</p>
+              </div>
+            </div>
+            <button onClick={() => setPieDescModal(false)} className="w-full bg-blue-700 text-white font-bold py-2 rounded-lg hover:bg-blue-800">OK</button>
+          </div>
+        </div>
+      )}
+
+      {switchModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-5 relative">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Cambio de cuestionario</h3>
+            <div className="text-sm text-gray-700 mb-4">
+              <p>Solo se detectó <span className="font-semibold">dolor a la palpación del tobillo</span> (criterio Ottawa).</p>
+              <p className="mt-2">¿Desea cambiar esta consulta a <span className="font-semibold">Torsión de Tobillo</span>?</p>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={handleConfirmSwitch} className="flex-1 bg-blue-700 text-white font-bold py-2 rounded-lg hover:bg-blue-800">Sí, cambiar</button>
+              <button onClick={() => setSwitchModal(false)} className="flex-1 bg-gray-100 text-gray-800 font-bold py-2 rounded-lg hover:bg-gray-200 border">Cancelar</button>
+            </div>
           </div>
         </div>
       )}
