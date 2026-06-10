@@ -29,6 +29,8 @@ const esTobilloMecanismo = (questionnaireKey) => questionnaireKey === 'torsion_t
 
 const esMetaTarso = (questionnaireKey) =>  questionnaireKey === 'metaTarso';
 
+const esVyT = (category) => category === 'violencia_y_trauma';
+
 const extractSection = (text, header, stopHeaders) => {
   const start = text.indexOf(header);
   if (start === -1) return null;
@@ -1043,8 +1045,8 @@ function App() {
     }
 
     if (step === "questionnaire") {
-      // Usa el helper: true para tobillo_pie (tobillo y ortejos), false para lumbago
-      const usaTabLayout = esTobilloPie(selectedCategory);
+      // Usa el helper: true para tobillo_pie (tobillo y ortejos) y violencia_y_trauma, false para lumbago
+      const usaTabLayout = esTobilloPie(selectedCategory) || esVyT(selectedCategory);
       const anamnesis = questionnaireModule.questions.filter(q => q.group === 'anamnesis');
       const currentRisk = questionnaireModule.questions.find(q => q.id === currentRiskQuestionId);
 
@@ -1136,7 +1138,7 @@ function App() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  {anamnesis.slice(0, 4).map(q => (
+                  {anamnesis.slice(0, questionnaireModule?.anamnesisLeftCount ?? 4).map(q => (
                     <div key={q.id} className="pb-2">
                       <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
                       <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} onVoiceUsed={() => setUsoDictadoVoz(true)} />
@@ -1144,7 +1146,7 @@ function App() {
                   ))}
                 </div>
                 <div className="space-y-4">
-                  {anamnesis.slice(4).map(q => (
+                  {anamnesis.slice(questionnaireModule?.anamnesisLeftCount ?? 4).map(q => (
                     <div key={q.id} className="pb-2">
                       <label className="block text-sm font-bold text-gray-700 mb-1">{q.text}</label>
                       <QuestionRenderer question={q} value={answers[q.id]} onChange={handleFormChange} answers={answers} onVoiceUsed={() => setUsoDictadoVoz(true)} />
@@ -1248,7 +1250,7 @@ function App() {
     }
 
     if (step === "result" && finalResult) {
-      const usaTabLayout = esTobilloPie(selectedCategory);
+      const usaTabLayout = esTobilloPie(selectedCategory) || esVyT(selectedCategory);
 
       // Solo tobillo tiene metatarsiano, TF, control y transporte
       const soloTobillo = esTobilloMecanismo(selectedQuestionnaireKey);

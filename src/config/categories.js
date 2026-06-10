@@ -22,6 +22,15 @@ export const categoriesConfig = {
       },
     },
   },
+  violencia_y_trauma: {
+    name: "Violencia y Trauma",
+    questionnaires: {
+      consulta_vyt: {
+        name: "(Piloto) Consulta por Violencia y Trauma",
+        getQuestionsModule: () => import('../questionnaires/VyTQuestions.js'),
+      },
+    },
+  },
   tobillo_pie: {
     name: "Tobillo y Pie",
     questionnaires: {
