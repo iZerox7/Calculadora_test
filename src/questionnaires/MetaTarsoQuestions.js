@@ -1202,7 +1202,7 @@ export const evaluateRisk = (answers) => {
 
   // Mensaje de advertencia cuando la sospecha de fractura tiene criterios positivos
   const tacWarning = (answers.hay_fractura_pie === "sospecha" && answers.sospecha_fractura && answers.sospecha_fractura !== "ninguno")
-    ? "Se recomienda solicitar TAC para una mayor evaluación de la lesión"
+    ? "Se recomienda solicitar TAC para descartar o confirmar fractura"
     : null;
 
   if (puedeEsguince) {
