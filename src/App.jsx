@@ -1378,6 +1378,12 @@ function App() {
             </div>
           )}
 
+          {finalResult.warningMessage && (
+            <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+              <p className="text-red-700 text-sm font-semibold">⚠️ {finalResult.warningMessage}</p>
+            </div>
+          )}
+
           {mensajeTF && (
             <div className="p-4 bg-purple-50 border-l-4 border-purple-400 rounded-lg">
               <p className="text-purple-800 text-sm font-semibold">🗓️ {mensajeTF}</p>

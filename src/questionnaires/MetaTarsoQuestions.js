@@ -681,7 +681,25 @@ export const questions = [
       { value: "si_cerrada", label: "Sí, cerrada" },
       { value: "si_abierta", label: "Sí, abierta" },
       { value: "si_tobillo", label: "Sí, pero en tobillo" },
-      { value: "si_ortejos", label: "Sí, pero en ortejos" }
+      { value: "si_ortejos", label: "Sí, pero en ortejos" },
+      { value: "sospecha", label: "Sospecha de fractura"}
+    ]
+  },
+
+
+    // Sospecha de fx
+  {
+    id: "sospecha_fractura",
+    text: "¿Se cumple alguno de estos criterios?",
+    type: "options",
+    group: "risk",
+    showIf: (ans) => ans.hay_fractura_pie === "sospecha",
+    options: [
+        { value: "linea_dudosa", label: "Radiografía con línea de fractura dudosa" },
+        { value: "sospecha_intraarticular", label: "Sospecha de fractura intraarticular en Radiografía" },
+        { value: "sospecha_avulsion", label: "Sospecha de fractura por avulsión de tamaño incierto en Radiografía" },
+        { value: "discordancia_clinica", label: "Discordancia entre clínica muy sugerente y severa con Radiografía normal" },
+        { value: "ninguno", label: "No se cumple ninguno de los criterios"}
     ]
   },
 
@@ -1176,10 +1194,16 @@ export const evaluateRisk = (answers) => {
   // ── 3. ESGUINCES ─────────────────────────────────────────────
 
   const ottawaArray = Array.isArray(answers.criterios_pie) ? answers.criterios_pie : [];
-  const ottawaNegativo = ottawaArray.length === 0 || 
+  const ottawaNegativo = ottawaArray.length === 0 ||
     (ottawaArray.length === 1 && ottawaArray.includes("no_cumple"));
 
-  const puedeEsguince = answers.hay_fractura_pie === "no" || ottawaNegativo;
+  // También cuando hay sospecha de fractura (se sugiere esguince + aviso de TAC)
+  const puedeEsguince = answers.hay_fractura_pie === "no" || ottawaNegativo || answers.hay_fractura_pie === "sospecha";
+
+  // Mensaje de advertencia cuando la sospecha de fractura tiene criterios positivos
+  const tacWarning = (answers.hay_fractura_pie === "sospecha" && answers.sospecha_fractura && answers.sospecha_fractura !== "ninguno")
+    ? "Se recomienda solicitar TAC para una mayor evaluación de la lesión"
+    : null;
 
   if (puedeEsguince) {
     const inestabilidad = answers.inestabilidad;
@@ -1196,11 +1220,12 @@ export const evaluateRisk = (answers) => {
       equimosis === "difusa" && equimosis != null) || (volumen === "severo"))
 
     ) {
-      return { 
-        id: "e3", 
-        text: "Esguince del Pie Grado III", 
-        color: "red", 
-        protocolId: "getProtocoloEsguincePie3" 
+      return {
+        id: "e3",
+        text: "Esguince del Pie Grado III",
+        color: "red",
+        protocolId: "getProtocoloEsguincePie3",
+        ...(tacWarning ? { warningMessage: tacWarning } : {})
       };
     }
 
@@ -1208,42 +1233,45 @@ export const evaluateRisk = (answers) => {
 
       // Me traigo los criterios de tobillo para derivar el esguince
       (inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
-      (volumen === "moderado" || volumen === "severo") 
-      
+      (volumen === "moderado" || volumen === "severo")
+
       // así lo tenía antes
-      // carga === "tolera" || carga === "con_dificultad" || 
-      //   (equimosis === "ninguno" && answers.tipo_dolor_pie === "local" && 
-      //    inestabilidad === "sin_inestabilidad") 
-        
+      // carga === "tolera" || carga === "con_dificultad" ||
+      //   (equimosis === "ninguno" && answers.tipo_dolor_pie === "local" &&
+      //    inestabilidad === "sin_inestabilidad")
+
         ) {
-      return { 
-        id: "e2", 
-        text: "Esguince del Pie Grado II", 
-        color: "green", 
-        protocolId: "getProtocoloEsguincePie2" 
+      return {
+        id: "e2",
+        text: "Esguince del Pie Grado II",
+        color: "green",
+        protocolId: "getProtocoloEsguincePie2",
+        ...(tacWarning ? { warningMessage: tacWarning } : {})
       };
     }
 
-    if (pruebasNegativas || 
-        (inestabilidad === "sin_inestabilidad" && 
+    if (pruebasNegativas ||
+        (inestabilidad === "sin_inestabilidad" &&
           (volumen === "ninguno" || volumen === "leve")
           // answers.tipo_dolor_pie === "local"
 
         )) {
-      return { 
-        id: "e1", 
-        text: "Esguince del Pie Grado I", 
-        color: "green", 
-        protocolId: "getProtocoloEsguincePie1" 
+      return {
+        id: "e1",
+        text: "Esguince del Pie Grado I",
+        color: "green",
+        protocolId: "getProtocoloEsguincePie1",
+        ...(tacWarning ? { warningMessage: tacWarning } : {})
       };
     }
   }
-  
-  return { 
-    id: "e1", 
-    text: "Esguince del Pie Grado I", 
-    color: "green", 
-    protocolId: "getProtocoloEsguincePie1" 
+
+  return {
+    id: "e1",
+    text: "Esguince del Pie Grado I",
+    color: "green",
+    protocolId: "getProtocoloEsguincePie1",
+    ...(tacWarning ? { warningMessage: tacWarning } : {})
   };
 };
 

@@ -355,8 +355,27 @@ export const questions = [
       { value: "si_cerrada", label: "Sí, cerrada" },
       { value: "si_abierta", label: "Sí, abierta" },
       { value: "si_otra",    label: "Sí, pero no en ortejos" },
+      { value: "sospecha", label: "Sospecha de fractura"}
     ],
   },
+
+    // Sospecha de fx
+  {
+    id: "sospecha_fractura",
+    text: "¿Se cumple alguno de estos criterios?",
+    type: "options",
+    group: "risk",
+    showIf: (ans) => ans.hay_fractura === "sospecha",
+    options: [
+        { value: "linea_dudosa", label: "Radiografía con línea de fractura dudosa" },
+        { value: "sospecha_intraarticular", label: "Sospecha de fractura intraarticular en Radiografía" },
+        { value: "sospecha_avulsion", label: "Sospecha de fractura por avulsión de tamaño incierto en Radiografía" },
+        { value: "discordancia_clinica", label: "Discordancia entre clínica muy sugerente y severa con Radiografía normal" },
+        { value: "ninguno", label: "No se cumple ninguno de los criterios" }
+    ]
+  },
+
+
 
   {
     id: "fractura_pie_tipo",
@@ -566,24 +585,32 @@ export const evaluateRisk = (answers) => {
 
   // ── 4. ESGUINCE ──────────────────────────────
 
+  // Mensaje de advertencia cuando la sospecha de fractura tiene criterios positivos
+  const tacWarning = (hayFractura === "sospecha" && answers.sospecha_fractura && answers.sospecha_fractura !== "ninguno")
+    ? "Se recomienda solicitar TAC para una mayor evaluación de la lesión"
+    : null;
+
+  const sinFractura = hayFractura === "no" || hayFractura === "sospecha";
 
   // Grado III: inestabilidad presente, con o sin RX (si hubo RX debe ser sin fractura)
-  if (inestabilidad === "con_inestabilidad" && (!huboRx || hayFractura === "no")) {
+  if (inestabilidad === "con_inestabilidad" && (!huboRx || sinFractura)) {
     return {
       id: "e3_ortj",
       text: "Esguince de Ortejos Grado III",
       color: "red",
       protocolId: "protocolo_esguince_3_ortj",
+      ...(tacWarning ? { warningMessage: tacWarning } : {}),
     };
   }
 
   // Grado II: RX realizada y sin fractura
-  if (huboRx && hayFractura === "no") {
+  if (huboRx && sinFractura) {
     return {
       id: "e2_ortj",
       text: "Esguince de Ortejos Grado II",
       color: "green",
       protocolId: "protocolo_esguince_2_ortj",
+      ...(tacWarning ? { warningMessage: tacWarning } : {}),
     };
   }
 
@@ -594,6 +621,7 @@ export const evaluateRisk = (answers) => {
       text: "Esguince de Ortejos Grado I",
       color: "green",
       protocolId: "protocolo_esguince_1_ortj",
+      ...(tacWarning ? { warningMessage: tacWarning } : {}),
     };
   }
 
@@ -603,6 +631,7 @@ export const evaluateRisk = (answers) => {
     text: "Esguince de Ortejos Grado I",
     color: "green",
     protocolId: "protocolo_esguince_1_ortj",
+    ...(tacWarning ? { warningMessage: tacWarning } : {}),
   };
 };
 
