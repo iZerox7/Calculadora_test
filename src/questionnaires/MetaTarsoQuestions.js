@@ -242,35 +242,22 @@ export const protocolo_fx_cerrada_conservador_tarso = (answers) => {
 };
 
 export const getProtocoloFxDerivacionSUOrtejos = (answers) => {
-  const esExpuestaPrimerOrtejo =
-    answers?.clasificacion_abierta_ortejos === "abierta_primer_ortj";
-  const esExpuestaNoPrimerOrtejo =
-    answers?.clasificacion_abierta_ortejos === "abierta_ex_primer_ortj";
   const esCerradaPrimerOrtejo =
     answers?.clasificacion_cerrada_ortejos === "cerrada_primer_ortj";
   const esCerradaNoPrimerOrtejo =
     answers?.clasificacion_cerrada_ortejos === "cerrada_ex_primer_ortj";
-  const hayCompromisoArticular = answers?.compromiso_derivacion_ortejos === "compromiso_articular"; 
+  const hayCompromisoArticular = answers?.compromiso_derivacion_ortejos === "compromiso_articular";
   const hayCompromisoBlandas = answers?.compromiso_derivacion_ortejos === "compromiso_blandas";
-  const esFracturaCerrada = esCerradaPrimerOrtejo || esCerradaNoPrimerOrtejo;
 
-  let nombreFractura = "";
-  if (esExpuestaPrimerOrtejo) {
-    nombreFractura = "FRACTURA PRIMER ORTEJO ABIERTA";
-  } else if (esExpuestaNoPrimerOrtejo) {
-    nombreFractura = "FRACTURA ORTEJOS ABIERTA (EXCEPTO PRIMER ORTEJO)";
-  } else if (esCerradaPrimerOrtejo) {
-    nombreFractura = "FRACTURA PRIMER ORTEJO CERRADA";
-  } else if (esCerradaNoPrimerOrtejo) {
-    nombreFractura = "FRACTURA ORTEJOS CERRADA (EXCEPTO PRIMER ORTEJO)";
-  }
+  const nombreFractura = esCerradaPrimerOrtejo
+    ? "FRACTURA PRIMER ORTEJO CERRADA"
+    : esCerradaNoPrimerOrtejo
+      ? "FRACTURA ORTEJOS CERRADA (EXCEPTO PRIMER ORTEJO)"
+      : "";
 
   let textoDerivacion = "🚨 Derivación inmediata a HT SU";
-  if (esFracturaCerrada && hayCompromisoArticular) {
+  if (hayCompromisoArticular) {
     textoDerivacion = "🚨 Derivación inmediata a HT TyP";
-  }
-  else if (esFracturaCerrada && hayCompromisoBlandas) {
-    textoDerivacion = "🚨 Derivación inmediata a HT SU";
   }
 
   return {
@@ -278,9 +265,8 @@ export const getProtocoloFxDerivacionSUOrtejos = (answers) => {
     pasos: [
       `${textoDerivacion} o centro hospitalario con capacidad resolutiva según indicación del especialista 🚨`,
       "Inmovilización con valva de la ambulancia",
-       "Aplicar frío local",
+      "Aplicar frío local",
       "Medicamentos: Analgesia EV y profilaxis tromboembólica con aspirina o dabigatrán una vez inmovilizada",
-      "Vacunación antitetánica (en caso de fractura expuesta)",
     ],
   };
 };
@@ -673,19 +659,37 @@ export const questions = [
     text: "¿Se detectó una fractura?",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.rx_deformidad_pie === "listo" || 
-      ans.rx_no_tolera_carga_pie === "listo" || 
+    showIf: (ans) => ans.rx_deformidad_pie === "listo" ||
+      ans.rx_no_tolera_carga_pie === "listo" ||
       ans.rx_tolera_carga_pie === "listo",
-    options: [
-      { value: "no",         label: "No" },
-      { value: "si_cerrada", label: "Sí, cerrada" },
-      { value: "si_abierta", label: "Sí, abierta" },
-      { value: "si_tobillo", label: "Sí, pero en tobillo" },
-      { value: "si_ortejos", label: "Sí, pero en ortejos" },
-      { value: "sospecha", label: "Sospecha de fractura"}
-    ]
+    optionsFn: (ans) => {
+      const OTTAWA_VALS = ['dolor_metatarsiano', 'dolor_palpacion', 'incapacidad_pasos'];
+      const tieneOttawa = Array.isArray(ans.criterios_pie) &&
+        ans.criterios_pie.some(v => OTTAWA_VALS.includes(v));
+      const tieneOrtejo = ans.dolor_ortejo === "si";
+      return [
+        { value: "no",         label: "No" },
+        { value: "si_cerrada", label: "Sí, cerrada" },
+        { value: "si_abierta", label: "Sí, abierta" },
+        ...(tieneOttawa  ? [{ value: "si_tobillo", label: "Sí, pero en tobillo" }] : []),
+        ...(tieneOrtejo  ? [{ value: "si_ortejos", label: "Sí, pero en ortejos" }] : []),
+        { value: "sospecha", label: "No, pero tengo dudas" },
+      ];
+    },
   },
 
+  {
+    id: "tac_fractura",
+    text: "¿Se cumple alguno de estos criterios?",
+    type: "options",
+    group: "risk",
+    showIf: (ans) => ans.hay_fractura_pie === "si_cerrada",
+    options: [
+      { value: "sospecha_intraarticular", label: "Sospecha de fractura intraarticular en Radiografía" },
+      { value: "sospecha_avulsion", label: "Sospecha de fractura por avulsión de tamaño incierto en Radiografía" },
+      { value: "ninguno", label: "No presenta ninguno" }
+    ]
+  },
 
     // Sospecha de fx
   {
@@ -708,22 +712,24 @@ export const questions = [
   // ─────────────────────────────────────────────
 
   {
-    id: "fractura_tobillo_tipo",
-    text: "¿La fractura de tobillo es cerrada o abierta?",
+    id: "tac_fractura_tobillo",
+    text: "¿Se cumple alguno de estos criterios?",
     type: "options",
     group: "risk",
     showIf: (ans) => ans.hay_fractura_pie === "si_tobillo",
     options: [
-      { value: "cerrada", label: "Cerrada" },
-      { value: "abierta", label: "Abierta" },
+      { value: "sospecha_intraarticular", label: "Sospecha de fractura intraarticular en Radiografía" },
+      { value: "sospecha_avulsion", label: "Sospecha de fractura por avulsión de tamaño incierto en Radiografía" },
+      { value: "ninguno", label: "No presenta ninguno" }
     ]
   },
+
   {
     id: "clasificacion_especifica_cerrada_tobillo",
     text: "Clasificación de la fractura:",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.hay_fractura_pie === "si_tobillo" && ans.fractura_tobillo_tipo === "cerrada",
+    showIf: (ans) => ans.hay_fractura_pie === "si_tobillo",
     options: [
       { value: "maleolo_perone_cerrada", label: "Maléolo Peroneo Cerrada" },
       { value: "maleolo_tibial_cerrada", label: "Maléolo Tibial Cerrada" },
@@ -732,24 +738,11 @@ export const questions = [
     ]
   },
   {
-    id: "clasificacion_especifica_abierta_tobillo",
-    text: "Clasificación de la fractura:",
-    type: "options",
-    group: "risk",
-    showIf: (ans) => ans.hay_fractura_pie === "si_tobillo" && ans.fractura_tobillo_tipo === "abierta",
-    options: [
-      { value: "maleolo_perone_abierta", label: "Maléolo Peroneo Abierta" },
-      { value: "maleolo_tibial_abierta", label: "Maléolo Tibial Abierta" },
-      { value: "bimaleolar_abierta",     label: "Bimaleolar Abierta" },
-      { value: "trimaleolar_abierta",    label: "Trimaleolar Abierta" },
-    ]
-  },
-  {
     id: "escenario_fractura_tobillo",
     text: "¿A cuál escenario pertenece la fractura?:",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.hay_fractura_pie === "si_tobillo" && ans.fractura_tobillo_tipo === "cerrada",
+    showIf: (ans) => ans.hay_fractura_pie === "si_tobillo",
     options: [
       { value: "escenario_1", label: "Escenario 1: Fractura unimaleolar no luxada" },
       { value: "escenario_2", label: "Escenario 2: Fractura bimaleolar no luxada" },
@@ -855,14 +848,15 @@ export const questions = [
   // ─────────────────────────────────────────────
 
   {
-    id: "fractura_ortejo_tipo",
-    text: "¿La fractura de ortejo es abierta o cerrada?",
+    id: "tac_fractura_ortejo",
+    text: "¿Se cumple alguno de estos criterios?",
     type: "options",
     group: "risk",
     showIf: (ans) => ans.hay_fractura_pie === "si_ortejos",
     options: [
-      { value: "cerrada_ortejo", label: "Cerrada" },
-      { value: "abierta_ortejo", label: "Abierta" }
+      { value: "sospecha_intraarticular", label: "Sospecha de fractura intraarticular en Radiografía" },
+      { value: "sospecha_avulsion", label: "Sospecha de fractura por avulsión de tamaño incierto en Radiografía" },
+      { value: "ninguno", label: "No presenta ninguno" }
     ]
   },
   {
@@ -870,21 +864,10 @@ export const questions = [
     text: "Clasificación de la fractura de ortejo:",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.fractura_ortejo_tipo === "cerrada_ortejo",
+    showIf: (ans) => ans.hay_fractura_pie === "si_ortejos",
     options: [
       { value: "cerrada_primer_ortj", label: "Primer ortejo" },
       { value: "cerrada_ex_primer_ortj", label: "Ortejos excepto primer ortejo" }
-    ]
-  },
-  {
-    id: "clasificacion_abierta_ortejos",
-    text: "Clasificación de la fractura de ortejo:",
-    type: "options",
-    group: "risk",
-    showIf: (ans) => ans.fractura_ortejo_tipo === "abierta_ortejo",
-    options: [
-      { value: "abierta_primer_ortj", label: "Primer ortejo" },
-      { value: "abierta_ex_primer_ortj", label: "Ortejos excepto primer ortejo" }
     ]
   },
   {
@@ -945,11 +928,6 @@ const FRACTURA_CERRADA_LABEL_ORTEJO = {
   cerrada_ex_primer_ortj: 'Ortejos (excepto primer ortejo) Cerrada'
 };
 
-const FRACTURA_ABIERTA_LABEL_ORTEJO = {
-  abierta_primer_ortj: 'Primer Ortejo Abierta',
-  abierta_ex_primer_ortj: 'Ortejos (excepto primer ortejo) Abierta'
-};
-
 // ═══════════════════════════════════════════════════════════════
 // REPOSO DINÁMICO POR CARGA
 // ═══════════════════════════════════════════════════════════════
@@ -1008,72 +986,55 @@ export const restTextPorCarga = (answers, protocolId) => {
 // ═══════════════════════════════════════════════════════════════
 
 export const evaluateRisk = (answers) => {
-  // ── 1. FRACTURAS DE ORTEJOS ──────────────────────────────────
-  
-  if (answers.hay_fractura_pie === "si_ortejos") {
-    const tipoOrtejo = answers.fractura_ortejo_tipo;
-    
-    // Fractura abierta de ortejo
-    if (tipoOrtejo === "abierta_ortejo") {
-      const clasVal = answers.clasificacion_abierta_ortejos;
-      const LABELS_ABIERTA = {
-        abierta_primer_ortj: "Fractura Primer Ortejo Abierta",
-        abierta_ex_primer_ortj: "Fractura Ortejos Abierta (excepto primer ortejo)",
-      };
-      return {
-        id: `fx_abierta_ortejo_${clasVal || "sin_clasificar"}`,
-        text: LABELS_ABIERTA[clasVal] || "Fractura de Ortejo Abierta: No especificada",
-        color: "red",
-        protocolId: "protocolo_fx_derivacion_su_ortejos",
-      };
-    }
-    
-    // Fractura cerrada de ortejo
-    if (tipoOrtejo === "cerrada_ortejo") {
-      const clasVal = answers.clasificacion_cerrada_ortejos;
-      const compromisoArticular = answers.compromiso_derivacion_ortejos === "compromiso_articular";
-      const hayCompromisoBlandas = answers.compromiso_derivacion_ortejos === "compromiso_blandas";
+  // Mensaje de advertencia: sospecha positiva o criterios TAC en fractura cerrada
+  const tacWarning =
+    (answers.hay_fractura_pie === "sospecha" && answers.sospecha_fractura && answers.sospecha_fractura !== "ninguno") ||
+    (answers.tac_fractura && answers.tac_fractura !== "ninguno") ||
+    (answers.tac_fractura_tobillo && answers.tac_fractura_tobillo !== "ninguno") ||
+    (answers.tac_fractura_ortejo && answers.tac_fractura_ortejo !== "ninguno")
+      ? "Se recomienda solicitar TAC"
+      : null;
+  const withTac = (r) => tacWarning ? { ...r, warningMessage: tacWarning } : r;
 
-      if (clasVal === "cerrada_primer_ortj") {
-        if (compromisoArticular || hayCompromisoBlandas) {
-          return {
-            id: "fx_cerrada_primer_ortj_derivacion",
-            text: "Fractura Primer Ortejo Cerrada con Criterios de Derivación",
-            color: "red",
-            protocolId: "protocolo_fx_derivacion_su_ortejos",
-          };
-        }
-        return {
-          id: "fx_cerrada_primer_ortj",
-          text: "Fractura Primer Ortejo Cerrada",
+  // ── 1. FRACTURAS DE ORTEJOS ──────────────────────────────────
+
+  if (answers.hay_fractura_pie === "si_ortejos") {
+    const clasVal = answers.clasificacion_cerrada_ortejos;
+    const compromisoArticular = answers.compromiso_derivacion_ortejos === "compromiso_articular";
+    const hayCompromisoBlandas = answers.compromiso_derivacion_ortejos === "compromiso_blandas";
+
+    if (clasVal === "cerrada_primer_ortj") {
+      if (compromisoArticular || hayCompromisoBlandas) {
+        return withTac({
+          id: "fx_cerrada_primer_ortj_derivacion",
+          text: "Fractura Primer Ortejo Cerrada con Criterios de Derivación",
           color: "red",
           protocolId: "protocolo_fx_derivacion_su_ortejos",
-        };
+        });
       }
-
-      if (clasVal === "cerrada_ex_primer_ortj") {
-        if (compromisoArticular || hayCompromisoBlandas) {
-          return {
-            id: "fx_cerrada_ex_primer_ortj_derivacion",
-            text: "Fractura Ortejos Cerrada (excepto primer ortejo) con Criterios de Derivación",
-            color: "red",
-            protocolId: "protocolo_fx_derivacion_su_ortejos",
-          };
-        }
-        return {
-          id: "fx_cerrada_ex_primer_ortj",
-          text: "Fractura Ortejos Cerrada (excepto primer ortejo)",
-          color: "red",
-          protocolId: "protocolo_fx_cerrada_ortejos",
-        };
-      }
-
-      return {
-        id: "fx_cerrada_ortejo_sin_clasificar",
-        text: "Fractura Ortejo Cerrada: No especificada",
+      return withTac({
+        id: "fx_cerrada_primer_ortj",
+        text: "Fractura Primer Ortejo Cerrada",
         color: "red",
         protocolId: "protocolo_fx_derivacion_su_ortejos",
-      };
+      });
+    }
+
+    if (clasVal === "cerrada_ex_primer_ortj") {
+      if (compromisoArticular || hayCompromisoBlandas) {
+        return withTac({
+          id: "fx_cerrada_ex_primer_ortj_derivacion",
+          text: "Fractura Ortejos Cerrada (excepto primer ortejo) con Criterios de Derivación",
+          color: "red",
+          protocolId: "protocolo_fx_derivacion_su_ortejos",
+        });
+      }
+      return withTac({
+        id: "fx_cerrada_ex_primer_ortj",
+        text: "Fractura Ortejos Cerrada (excepto primer ortejo)",
+        color: "red",
+        protocolId: "protocolo_fx_cerrada_ortejos",
+      });
     }
   }
 
@@ -1086,24 +1047,6 @@ export const evaluateRisk = (answers) => {
       bimaleolar_cerrada:     "Bimaleolar Cerrada",
       trimaleolar_cerrada:    "Trimaleolar Cerrada",
     };
-    const TOBILLO_ABIERTA_LABELS = {
-      maleolo_perone_abierta: "Maléolo Peroneo Abierta",
-      maleolo_tibial_abierta: "Maléolo Tibial Abierta",
-      bimaleolar_abierta:     "Bimaleolar Abierta",
-      trimaleolar_abierta:    "Trimaleolar Abierta",
-    };
-
-    const isAbierta = answers.fractura_tobillo_tipo === "abierta";
-
-    if (isAbierta) {
-      const clasVal = answers.clasificacion_especifica_abierta_tobillo;
-      return {
-        id: `fx_tobillo_abierta_${clasVal || "sin_clasificar"}`,
-        text: `Fractura Tobillo Abierta${clasVal ? `: ${TOBILLO_ABIERTA_LABELS[clasVal] || clasVal}` : ""}`,
-        color: "red",
-        protocolId: "protocolo_escenario_4",
-      };
-    }
 
     const clasVal = answers.clasificacion_especifica_cerrada_tobillo;
     const escenario = answers.escenario_fractura_tobillo;
@@ -1123,12 +1066,12 @@ export const evaluateRisk = (answers) => {
       return null;
     }
 
-    return {
+    return withTac({
       id: `fx_tobillo_cerrada_${clasVal || "sin_clas"}_${escenario}`,
       text: `Fractura Tobillo Cerrada: ${TOBILLO_CERRADA_LABELS[clasVal] || clasVal || "Sin clasificar"}`,
       color: "red",
       protocolId,
-    };
+    });
   }
 
   // ── 3. FRACTURAS DEL PIE (METATARSO Y TARSO) ─────────────────
@@ -1167,12 +1110,12 @@ export const evaluateRisk = (answers) => {
         ans.hay_derivacion_tarso_cerrada.includes('no_cumple');
 
       if (noCumpleCriterios) {
-        return {
+        return withTac({
           id: `f_pie_${clasVal}_conservador`,
           text: TARSO_CERRADA_CONSERVADOR_LABEL[clasVal] || `Fractura del Pie Cerrada: ${clasLabel}`,
           color: 'red',
           protocolId: 'protocolo_fx_cerrada_conservador_tarso',
-        };
+        });
       }
       protocolId = 'protocolo_fx_derivacion';
 
@@ -1180,12 +1123,12 @@ export const evaluateRisk = (answers) => {
       protocolId = 'protocolo_fx_derivacion';
     }
 
-    return {
+    return withTac({
       id: `f_pie_${clasVal}`,
       text: `Fractura del Pie ${tipoTxt}: ${clasLabel || 'No especificada'}`,
       color: 'red',
       protocolId,
-    };
+    });
   };
 
   const diagFractura = buildFracturaResult(answers);
@@ -1199,11 +1142,6 @@ export const evaluateRisk = (answers) => {
 
   // También cuando hay sospecha de fractura (se sugiere esguince + aviso de TAC)
   const puedeEsguince = answers.hay_fractura_pie === "no" || ottawaNegativo || answers.hay_fractura_pie === "sospecha";
-
-  // Mensaje de advertencia cuando la sospecha de fractura tiene criterios positivos
-  const tacWarning = (answers.hay_fractura_pie === "sospecha" && answers.sospecha_fractura && answers.sospecha_fractura !== "ninguno")
-    ? "Se recomienda solicitar TAC para descartar o confirmar fractura"
-    : null;
 
   if (puedeEsguince) {
     const inestabilidad = answers.inestabilidad;
@@ -1422,14 +1360,8 @@ export const generateClinicalReport = ({
       bimaleolar_cerrada:     'Bimaleolar Cerrada',
       trimaleolar_cerrada:    'Trimaleolar Cerrada',
     };
-    const ABIERTA_LABELS = {
-      maleolo_perone_abierta: 'Maléolo Peroneo Abierta',
-      maleolo_tibial_abierta: 'Maléolo Tibial Abierta',
-      bimaleolar_abierta:     'Bimaleolar Abierta',
-      trimaleolar_abierta:    'Trimaleolar Abierta',
-    };
-    const val = answers.clasificacion_especifica_cerrada_tobillo || answers.clasificacion_especifica_abierta_tobillo;
-    const label = CERRADA_LABELS[val] || ABIERTA_LABELS[val] || val;
+    const val = answers.clasificacion_especifica_cerrada_tobillo;
+    const label = CERRADA_LABELS[val] || val;
     const parts = val ? [`- Clasificación tobillo: ${label}`] : [];
     const escenario = answers.escenario_fractura_tobillo;
     if (escenario) parts.push(`- Escenario: ${escenario.replace('escenario_', 'Escenario ')}`);
@@ -1448,9 +1380,8 @@ export const generateClinicalReport = ({
 
   // Clasificación de fractura de ortejo
   const clasificacionLineaOrtejo = (() => {
-    const val = answers.clasificacion_cerrada_ortejos || 
-                answers.clasificacion_abierta_ortejos;
-    const label = FRACTURA_CERRADA_LABEL_ORTEJO[val] || FRACTURA_ABIERTA_LABEL_ORTEJO[val];
+    const val = answers.clasificacion_cerrada_ortejos;
+    const label = FRACTURA_CERRADA_LABEL_ORTEJO[val];
     return val ? `- Clasificación: ${label || val}` : null;
   })();
 

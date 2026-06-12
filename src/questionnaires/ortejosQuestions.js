@@ -115,10 +115,8 @@ export const getProtocoloFxDerivacionSUOrtejos = (answers) => {
 // ─────────────────────────────────────────────
 
 const FRACTURA_PIE_LABELS = {
-  fractura_metatarsiano_abierta:       "Fractura Metatarsiano Abierta",
-  fractura_metatarsiano_cerrada:       "Fractura Metatarsiano Cerrada",
-  luxofractura_lisfranc_abierta:       "Luxofractura de Lisfranc Abierta",
-  luxofractura_lisfranc_cerrada:       "Luxofractura de Lisfranc Cerrada"
+  fractura_metatarsiano_cerrada: "Fractura Metatarsiano Cerrada",
+  luxofractura_lisfranc_cerrada: "Luxofractura de Lisfranc Cerrada",
 };
 
 // ─────────────────────────────────────────────
@@ -128,26 +126,16 @@ const FRACTURA_PIE_LABELS = {
 
 export const protocolo_fx_derivacion_pie = (answers) => {
   const criterios = answers?.hay_derivacion_metatarso_cerrada || [];
-  const esMetatarsianoCerradaConDerivacion = 
+  const esMetatarsianoCerradaConDerivacion =
     Array.isArray(criterios) && !criterios.includes("no_cumple");
-    
-  const esMetatarsianoAbierta =
-    answers?.fractura_pie_tipo === "fractura_metatarsiano_abierta";
-  const esLuxoLisfrancAbierta =
-    answers?.fractura_pie_tipo === "luxofractura_lisfranc_abierta";
-  const esLuxoLisfrancCerrada  =
+  const esLuxoLisfrancCerrada =
     answers?.fractura_pie_tipo === "luxofractura_lisfranc_cerrada";
 
-  let nombreFractura = "";
-  if (esLuxoLisfrancAbierta) {
-    nombreFractura = "LUXOFRACTURA DE LISFRANC ABIERTA";
-  } else if (esMetatarsianoAbierta) {
-    nombreFractura = "FRACTURA METATARSIANO ABIERTA";
-  } else if (esLuxoLisfrancCerrada) {
-    nombreFractura = "LUXOFRACTURA DE LISFRANC CERRADA";
-  } else if (esMetatarsianoCerradaConDerivacion) {
-    nombreFractura = "FRACTURA METATARSIANO CERRADA";
-  } 
+  const nombreFractura = esLuxoLisfrancCerrada
+    ? "LUXOFRACTURA DE LISFRANC CERRADA"
+    : esMetatarsianoCerradaConDerivacion
+      ? "FRACTURA METATARSIANO CERRADA"
+      : "";
 
   return {
     titulo: `PROTOCOLO DE MANEJO - ${nombreFractura}`,
@@ -156,7 +144,6 @@ export const protocolo_fx_derivacion_pie = (answers) => {
       "Inmovilización con valva de la ambulancia",
       "Aplicar frío local",
       "Medicamentos: Analgesia EV y profilaxis tromboembólica con aspirina o dabigatrán una vez inmovilizada",
-      "Vacunación antitetánica (en caso de fractura expuesta)",
     ],
   };
 };
@@ -350,13 +337,16 @@ export const questions = [
     group: "risk",
     showIf: (ans) =>
       ans.rx_dolor_difuso === "listo" || ans.rx_dolor_local === "listo",
-    options: [
-      { value: "no",         label: "No" },
-      { value: "si_cerrada", label: "Sí, cerrada" },
-      { value: "si_abierta", label: "Sí, abierta" },
-      { value: "si_otra",    label: "Sí, pero no en ortejos" },
-      { value: "sospecha", label: "Sospecha de fractura"}
-    ],
+    optionsFn: (ans) => {
+      const tieneRxPie = ans.rx_dolor_difuso === "listo";
+      return [
+        { value: "no",         label: "No" },
+        { value: "si_cerrada", label: "Sí, cerrada" },
+        { value: "si_abierta", label: "Sí, abierta" },
+        ...(tieneRxPie ? [{ value: "si_otra", label: "Sí, pero no en ortejos" }] : []),
+        { value: "sospecha",   label: "No, pero tengo dudas" },
+      ];
+    },
   },
 
     // Sospecha de fx
@@ -368,8 +358,6 @@ export const questions = [
     showIf: (ans) => ans.hay_fractura === "sospecha",
     options: [
         { value: "linea_dudosa", label: "Radiografía con línea de fractura dudosa" },
-        { value: "sospecha_intraarticular", label: "Sospecha de fractura intraarticular en Radiografía" },
-        { value: "sospecha_avulsion", label: "Sospecha de fractura por avulsión de tamaño incierto en Radiografía" },
         { value: "discordancia_clinica", label: "Discordancia entre clínica muy sugerente y severa con Radiografía normal" },
         { value: "ninguno", label: "No se cumple ninguno de los criterios" }
     ]
@@ -384,11 +372,22 @@ export const questions = [
     group: "risk",
     showIf: (ans) => ans.hay_fractura === "si_otra",
     options: [
-        { value: "fractura_metatarsiano_abierta", label: "Fractura Metatarsiano Abierta" },
         { value: "fractura_metatarsiano_cerrada", label: "Fractura Metatarsiano Cerrada" },
-        { value: "luxofractura_lisfranc_abierta", label: "Luxofractura de Lisfranc Abierta" },
         { value: "luxofractura_lisfranc_cerrada", label: "Luxofractura de Lisfranc Cerrada" },
         { value: "otra", label: "Otra" }
+    ]
+  },
+
+  {
+    id: "tac_fractura",
+    text: "¿Se cumple alguno de estos criterios?",
+    type: "options",
+    group: "risk",
+    showIf: (ans) => ans.hay_fractura === "si_cerrada" || ans.hay_fractura === "si_otra",
+    options: [
+        { value: "sospecha_intraarticular", label: "Sospecha de fractura intraarticular en Radiografía" },
+        { value: "sospecha_avulsion", label: "Sospecha de fractura por avulsión de tamaño incierto en Radiografía" },
+        { value: "ninguno", label: "No presenta ninguno" }
     ]
   },
 
@@ -503,6 +502,13 @@ export const evaluateRisk = (answers) => {
   const huboRx =
     answers.rx_dolor_difuso === "listo" || answers.rx_dolor_local === "listo";
 
+  // Mensaje de advertencia: sospecha positiva o criterios TAC en fractura cerrada
+  const tacWarning =
+    (hayFractura === "sospecha" && answers.sospecha_fractura && answers.sospecha_fractura !== "ninguno") ||
+    (answers.tac_fractura && answers.tac_fractura !== "ninguno")
+      ? "Se recomienda solicitar TAC"
+      : null;
+
   // ── 1. FRACTURA DE PIE (no de ortejo) ────────
 
    // Lógica de derivación de fractura de pie 
@@ -516,9 +522,7 @@ export const evaluateRisk = (answers) => {
 
   let protocolId;
   
-  if (clasVal === "fractura_metatarsiano_abierta" || 
-      clasVal === "luxofractura_lisfranc_abierta" || 
-      clasVal === "luxofractura_lisfranc_cerrada") {
+  if (clasVal === "luxofractura_lisfranc_cerrada") {
     protocolId = "protocolo_fx_derivacion_pie";
   } else if (clasVal === "fractura_metatarsiano_cerrada") {
     // Si NO cumple criterios de derivación → conservador
@@ -535,6 +539,7 @@ export const evaluateRisk = (answers) => {
     text: diagText,
     color: "red",
     protocolId,
+    ...(tacWarning ? { warningMessage: tacWarning } : {}),
   };
 }
 
@@ -551,6 +556,7 @@ export const evaluateRisk = (answers) => {
       text: LABELS_ABIERTA[clasVal] || "Fractura de Ortejo Abierta: No especificada",
       color: "red",
       protocolId: "protocolo_fx_derivacion_su_ortejos",
+      ...(tacWarning ? { warningMessage: tacWarning } : {}),
     };
   }
 
@@ -571,6 +577,7 @@ export const evaluateRisk = (answers) => {
         protocolId: compromisoArticular
           ? "protocolo_fx_derivacion_su_ortejos"
           : "protocolo_fx_cerrada_ortejos",
+        ...(tacWarning ? { warningMessage: tacWarning } : {}),
       };
     }
 
@@ -580,15 +587,11 @@ export const evaluateRisk = (answers) => {
       text: "Fractura Ortejo Cerrada: No especificada",
       color: "red",
       protocolId: "protocolo_fx_derivacion_su_ortejos",
+      ...(tacWarning ? { warningMessage: tacWarning } : {}),
     };
   }
 
   // ── 4. ESGUINCE ──────────────────────────────
-
-  // Mensaje de advertencia cuando la sospecha de fractura tiene criterios positivos
-  const tacWarning = (hayFractura === "sospecha" && answers.sospecha_fractura && answers.sospecha_fractura !== "ninguno")
-    ? "Se recomienda solicitar TAC para descartar o confirmar fractura"
-    : null;
 
   const sinFractura = hayFractura === "no" || hayFractura === "sospecha";
 

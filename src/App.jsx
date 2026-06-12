@@ -83,7 +83,7 @@ const QuestionRenderer = ({ question, value, onChange, answers, onVoiceUsed }) =
   const commonInputClass = "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 placeholder:text-sm";
 
   // --- Filtrado dinámico para 'escenario_fractura' y 'weber' ---
-  let optionsToRender = question.options || [];
+  let optionsToRender = question.optionsFn ? question.optionsFn(answers) : (question.options || []);
   if (question.type === 'options' || question.type === 'boolean' || question.type === 'button-group') {
     if (question.id === 'escenario_fractura') {
       const allowed = allowedScenariosFor(answers);

@@ -481,14 +481,18 @@ export const questions = [
     text: "¿Se detectó una fractura?",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.rx_deformidad === "listo" || ans.rx_no_tolera_carga === "listo" || ans.rx_tolera_carga === "listo" ,
-    options: [
-        { value: "no", label: "No" },
+    showIf: (ans) => ans.rx_deformidad === "listo" || ans.rx_no_tolera_carga === "listo" || ans.rx_tolera_carga === "listo",
+    optionsFn: (ans) => {
+      const tieneMetatarsiano = Array.isArray(ans.criterios_ottawa2) &&
+        ans.criterios_ottawa2.includes("dolor_metatarsiano");
+      return [
+        { value: "no",        label: "No" },
         { value: "si_cerrada", label: "Sí, cerrada" },
         { value: "si_abierta", label: "Sí, abierta" },
-        { value: "si_otra", label: "Sí, pero no en tobillo" },
-        { value: "sospecha", label: "Sospecha de fractura"}
-    ]
+        ...(tieneMetatarsiano ? [{ value: "si_otra", label: "Sí, pero no en tobillo" }] : []),
+        { value: "sospecha",  label: "No, pero tengo dudas" },
+      ];
+    },
   },
 
   // Sospecha de fx
@@ -500,13 +504,24 @@ export const questions = [
     showIf: (ans) => ans.hay_fractura === "sospecha",
     options: [
         { value: "linea_dudosa", label: "Radiografía con línea de fractura dudosa" },
-        { value: "sospecha_intraarticular", label: "Sospecha de fractura intraarticular en Radiografía" },
-        { value: "sospecha_avulsion", label: "Sospecha de fractura por avulsión de tamaño incierto en Radiografía" },
         { value: "discordancia_clinica", label: "Discordancia entre clínica muy sugerente y severa con Radiografía normal" },
-        { value: "ninguno", label: "No se cumple ninguno de los criterios"}
+        { value: "ninguno", label: "No se cumple ninguno"}
     ]
   },
 
+    {
+  id: "tac_fractura",
+  text: "¿Se cumple alguno de estos criterios?",
+  type: "options",
+  group: "risk",
+  showIf: (ans) => ans.hay_fractura === "si_cerrada" || 
+          (ans.hay_fractura === "si_otra"),
+  options: [
+      { value: "sospecha_intraarticular", label: "Sospecha de fractura intraarticular en Radiografía" },
+      { value: "sospecha_avulsion", label: "Sospecha de fractura por avulsión de tamaño incierto en Radiografía" },
+      { value: "ninguno", label: "No presenta ninguno" }
+  ]
+},
 
 // Clasificación fractura pie cerrada
 {
@@ -529,6 +544,9 @@ export const questions = [
     { value: "luxo_pie_cerrada",       label: "Luxofractura del Pie Cerrada" }
   ]
 },
+
+
+
 
 // Criterios derivación metatarsiano cerrada
 {
@@ -876,9 +894,16 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
     };
   };
 
+  // Mensaje de advertencia: sospecha positiva o criterios TAC en fractura cerrada
+  const tacWarning =
+    (answers.hay_fractura === "sospecha" && answers.sospecha_fractura && answers.sospecha_fractura !== "ninguno") ||
+    (answers.tac_fractura && answers.tac_fractura !== "ninguno")
+      ? "Se recomienda solicitar TAC"
+      : null;
+
 // 1) Intentar con fractura
   const diagFractura = buildFracturaResult(answers);
-  if (diagFractura) return diagFractura;
+  if (diagFractura) return tacWarning ? { ...diagFractura, warningMessage: tacWarning } : diagFractura;
 
   // Helper: Ottawa negativo = seleccionó solo "no_cumple" o array vacío
   const ottawaArray = Array.isArray(answers.criterios_ottawa2) ? answers.criterios_ottawa2 : [];
@@ -888,11 +913,6 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
   // Lógica de esguinces — aplica tanto si hay_fractura === "no" como si no hubo RX (ottawa negativo)
   // También cuando hay sospecha de fractura (se sugiere esguince + aviso de TAC)
   const puedeEsguince = answers.hay_fractura === "no" || ottawaNegativo || answers.hay_fractura === "sospecha";
-
-  // Mensaje de advertencia cuando la sospecha de fractura tiene criterios positivos
-  const tacWarning = (answers.hay_fractura === "sospecha" && answers.sospecha_fractura && answers.sospecha_fractura !== "ninguno")
-    ? "Se recomienda solicitar TAC para descartar o confirmar fractura"
-    : null;
 
   if (puedeEsguince) {
     const inestabilidad = answers.inestabilidad;
