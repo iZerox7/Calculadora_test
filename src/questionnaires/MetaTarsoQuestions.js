@@ -1153,9 +1153,13 @@ export const evaluateRisk = (answers) => {
       (ottawaArray.length === 1 && ottawaArray.includes('no_cumple'));
 
     if (//deformidad === "si" || carga === "no_tolera"
-      inestabilidad === "con_inestabilidad" && ((
-      volumen !== "ninguno" && volumen != null &&
-      equimosis === "difusa" && equimosis != null) || (volumen === "severo"))
+      // inestabilidad === "con_inestabilidad" && ((
+      // volumen !== "ninguno" && volumen != null &&
+      // equimosis === "difusa" && equimosis != null) || (volumen === "severo"))
+
+      inestabilidad === "con_inestabilidad" &&
+      (volumen === "severo" || (volumen !== "ninguno" && equimosis !== "ninguno"))
+
 
     ) {
       return {
@@ -1170,8 +1174,12 @@ export const evaluateRisk = (answers) => {
     if (
 
       // Me traigo los criterios de tobillo para derivar el esguince
-      (inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
-      (volumen === "moderado" || volumen === "severo")
+      // (inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
+      // (volumen === "moderado" || volumen === "severo")
+
+            (inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
+      (equimosis !== "ninguno")
+
 
       // así lo tenía antes
       // carga === "tolera" || carga === "con_dificultad" ||
