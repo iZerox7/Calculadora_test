@@ -481,14 +481,47 @@ export const questions = [
     text: "¿Se detectó una fractura?",
     type: "options",
     group: "risk",
-    showIf: (ans) => ans.rx_deformidad === "listo" || ans.rx_no_tolera_carga === "listo" || ans.rx_tolera_carga === "listo" ,
-    options: [
-        { value: "no", label: "No" },
+    showIf: (ans) => ans.rx_deformidad === "listo" || ans.rx_no_tolera_carga === "listo" || ans.rx_tolera_carga === "listo",
+    optionsFn: (ans) => {
+      const tieneMetatarsiano = Array.isArray(ans.criterios_ottawa2) &&
+        ans.criterios_ottawa2.includes("dolor_metatarsiano");
+      return [
+        { value: "no",        label: "No" },
         { value: "si_cerrada", label: "Sí, cerrada" },
         { value: "si_abierta", label: "Sí, abierta" },
-        { value: "si_otra", label: "Sí, pero no en tobillo" }
+        ...(tieneMetatarsiano ? [{ value: "si_otra", label: "Sí, pero no en tobillo" }] : []),
+        { value: "sospecha",  label: "No, pero tengo dudas" },
+      ];
+    },
+  },
+
+  // Sospecha de fx
+  {
+    id: "sospecha_fractura",
+    text: "¿Se cumple alguno de estos criterios?",
+    type: "options",
+    group: "risk",
+    showIf: (ans) => ans.hay_fractura === "sospecha",
+    options: [
+        { value: "linea_dudosa", label: "Radiografía con línea de fractura dudosa" },
+        { value: "discordancia_clinica", label: "Discordancia entre clínica muy sugerente y severa con Radiografía normal" },
+        { value: "ninguno", label: "No se cumple ninguno"}
     ]
   },
+
+    {
+  id: "tac_fractura",
+  text: "¿Se cumple alguno de estos criterios?",
+  type: "options",
+  group: "risk",
+  showIf: (ans) => ans.hay_fractura === "si_cerrada" || 
+          (ans.hay_fractura === "si_otra"),
+  options: [
+      { value: "sospecha_intraarticular", label: "Sospecha de fractura intraarticular en Radiografía" },
+      { value: "sospecha_avulsion", label: "Sospecha de fractura por avulsión de tamaño incierto en Radiografía" },
+      { value: "ninguno", label: "No presenta ninguno" }
+  ]
+},
 
 // Clasificación fractura pie cerrada
 {
@@ -511,6 +544,9 @@ export const questions = [
     { value: "luxo_pie_cerrada",       label: "Luxofractura del Pie Cerrada" }
   ]
 },
+
+
+
 
 // Criterios derivación metatarsiano cerrada
 {
@@ -858,17 +894,25 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
     };
   };
 
+  // Mensaje de advertencia: sospecha positiva o criterios TAC en fractura cerrada
+  const tacWarning =
+    (answers.hay_fractura === "sospecha" && answers.sospecha_fractura && answers.sospecha_fractura !== "ninguno") ||
+    (answers.tac_fractura && answers.tac_fractura !== "ninguno")
+      ? "Se recomienda solicitar TAC"
+      : null;
+
 // 1) Intentar con fractura
   const diagFractura = buildFracturaResult(answers);
-  if (diagFractura) return diagFractura;
+  if (diagFractura) return tacWarning ? { ...diagFractura, warningMessage: tacWarning } : diagFractura;
 
   // Helper: Ottawa negativo = seleccionó solo "no_cumple" o array vacío
   const ottawaArray = Array.isArray(answers.criterios_ottawa2) ? answers.criterios_ottawa2 : [];
-  const ottawaNegativo = ottawaArray.length === 0 || 
+  const ottawaNegativo = ottawaArray.length === 0 ||
     (ottawaArray.length === 1 && ottawaArray.includes("no_cumple"));
 
   // Lógica de esguinces — aplica tanto si hay_fractura === "no" como si no hubo RX (ottawa negativo)
-  const puedeEsguince = answers.hay_fractura === "no" || ottawaNegativo;
+  // También cuando hay sospecha de fractura (se sugiere esguince + aviso de TAC)
+  const puedeEsguince = answers.hay_fractura === "no" || ottawaNegativo || answers.hay_fractura === "sospecha";
 
   if (puedeEsguince) {
     const inestabilidad = answers.inestabilidad;
@@ -877,23 +921,35 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
 
     // Grado III: con inestabilidad + edema + equimosis (ambos presentes)
     if (
+      // inestabilidad === "con_inestabilidad" &&
+      // volumen !== "ninguno" && volumen != null &&
+      // equimosis === "difusa" && equimosis != null &&
+
       inestabilidad === "con_inestabilidad" &&
-      volumen !== "ninguno" && volumen != null &&
-      equimosis === "difusa" && equimosis != null
+      (volumen === "severo" || (volumen !== "ninguno" && equimosis !== "ninguno"))
+
     ) {
-      return { id: "e3", text: "Esguince de Tobillo Grado III", color: "red", protocolId: "protocolo_esguince_3" };
+      return { id: "e3", text: "Esguince de Tobillo Grado III", color: "red", protocolId: "protocolo_esguince_3", ...(tacWarning ? { warningMessage: tacWarning } : {}) };
     }
 
     // Grado II: sin inestabilidad o dudosa + edema presente + algo de equimosis
     if (
-      ((inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
-      (volumen === "moderado" || volumen === "severo") ) || (inestabilidad === "con_inestabilidad" &&
-      volumen !== "ninguno" && volumen != null &&
-      equimosis === "localizada" && equimosis != null)
+      // ((inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
+      // (volumen === "moderado" || volumen === "severo") ) || (inestabilidad === "con_inestabilidad" &&
+      // volumen !== "ninguno" && volumen != null &&
+      // equimosis === "localizada" && equimosis != null)
+
+      // ((inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
+      // ((volumen !== "ninguno" || equimosis !== "ninguno") || (volumen === "ninguno" && equimosis !== "ninguno")  ) )
+
+      (inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
+      (equimosis !== "ninguno")
+
+
       //  &&
       // (equimosis === "localizada" || equimosis === "difusa" ) // Comentamos el criterio de equimosis para darle más importancia al AVO
     ) {
-      return { id: "e2", text: "Esguince de Tobillo Grado II", color: "green", protocolId: "protocolo_esguince_2" };
+      return { id: "e2", text: "Esguince de Tobillo Grado II", color: "green", protocolId: "protocolo_esguince_2", ...(tacWarning ? { warningMessage: tacWarning } : {}) };
     }
 
     // Grado II (fallback por Ottawa): incapacidad de dar pasos, aunque edema sea leve o ausente
@@ -902,7 +958,7 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
       (inestabilidad === "sin_inestabilidad" || inestabilidad === "dudosa") &&
       tieneIncapacidadPasos
     ) {
-      return { id: "e2", text: "Esguince de Tobillo Grado II", color: "green", protocolId: "protocolo_esguince_2" };
+      return { id: "e2", text: "Esguince de Tobillo Grado II", color: "green", protocolId: "protocolo_esguince_2", ...(tacWarning ? { warningMessage: tacWarning } : {}) };
     }
 
     // Grado I: sin inestabilidad + sin edema o leve
@@ -910,7 +966,7 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
       inestabilidad === "sin_inestabilidad" &&
       (volumen === "ninguno" || volumen === "leve")
     ) {
-      return { id: "e1", text: "Esguince de Tobillo Grado I", color: "green", protocolId: "protocolo_esguince_1" };
+      return { id: "e1", text: "Esguince de Tobillo Grado I", color: "green", protocolId: "protocolo_esguince_1", ...(tacWarning ? { warningMessage: tacWarning } : {}) };
     }
   }
 
@@ -918,7 +974,7 @@ if (tipo !== 'si_abierta' && tipo !== 'si_cerrada') return null;
   // const tieneMetatarsiano = Array.isArray(answers.criterios_ottawa2) &&
   //   answers.criterios_ottawa2.includes("dolor_metatarsiano");
   // Fallback
-  return { id: "e1", text: "Esguince de Tobillo Grado I", color: "green", protocolId: "protocolo_esguince_1" };
+  return { id: "e1", text: "Esguince de Tobillo Grado I", color: "green", protocolId: "protocolo_esguince_1", ...(tacWarning ? { warningMessage: tacWarning } : {}) };
 };
 
 

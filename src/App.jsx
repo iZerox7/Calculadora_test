@@ -83,7 +83,7 @@ const QuestionRenderer = ({ question, value, onChange, answers, onVoiceUsed }) =
   const commonInputClass = "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 placeholder:text-sm";
 
   // --- Filtrado dinámico para 'escenario_fractura' y 'weber' ---
-  let optionsToRender = question.options || [];
+  let optionsToRender = question.optionsFn ? question.optionsFn(answers) : (question.options || []);
   if (question.type === 'options' || question.type === 'boolean' || question.type === 'button-group') {
     if (question.id === 'escenario_fractura') {
       const allowed = allowedScenariosFor(answers);
@@ -1375,6 +1375,12 @@ function App() {
               <p className="text-orange-800 text-sm font-semibold">
                 ⚠️ Dado que cumple con uno o más criterios de Ottawa, ver protocolo de esguince de tobillo previo a determinar diagnóstico final
               </p>
+            </div>
+          )}
+
+          {finalResult.warningMessage && (
+            <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+              <p className="text-red-700 text-sm font-semibold">⚠️ {finalResult.warningMessage}</p>
             </div>
           )}
 
