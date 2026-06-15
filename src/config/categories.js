@@ -23,10 +23,10 @@ export const categoriesConfig = {
     },
   },
   violencia_y_trauma: {
-    name: "Violencia y Trauma",
+    name: "Salud Mental",
     questionnaires: {
       consulta_vyt: {
-        name: "(Piloto) Consulta por Violencia y Trauma",
+        name: "(Piloto) Consulta por Violencia y Traumaaaaaaa",
         getQuestionsModule: () => import('../questionnaires/VyTQuestions.js'),
       },
     },

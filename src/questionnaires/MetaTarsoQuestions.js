@@ -507,9 +507,9 @@ export const questions = [
       { value: "prueba_lisfranc", label: "Prueba de Lisfranc" },
       { value: "prueba_chopart",  label: "Prueba de Chopart" },
       { value: "prueba_squeeze",  label: "Prueba de Squeeze" },
-      { value: "dolor_metatarsiano", labelBold: "[Ottawa]", label: "Dolor en la base del quinto metatarsiano o en el navicular" },
-      { value: "dolor_palpacion",    labelBold: "[Ottawa]", label: "Dolor a la palpación en el borde posterior de los 6 cm distales de la tibia o la fíbula hasta el segmento más distal del maléolo medial o lateral" },
-      { value: "incapacidad_pasos",  labelBold: "[Ottawa]", label: "Incapacidad de dar más de 4 pasos seguidos sin ayuda o de sostener su peso corporal" },
+      { value: "dolor_metatarsiano", labelBold: "(Ottawa)", label: "Dolor en la base del quinto metatarsiano o en el navicular" },
+      { value: "dolor_palpacion",    labelBold: "(Ottawa)", label: "Dolor a la palpación en el borde posterior de los 6 cm distales de la tibia o la fíbula hasta el segmento más distal del maléolo medial o lateral" },
+      { value: "incapacidad_pasos",  labelBold: "(Ottawa)", label: "Incapacidad de dar más de 4 pasos seguidos sin ayuda o de sostener su peso corporal" },
       { value: "no_cumple", label: "No cumple ninguno (-)", exclusive: true}
     ]
   },

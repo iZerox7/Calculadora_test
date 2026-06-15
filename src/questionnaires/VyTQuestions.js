@@ -1,6 +1,29 @@
 // questionnaires/VyTQuestions.js
 
-export const protocols = {};
+const EVENTOS_TRAUMATICOS = new Set([
+  'exposicion_muerte', 'exposicion_lesiones', 'violencia_sexual',
+  'secuestro', 'exposicion_repulsiva',
+]);
+
+const SINTOMAS_AJUSTE = new Set([
+  'tristeza', 'rabia', 'preocupacion', 'miedo', 'frustracion',
+  'liabilidad_emocional', 'insomnio_leve', 'ansiedad_autoregulable',
+]);
+
+export const protocols = {
+  protocolo_estres_agudo: {
+    titulo: 'REACCIÓN AL ESTRÉS AGUDO',
+    pasos: [],
+  },
+  protocolo_adaptativa: {
+    titulo: 'REACCIÓN ADAPTATIVA AL ESTRÉS',
+    pasos: [],
+  },
+  protocolo_ajuste: {
+    titulo: 'REACCIÓN DE AJUSTE O REACCIÓN VIVENCIAL ESPERABLE',
+    pasos: [],
+  },
+};
 
 export const questions = [
   // ── ANAMNESIS ──────────────────────────────────────────────────────────────
@@ -52,11 +75,11 @@ export const questions = [
     group: "anamnesis",
     options: [
       // Reacción al estrés agudo
-      { value: "sintomas_evitativos",         label: "Síntomas evitativos" },
+      { value: "sintomas_evitativos",         label: "Síntomas evitativos (evitar recuerdos, lugares, actividades que recuerden el evento)" },
       { value: "recuerdos_vividos",           label: "Recuerdos vívidos" },
-      { value: "pesadillas",                  label: "Pesadillas relacionadas con el evento" },
+      // { value: "pesadillas",                  label: "Pesadillas relacionadas con el evento" },
       { value: "sintomas_neurovegetativos",   label: "Síntomas neurovegetativos" },
-      { value: "sintomas_disociativos",       label: "Síntomas disociativos" },
+      { value: "sintomas_disociativos",       label: "Síntomas disociativos (incapacidad para recordar aspectos importantes del evento traumático, sentido de la realidad alterado)" },
       // Reacción de ajuste o reacción vivencial esperable
       { value: "tristeza",                    label: "Tristeza" },
       { value: "rabia",                       label: "Rabia" },
@@ -71,7 +94,8 @@ export const questions = [
       { value: "insomnio_moderado_severo",    label: "Insomnio moderado a severo" },
       { value: "alteraciones_memoria_atencion", label: "Alteraciones de memoria y atención" },
       { value: "animo_bajo",                  label: "Ánimo bajo" },
-      { value: "sintomas_intrusivos",         label: "Síntomas intrusivos" },
+      { value: "sintomas_intrusivos",         label: "Síntomas intrusivos (recuerdos intrusivos, pesadillas, re experimentación)" },
+      { value: "asintomático",         label: "No presenta síntomas" },
     ],
   },
 
@@ -93,12 +117,36 @@ export const questions = [
   },
 ];
 
-export const evaluateRisk = () => ({
-  id: "pendiente",
-  text: "Evaluación en desarrollo",
-  color: "green",
-  protocolId: "pendiente",
-});
+export const evaluateRisk = (answers) => {
+  const evento = answers.tipo_evento;
+  const sintomas = Array.isArray(answers.sintomatologia) ? answers.sintomatologia : [];
+
+  if (EVENTOS_TRAUMATICOS.has(evento)) {
+    return {
+      id: 'reaccion_estres_agudo',
+      text: 'Reacción al estrés agudo',
+      color: 'red',
+      protocolId: 'protocolo_estres_agudo',
+    };
+  }
+
+  const soloAjuste = sintomas.length > 0 && sintomas.every(s => SINTOMAS_AJUSTE.has(s));
+  if (soloAjuste) {
+    return {
+      id: 'reaccion_ajuste',
+      text: 'Reacción de ajuste o reacción vivencial esperable',
+      color: 'green',
+      protocolId: 'protocolo_ajuste',
+    };
+  }
+
+  return {
+    id: 'reaccion_adaptativa',
+    text: 'Reacción adaptativa al estrés',
+    color: 'red',
+    protocolId: 'protocolo_adaptativa',
+  };
+};
 
 export const generateClinicalReport = ({ caseId }) =>
   `INFORME MÉDICO: VIOLENCIA Y TRAUMA\nID CASO: ${caseId}\nEn desarrollo.`;
