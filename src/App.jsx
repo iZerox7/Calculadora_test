@@ -896,6 +896,7 @@ function App() {
     let mensajeTFGuardar = null;
     let mensajeControlGuardar = null;
     let transporteGuardar = null;
+    let mensajeTACGuardar = null;
 
     if (esTobilloMecanismo(selectedQuestionnaireKey)) {
       const esGrado1 = evaluation.protocolId === 'protocolo_esguince_1';
@@ -946,6 +947,10 @@ function App() {
       }
     }
 
+      if (esTobilloPie(selectedCategory) && evaluation.warningMessage) {
+          mensajeTACGuardar = evaluation.warningMessage;
+        }
+
     const resultData = {
       id_caso: caseId,
       cuestionario: selectedQuestionnaireKey,
@@ -957,6 +962,7 @@ function App() {
       ...(mensajeTFGuardar !== null && { mensaje_tf: mensajeTFGuardar }),
       ...(mensajeControlGuardar !== null && { mensaje_control: mensajeControlGuardar }),
       ...(transporteGuardar !== null && { transporte: transporteGuardar }),
+      ...(mensajeTACGuardar !== null && { mensaje_tac: mensajeTACGuardar }),
     };
 
     try {
@@ -1329,6 +1335,7 @@ function App() {
       // })();
 
       const esOrtjOMetaTarso = esTobilloPie(selectedCategory) && !soloTobillo;
+      const mensajeTAC = finalResult.warningMessage || null;
 
       const mensajeTFOrtj = (() => {
         if (!esOrtjOMetaTarso) return null;
@@ -1405,6 +1412,12 @@ function App() {
           {mensajeControlOrtj && (
             <div className="p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
               <p className="text-yellow-800 text-sm font-semibold">📅 {mensajeControlOrtj}</p>
+            </div>
+          )}
+
+          {mensajeTAC && (
+            <div className="p-4 bg-sky-50 border-l-4 border-sky-400 rounded-lg">
+              <p className="text-sky-800 text-sm font-semibold">🩻 {mensajeTAC}</p>
             </div>
           )}
 
