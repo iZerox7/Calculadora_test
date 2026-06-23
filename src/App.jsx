@@ -905,10 +905,10 @@ function App() {
       const eva = answers.eva;
       const carg = Number(answers.carga_laboral);
 
-      if (esGrado3) mensajeTFGuardar = 'Agendar primera TF al día 3';
+      if (esGrado3) mensajeTFGuardar = 'Generar OC para comenzar TF al día 3';
       else if (esGrado2) {
-        if ((vol === 'moderado' || vol === 'severo') && eva >= 6) mensajeTFGuardar = 'Agendar primera TF al día 3';
-        else if (vol === 'leve' && eva >= 6) mensajeTFGuardar = 'Agendar primera TF al día 5';
+        if ((vol === 'moderado' || vol === 'severo') && eva >= 6) mensajeTFGuardar = 'Generar OC para comenzar TF al día 3';
+        // else if (vol === 'leve' && eva >= 6) mensajeTFGuardar = 'Agendar primera TF al día 5';
         else mensajeTFGuardar = 'A partir de las condiciones del paciente, no requiere terapia física';
       }
 
@@ -931,7 +931,7 @@ function App() {
       if (['protocolo_esguince_2_ortj', 'protocolo_esguince_3_ortj',
            'protocolo_fx_cerrada_ortejos', 'getProtocoloEsguincePie2',
            'getProtocoloEsguincePie3'].includes(pid)) {
-        mensajeTFGuardar = 'Agendar primera TF al día 3';
+        mensajeTFGuardar = 'Generar OC para comenzar TF al día 3';
       }
       if (['protocolo_esguince_2_ortj', 'protocolo_esguince_3_ortj',
            'getProtocoloEsguincePie2', 'getProtocoloEsguincePie3'].includes(pid)) {
@@ -1300,10 +1300,10 @@ function App() {
 
       const mensajeTF = (() => {
         if (!soloTobillo) return null;
-        if (esGrado3) return 'Agendar primera TF al día 3';
+        if (esGrado3) return 'Generar OC para comenzar TF al día 3';
         if (esGrado2) {
-          if ((volumen === 'moderado' || volumen === 'severo') && eva >= 6) return 'Agendar primera TF al día 3';
-          if (volumen === 'leve' && eva >= 6) return 'Agendar primera TF al día 5';
+          if ((volumen === 'moderado' || volumen === 'severo') && eva >= 6) return 'Generar OC para comenzar TF al día 3';
+          // if (volumen === 'leve' && eva >= 6) return 'Agendar primera TF al día 5';
           return 'A partir de las condiciones del paciente, no requiere terapia física';
         }
         return null;
@@ -1336,7 +1336,7 @@ function App() {
         if (['protocolo_esguince_2_ortj', 'protocolo_esguince_3_ortj',
              'protocolo_fx_cerrada_ortejos', 'getProtocoloEsguincePie2',
              'getProtocoloEsguincePie3'].includes(pid)) {
-          return 'Agendar primera TF al día 3';
+          return 'Generar OC para comenzar TF al día 3';
         }
         return null;
       })();
