@@ -1415,12 +1415,6 @@ function App() {
             </div>
           )}
 
-          {mensajeTAC && (
-            <div className="p-4 bg-sky-50 border-l-4 border-sky-400 rounded-lg">
-              <p className="text-sky-800 text-sm font-semibold">🩻 {mensajeTAC}</p>
-            </div>
-          )}
-
           <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
             <h3 className="text-blue-800 font-bold text-lg mb-4 flex items-center">
               <span className="mr-2">📋</span> Protocolo de Manejo Sugerido:
